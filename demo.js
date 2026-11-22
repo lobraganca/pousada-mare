@@ -279,7 +279,7 @@
     categoria_salvar: function (b, u, db) { var c = byId(db.categorias, b.id); Object.assign(c, { nome: b.nome, resumo: b.resumo, descricao: b.descricao, capacidade: +b.capacidade, no_site: b.no_site !== false, fotos: b.fotos || c.fotos, caracteristicas: b.caracteristicas || c.caracteristicas }); return { ok: true }; },
     video_salvar: function (b, u, db) { if (!/^https:\/\//.test(b.url || "")) erro("Link do vídeo inválido."); var v = b.id ? byId(db.videos, b.id) : null; if (!v) { v = { id: ++db.seq.videos }; db.videos.push(v); } Object.assign(v, { titulo: b.titulo || "", url: b.url, capa: b.capa || "", ordem: +b.ordem || 0, ativo: b.ativo !== false }); return { ok: true }; },
     video_del: function (b, u, db) { db.videos = db.videos.filter(function (v) { return v.id !== +b.id; }); return { ok: true }; },
-    usuario_salvar: function (b, u, db) { if (!/^[a-z0-9._-]{3,40}$/.test(b.login || "")) erro("Login: use 3 a 40 letras minúsculas, números, ponto ou traço."); var x = b.id ? byId(db.usuarios, b.id) : null; if (!x) { if (!b.senha) erro("Defina uma senha inicial."); x = { id: ++db.seq.usuarios }; db.usuarios.push(x); } Object.assign(x, { nome: b.nome, login: b.login, papel: b.papel, ativo: b.ativo !== false, areas: b.papel === "dono" ? null : (Array.isArray(b.areas) ? b.areas.filter(function (a) { return AREAS.indexOf(a) >= 0; }) : x.areas || null) }); return { ok: true }; }
+    usuario_salvar: function (b, u, db) { if (!/^[a-z0-9._-]{3,40}$/.test(b.login || "")) erro("Login: use 3 a 40 letras minúsculas, números, ponto ou traço."); var x = b.id ? byId(db.usuarios, b.id) : null; if (!x) { if (!b.senha) erro("Defina uma senha inicial."); x = { id: ++db.seq.usuarios }; db.usuarios.push(x); } if (b.senha) x.senha_demo = String(b.senha); Object.assign(x, { nome: b.nome, login: b.login, papel: b.papel, ativo: b.ativo !== false, areas: b.papel === "dono" ? null : (Array.isArray(b.areas) ? b.areas.filter(function (a) { return AREAS.indexOf(a) >= 0; }) : x.areas || null) }); return { ok: true }; }
   };
 
   var AREAS = ["mapa", "reservas", "leads", "consumo", "pagamentos", "tarefas", "tarefas_gerir", "relatorios", "ajustes"];
@@ -298,7 +298,7 @@
       var db = load();
       if (!b) { if (!USER) erro("sessao", 401); return { usuario: USER }; }
       if (b.acao === "logout") { USER = null; sessionStorage.removeItem("mare_demo_user"); return { ok: true }; }
-      if (b.acao === "login") { var x = db.usuarios.filter(function (y) { return y.login === String(b.login || "").toLowerCase() && y.ativo; })[0]; if (!x) erro("No modo demonstração, entre como: dono, brenda (recepção) ou jaci (equipe). Qualquer senha.", 401); USER = { id: x.id, nome: x.nome, login: x.login, papel: x.papel }; sessionStorage.setItem("mare_demo_user", JSON.stringify(USER)); return { usuario: USER }; }
+      if (b.acao === "login") { var x = db.usuarios.filter(function (y) { return y.login === String(b.login || "").toLowerCase() && y.ativo; })[0]; if (!x) erro("No modo demonstração, entre como: dono, brenda (recepção) ou jaci (equipe). Qualquer senha.", 401); if (String(b.senha || "") !== (x.senha_demo || "mare2026")) erro("Senha incorreta.", 401); USER = { id: x.id, nome: x.nome, login: x.login, papel: x.papel }; sessionStorage.setItem("mare_demo_user", JSON.stringify(USER)); return { usuario: USER }; }
       if (b.acao === "senha") return { ok: true };
       erro("ação");
     },
