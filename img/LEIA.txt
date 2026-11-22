@@ -1,0 +1,2 @@
+Coloque aqui o arquivo da logo com o nome logo.png (fundo transparente, de preferência branca ou clara, ~400px de largura).
+O site usa /img/logo.png automaticamente; enquanto não houver, mostra o nome "Maré".
