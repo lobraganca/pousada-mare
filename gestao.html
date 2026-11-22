@@ -857,7 +857,7 @@ document.addEventListener("mousemove",function(e){var t=e.target.closest&&e.targ
 
 /* =================== MAPA DE QUARTOS =================== */
 VIEWS.mapa=function(){
-  V.innerHTML=topo("Mapa de quartos",'<button class="btn sec" id="bt-bloq">'+ic("lock",16)+'Bloquear quarto</button><button class="btn agua" data-nova="1">'+ic("plus",16)+'Nova reserva</button>')+
+  V.innerHTML=topo("Mapa de quartos",'<button class="btn agua" data-nova="1">'+ic("plus",16)+'Nova reserva</button>')+
   '<div class="map-ctrl"><button class="btn sec sm" id="mp-p" aria-label="Anterior">'+ic("l",16)+'</button><button class="btn sec sm" id="mp-h">Hoje</button><button class="btn sec sm" id="mp-n" aria-label="Próximo">'+ic("r",16)+'</button><input type="date" id="mp-d" value="'+S.mapIni+'" style="max-width:160px"><div class="seg" id="mp-s"><button data-d="7">1 sem</button><button data-d="14">2 sem</button><button data-d="21">3 sem</button><button data-d="31">1 mês</button><button data-d="62">2 meses</button></div><span class="muted tiny mp-dica" style="flex:1;min-width:200px">Arraste uma reserva para trocar de quarto ou de data · puxe a ponta direita para mudar a saída · toque e arraste em dias vazios para criar.</span></div>'+
   '<div class="map-wrap" id="mw"><div class="empty">Carregando mapa…</div></div>'+
   '<div class="legend"><span><i style="background:repeating-linear-gradient(135deg,#C68A2E 0 4px,#D19A42 4px 8px)"></i>Pré-reserva (aguarda pagamento)</span><span><i style="background:#12586A"></i>Confirmada</span><span><i style="background:#0E3941"></i>Hospedada</span><span><i style="background:#D8CDB8"></i>Finalizada</span><span><i style="background:repeating-linear-gradient(135deg,#8E9A9D 0 4px,#A7B2B4 4px 8px)"></i>Bloqueado</span><span style="margin-left:8px">Origem (ponto colorido):</span>'+Object.keys(ORIG).map(function(o){return'<span><i style="background:var(--o-'+o+');width:8px;height:8px;border-radius:50%"></i>'+ORIG[o]+'</span>'}).join("")+'</div>';
@@ -866,7 +866,6 @@ VIEWS.mapa=function(){
   $("#mp-n").onclick=function(){S.mapIni=add(S.mapIni,Math.max(7,Math.floor(S.mapDias/2)));VIEWS.mapa()};
   $("#mp-h").onclick=function(){S.mapIni=add(hojeStr(),-2);VIEWS.mapa()};
   $("#mp-d").onchange=function(){if(this.value){S.mapIni=this.value;VIEWS.mapa()}};
-  $("#bt-bloq").onclick=function(){formBloqueio({})};
   carregaMapa();
 };
 function carregaMapa(){
