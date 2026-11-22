@@ -115,10 +115,10 @@
 
   var A = {
     boot: function (b, u, db) {
-      return { usuario: u, hoje: hoje(), quartos: db.quartos.map(function (q) { return Object.assign({}, q, { capacidade: cat(db, q.categoria_id).capacidade }); }).sort(function (a, b) { return a.ordem - b.ordem; }), categorias: db.categorias, produtos: db.produtos, usuarios: db.usuarios.filter(function (x) { return x.ativo; }), config: db.config };
+      return { usuario: Object.assign({}, u, { areas: areasDe(u) }), hoje: hoje(), quartos: db.quartos.map(function (q) { return Object.assign({}, q, { capacidade: cat(db, q.categoria_id).capacidade }); }).sort(function (a, b) { return a.ordem - b.ordem; }), categorias: db.categorias, produtos: db.produtos, usuarios: db.usuarios.filter(function (x) { return x.ativo; }), config: db.config };
     },
     hoje: function (b, u, db) {
-      var d = b.data || hoje(), din = u.papel !== "equipe";
+      var d = b.data || hoje(), din = areasDe(u).indexOf("pagamentos") >= 0;
       var ativosR = db.reservas;
       var cheg = ativosR.filter(function (r) { return r.checkin === d && ["pre", "confirmada", "hospedada"].indexOf(r.status) >= 0; }).map(function (r) { return resumoReserva(db, r); });
       var sai = ativosR.filter(function (r) { return r.checkout === d && ["confirmada", "hospedada", "finalizada"].indexOf(r.status) >= 0; }).map(function (r) { return resumoReserva(db, r); });
@@ -241,7 +241,7 @@
     hospedados: function (b, u, db) { return { itens: A.hoje({ data: b.data }, { papel: "dono" }, db).hospedados.map(function (h) { return { reserva_id: h.id, codigo: h.codigo, nome: h.nome, acompanhantes: (byId(db.reservas, h.id) || {}).acompanhantes || "", quarto_id: h.quarto_id, quarto: h.quarto }; }) }; },
     lancar: function (b, u, db) {
       var r = byId(db.reservas, b.reserva_id); if (!r || ["confirmada", "hospedada", "finalizada"].indexOf(r.status) < 0) erro("Só dá para lançar consumo em reserva confirmada ou hospedada.");
-      (b.itens || []).forEach(function (it) { var p = it.produto_id ? byId(db.produtos, it.produto_id) : null; var vu = p && (it.valor_unit === undefined || it.valor_unit === "" || u.papel === "equipe") ? p.preco : +it.valor_unit; var l = { id: ++db.seq.lancamentos, reserva_id: r.id, quarto_id: it.quarto_id ? +it.quarto_id : null, produto_id: p ? p.id : null, tipo: p ? p.tipo : (it.tipo || "extra"), descricao: it.descricao || (p && p.nome), qtd: +it.qtd || 1, valor_unit: vu, total: Math.round((+it.qtd || 1) * vu * 100) / 100, cancelado: false, criado_em: new Date().toISOString(), por: u.nome, pessoa: it.pessoa || "" }; db.lancamentos.push(l); audit(db, u, "insert", "lancamentos", l.id, l); });
+      (b.itens || []).forEach(function (it) { var p = it.produto_id ? byId(db.produtos, it.produto_id) : null; var vu = p && (it.valor_unit === undefined || it.valor_unit === "" || areasDe(u).indexOf("pagamentos") < 0) ? p.preco : +it.valor_unit; var l = { id: ++db.seq.lancamentos, reserva_id: r.id, quarto_id: it.quarto_id ? +it.quarto_id : null, produto_id: p ? p.id : null, tipo: p ? p.tipo : (it.tipo || "extra"), descricao: it.descricao || (p && p.nome), qtd: +it.qtd || 1, valor_unit: vu, total: Math.round((+it.qtd || 1) * vu * 100) / 100, cancelado: false, criado_em: new Date().toISOString(), por: u.nome, pessoa: it.pessoa || "" }; db.lancamentos.push(l); audit(db, u, "insert", "lancamentos", l.id, l); });
       return { ok: true };
     },
     lancamento_cancelar: function (b, u, db) { var l = byId(db.lancamentos, b.id); if (l) { l.cancelado = true; audit(db, u, "update", "lancamentos", l.id, l); } return { ok: true }; },
@@ -249,9 +249,9 @@
     produto_salvar: function (b, u, db) { if (!b.nome) erro("Informe o nome."); var p = b.id ? byId(db.produtos, b.id) : null; if (!p) { p = { id: ++db.seq.produtos }; db.produtos.push(p); } Object.assign(p, { tipo: b.tipo, grupo: b.grupo || "", nome: b.nome, descricao: b.descricao || "", preco: +b.preco || 0, no_cardapio: !!b.no_cardapio, ativo: b.ativo !== false, ordem: +b.ordem || 0 }); audit(db, u, b.id ? "update" : "insert", "produtos", p.id, p); return { ok: true }; },
     tarefas: function (b, u, db) {
       var st = b.status || "aberta", lst = { quadro: ["aberta", "andamento", "feita"], pendentes: ["aberta", "andamento"] }[st] || [st];
-      return { itens: db.tarefas.filter(function (t) { return lst.indexOf(t.status) >= 0 && (u.papel !== "equipe" || !t.responsavel_id || t.responsavel_id === u.id); }).map(function (t) { var q = t.quarto_id ? quarto(db, t.quarto_id) : null, r = t.responsavel_id ? byId(db.usuarios, t.responsavel_id) : null; return Object.assign({}, t, { quarto: q ? q.nome : null, responsavel: r ? r.nome : null }); }).sort(function (a, b) { return st === "aberta" ? (a.prazo < b.prazo ? -1 : a.prazo > b.prazo ? 1 : 0) : (a.feita_em < b.feita_em ? 1 : -1); }) };
+      return { itens: db.tarefas.filter(function (t) { return lst.indexOf(t.status) >= 0 && (areasDe(u).indexOf("tarefas_gerir") >= 0 || !t.responsavel_id || t.responsavel_id === u.id); }).map(function (t) { var q = t.quarto_id ? quarto(db, t.quarto_id) : null, r = t.responsavel_id ? byId(db.usuarios, t.responsavel_id) : null; return Object.assign({}, t, { quarto: q ? q.nome : null, responsavel: r ? r.nome : null }); }).sort(function (a, b) { return st === "aberta" ? (a.prazo < b.prazo ? -1 : a.prazo > b.prazo ? 1 : 0) : (a.feita_em < b.feita_em ? 1 : -1); }) };
     },
-    tarefa_salvar: function (b, u, db) { if (!b.titulo || b.titulo.length < 2) erro("Dê um título para a tarefa."); var t = b.id ? byId(db.tarefas, b.id) : null; if (!t) { t = { id: ++db.seq.tarefas, status: "aberta", origem: "manual", criado_em: new Date().toISOString() }; db.tarefas.push(t); } Object.assign(t, { titulo: b.titulo, descricao: b.descricao || "", quarto_id: b.quarto_id ? +b.quarto_id : null, responsavel_id: b.responsavel_id ? +b.responsavel_id : null, prazo: b.prazo || hoje(), prioridade: b.prioridade || "normal" }); return { ok: true }; },
+    tarefa_salvar: function (b, u, db) { if (!b.titulo || b.titulo.length < 2) erro("Dê um título para a tarefa."); var t = b.id ? byId(db.tarefas, b.id) : null; if (!t) { t = { id: ++db.seq.tarefas, status: "aberta", origem: "manual", criado_por: u.id, criado_em: new Date().toISOString() }; db.tarefas.push(t); } Object.assign(t, { titulo: b.titulo, descricao: b.descricao || "", quarto_id: b.quarto_id ? +b.quarto_id : null, responsavel_id: b.responsavel_id ? +b.responsavel_id : null, prazo: b.prazo || hoje(), prioridade: b.prioridade || "normal" }); return { ok: true }; },
     tarefa_status: function (b, u, db) { var t = byId(db.tarefas, b.id); if (!t) erro("Tarefa não encontrada.", 404); if (b.status === "arquivada") { if (t.status !== "feita") erro("Só dá para arquivar tarefa concluída."); t.status = "arquivada"; return { ok: true }; } t.status = b.status; t.feita_em = b.status === "feita" ? new Date().toISOString() : null; t.feita_por_nome = b.status === "feita" ? u.nome : null; return { ok: true }; },
     tarefa_del: function (b, u, db) { db.tarefas = db.tarefas.filter(function (t) { return t.id !== +b.id; }); return { ok: true }; },
     _resumo: function (db, ini, fim) {
@@ -279,10 +279,15 @@
     categoria_salvar: function (b, u, db) { var c = byId(db.categorias, b.id); Object.assign(c, { nome: b.nome, resumo: b.resumo, descricao: b.descricao, capacidade: +b.capacidade, no_site: b.no_site !== false, fotos: b.fotos || c.fotos, caracteristicas: b.caracteristicas || c.caracteristicas }); return { ok: true }; },
     video_salvar: function (b, u, db) { if (!/^https:\/\//.test(b.url || "")) erro("Link do vídeo inválido."); var v = b.id ? byId(db.videos, b.id) : null; if (!v) { v = { id: ++db.seq.videos }; db.videos.push(v); } Object.assign(v, { titulo: b.titulo || "", url: b.url, capa: b.capa || "", ordem: +b.ordem || 0, ativo: b.ativo !== false }); return { ok: true }; },
     video_del: function (b, u, db) { db.videos = db.videos.filter(function (v) { return v.id !== +b.id; }); return { ok: true }; },
-    usuario_salvar: function (b, u, db) { if (!/^[a-z0-9._-]{3,40}$/.test(b.login || "")) erro("Login: use 3 a 40 letras minúsculas, números, ponto ou traço."); var x = b.id ? byId(db.usuarios, b.id) : null; if (!x) { if (!b.senha) erro("Defina uma senha inicial."); x = { id: ++db.seq.usuarios }; db.usuarios.push(x); } Object.assign(x, { nome: b.nome, login: b.login, papel: b.papel, ativo: b.ativo !== false }); return { ok: true }; }
+    usuario_salvar: function (b, u, db) { if (!/^[a-z0-9._-]{3,40}$/.test(b.login || "")) erro("Login: use 3 a 40 letras minúsculas, números, ponto ou traço."); var x = b.id ? byId(db.usuarios, b.id) : null; if (!x) { if (!b.senha) erro("Defina uma senha inicial."); x = { id: ++db.seq.usuarios }; db.usuarios.push(x); } Object.assign(x, { nome: b.nome, login: b.login, papel: b.papel, ativo: b.ativo !== false, areas: b.papel === "dono" ? null : (Array.isArray(b.areas) ? b.areas.filter(function (a) { return AREAS.indexOf(a) >= 0; }) : x.areas || null) }); return { ok: true }; }
   };
 
-  var PERM = { dono: null, recepcao: ["relatorios", "auditoria", "ajustes", "tarifas_salvar", "temporada_salvar", "temporada_del", "fechamento_salvar", "fechamento_del", "config_salvar", "quarto_salvar", "categoria_salvar", "video_salvar", "video_del", "usuario_salvar", "produto_salvar", "pagamento_del", "lead_del"], equipe: "boot hoje hospedados lancar tarefas tarefa_status" };
+  var AREAS = ["mapa", "reservas", "leads", "consumo", "pagamentos", "tarefas", "tarefas_gerir", "relatorios", "ajustes"];
+  var AREAS_PADRAO = { recepcao: ["mapa", "reservas", "leads", "consumo", "pagamentos", "tarefas", "tarefas_gerir"], equipe: ["consumo", "tarefas"] };
+  var SO_DONO = ["usuario_salvar", "pagamento_del", "lead_del"];
+  var AREA_DE = { mapa: ["mapa"], mover: ["mapa"], bloqueio_criar: ["mapa"], bloqueio_remover: ["mapa"], reserva_salvar: ["reservas", "mapa"], reserva_status: ["reservas", "mapa"], reservas_busca: ["reservas"], hospede_busca: ["reservas", "mapa", "leads"], acompanhantes: ["reservas", "mapa"], disponiveis: ["reservas", "mapa", "leads"], preco: ["reservas", "mapa", "leads"], reserva_get: ["reservas", "mapa", "leads", "pagamentos"], leads: ["leads"], lead_status: ["leads"], lancar: ["consumo"], consumo: ["pagamentos"], lancamento_cancelar: ["pagamentos"], pagamento_add: ["pagamentos"], tarefas: ["tarefas", "tarefas_gerir"], tarefa_status: ["tarefas", "tarefas_gerir"], tarefa_salvar: ["tarefas_gerir"], tarefa_del: ["tarefas_gerir"], relatorios: ["relatorios"], auditoria: ["relatorios"], ajustes: ["ajustes"], tarifas_salvar: ["ajustes"], temporada_salvar: ["ajustes"], temporada_del: ["ajustes"], fechamento_salvar: ["ajustes"], fechamento_del: ["ajustes"], config_salvar: ["ajustes"], quarto_salvar: ["ajustes"], categoria_salvar: ["ajustes"], video_salvar: ["ajustes"], video_del: ["ajustes"], produto_salvar: ["ajustes"] };
+  function areasDe(u) { if (u.papel === "dono") return AREAS.slice(); var x = (load().usuarios.filter(function (y) { return y.id === u.id; })[0] || u).areas; return x && x.length ? x : (AREAS_PADRAO[u.papel] || []); }
+  function podeAcao(n, u) { if (u.papel === "dono") return true; if (SO_DONO.indexOf(n) >= 0) return false; var a = areasDe(u); if (AREA_DE[n]) return AREA_DE[n].some(function (x) { return a.indexOf(x) >= 0; }); return ["boot", "hoje", "hospedados"].indexOf(n) >= 0 || u.papel === "recepcao"; }
   var USER = null;
   try { USER = JSON.parse(sessionStorage.getItem("mare_demo_user")); } catch (e) { }
 
@@ -300,7 +305,7 @@
     g: function (b) {
       var db = load(); if (!USER) erro("sessao", 401);
       var f = A[b.a]; if (!f || b.a.charAt(0) === "_") erro("Ação desconhecida.");
-      var p = PERM[USER.papel]; if (p && (typeof p === "string" ? p.split(" ").indexOf(b.a) < 0 : p.indexOf(b.a) >= 0)) erro("Seu usuário não tem permissão para isso.", 403);
+      if (!podeAcao(b.a, USER)) erro("Seu usuário não tem permissão para isso.", 403);
       var out = f(clone(b), USER, db); save(); return clone(out);
     },
     site: function () {

@@ -4,6 +4,29 @@ import { usuarioDe, origemOk, hashSenha, senhaForte } from "./_auth.js";
 // API da Gestão. Cada ação diz quais papéis podem usá-la:
 //   dono = tudo · recepcao = operação do dia a dia · equipe = tarefas e lançamentos do bar
 const D = ["dono"], DR = ["dono", "recepcao"], T = ["dono", "recepcao", "equipe"];
+// Áreas que o dono libera para cada pessoa (Ajustes › Usuários). Dono vê tudo.
+// Sem áreas marcadas, vale o padrão do papel.
+const AREAS = ["mapa", "reservas", "leads", "consumo", "pagamentos", "tarefas", "tarefas_gerir", "relatorios", "ajustes"];
+const AREAS_PADRAO = { recepcao: ["mapa", "reservas", "leads", "consumo", "pagamentos", "tarefas", "tarefas_gerir"], equipe: ["consumo", "tarefas"] };
+const so_dono = ["usuario_salvar", "pagamento_del", "lead_del"];
+const AREA_DE = {
+  mapa: ["mapa"], mover: ["mapa"], bloqueio_criar: ["mapa"], bloqueio_remover: ["mapa"],
+  reserva_salvar: ["reservas", "mapa"], reserva_status: ["reservas", "mapa"], reservas_busca: ["reservas"], hospede_busca: ["reservas", "mapa", "leads"],
+  acompanhantes: ["reservas", "mapa"], disponiveis: ["reservas", "mapa", "leads"], preco: ["reservas", "mapa", "leads"],
+  reserva_get: ["reservas", "mapa", "leads", "pagamentos"], leads: ["leads"], lead_status: ["leads"],
+  lancar: ["consumo"], consumo: ["pagamentos"], lancamento_cancelar: ["pagamentos"], pagamento_add: ["pagamentos"],
+  tarefas: ["tarefas", "tarefas_gerir"], tarefa_status: ["tarefas", "tarefas_gerir"], tarefa_salvar: ["tarefas_gerir"], tarefa_del: ["tarefas_gerir"],
+  relatorios: ["relatorios"], auditoria: ["relatorios"],
+  ajustes: ["ajustes"], tarifas_salvar: ["ajustes"], temporada_salvar: ["ajustes"], temporada_del: ["ajustes"], fechamento_salvar: ["ajustes"], fechamento_del: ["ajustes"],
+  config_salvar: ["ajustes"], quarto_salvar: ["ajustes"], categoria_salvar: ["ajustes"], video_salvar: ["ajustes"], video_del: ["ajustes"], produto_salvar: ["ajustes"],
+};
+export const areasDe = (u) => u.papel === "dono" ? AREAS.slice() : (Array.isArray(u.areas) && u.areas.length ? u.areas.filter((x) => AREAS.includes(x)) : (AREAS_PADRAO[u.papel] || []));
+const podeAcao = (nome, acao, u) => {
+  if (u.papel === "dono") return true;
+  if (so_dono.includes(nome)) return false;
+  if (AREA_DE[nome]) { const a = areasDe(u); return AREA_DE[nome].some((x) => a.includes(x)); }
+  return acao[0].includes(u.papel);
+};
 const ORIGENS = ["site", "whatsapp", "booking", "telefone", "balcao", "outro"];
 const STATUS = ["pre", "confirmada", "hospedada", "finalizada", "cancelada", "no_show"];
 const ATIVOS = "('pre','confirmada','hospedada','finalizada')";
@@ -31,13 +54,13 @@ const ACOES = {
       q(`select id, nome, papel from usuarios where ativo order by nome`),
       q(`select chave, valor from config`),
     ]);
-    return { usuario: u, hoje: hoje(), quartos, categorias, produtos, usuarios, config: Object.fromEntries(cfg.map((r) => [r.chave, r.valor])) };
+    return { usuario: Object.assign({}, u, { areas: areasDe(u) }), hoje: hoje(), quartos, categorias, produtos, usuarios, config: Object.fromEntries(cfg.map((r) => [r.chave, r.valor])) };
   }],
 
   // ---------------- Hoje (painel inicial) ----------------
   hoje: [T, async (b, u) => {
     const d = isData(b.data) ? b.data : hoje();
-    const dinheiro = u.papel !== "equipe";
+    const dinheiro = areasDe(u).includes("pagamentos");
     const [chegadas, saidas, hospedados, cafe, tarefas, leads, receber] = await Promise.all([
       q(`select r.id, r.codigo, r.status, r.origem, h.nome, h.telefone, r.adultos, r.criancas, r.checkout,
                 (select string_agg(qt.nome, ', ' order by qt.ordem) from ocupacoes o join quartos qt on qt.id = o.quarto_id where o.reserva_id = r.id and o.ativo) quartos
@@ -50,7 +73,7 @@ const ACOES = {
           where o.ativo and o.periodo @> $1::date and r.status in ('confirmada','hospedada') order by qt.ordem`, [d]),
       q(`select * from previsao_cafe($1::date, 7)`, [d]),
       q(`select t.*, qt.nome quarto, us.nome responsavel from tarefas t left join quartos qt on qt.id = t.quarto_id left join usuarios us on us.id = t.responsavel_id
-          where t.status in ('aberta','andamento') and t.prazo <= $1::date + 1 ${u.papel === "equipe" ? "and (t.responsavel_id is null or t.responsavel_id = $2)" : "and $2::int is not null"} order by t.prazo, t.prioridade desc limit 50`, [d, u.id]),
+          where t.status in ('aberta','andamento') and t.prazo <= $1::date + 1 ${!areasDe(u).includes("tarefas_gerir") ? "and (t.responsavel_id is null or t.responsavel_id = $2)" : "and $2::int is not null"} order by t.prazo, t.prioridade desc limit 50`, [d, u.id]),
       dinheiro ? q(`select count(*) filter (where status = 'novo' and enviado)::int enviados, count(*) filter (where status = 'novo' and not enviado and length(telefone) >= 10)::int abandonados from leads where atualizado_em > now() - interval '30 days'`) : [{}],
       dinheiro ? q(`select coalesce(sum(greatest(x.total_hospedagem + x.consumo - x.pago, 0)), 0) total from (select ${FIN} from reservas r where r.status in ('confirmada','hospedada') and r.checkin <= $1::date + 7) x`, [d]) : [{}],
     ]);
@@ -215,7 +238,7 @@ const ACOES = {
       if (pid) {
         const p = await q1(`select nome, preco, tipo from produtos where id = $1 and ativo`, [pid]);
         if (!p) throw Object.assign(new Error("Produto não encontrado."), { status: 400 });
-        desc = desc || p.nome; tipo = p.tipo; if (preco === undefined || preco === null || preco === "" || u.papel === "equipe") preco = p.preco;
+        desc = desc || p.nome; tipo = p.tipo; if (preco === undefined || preco === null || preco === "" || !areasDe(u).includes("pagamentos")) preco = p.preco;
       }
       if (!desc) throw Object.assign(new Error("Descreva o item."), { status: 400 });
       await q(`insert into lancamentos(reserva_id, quarto_id, produto_id, tipo, descricao, qtd, valor_unit, criado_por, pessoa) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
@@ -246,7 +269,7 @@ const ACOES = {
     return { itens: await q(
       `select t.*, qt.nome quarto, us.nome responsavel, f.nome feita_por_nome from tarefas t left join quartos qt on qt.id = t.quarto_id
          left join usuarios us on us.id = t.responsavel_id left join usuarios f on f.id = t.feita_por
-        where t.status = any($1::text[]) ${u.papel === "equipe" ? "and (t.responsavel_id is null or t.responsavel_id = $2)" : "and $2::int is not null"}
+        where t.status = any($1::text[]) ${!areasDe(u).includes("tarefas_gerir") ? "and (t.responsavel_id is null or t.responsavel_id = $2)" : "and $2::int is not null"}
           and (t.status <> 'feita' or t.feita_em > now() - interval '30 days')
           and (t.status <> 'arquivada' or coalesce(t.feita_em, t.criado_em) > now() - interval '180 days')
         order by case when t.status in ('aberta','andamento') then t.prazo end, t.feita_em desc nulls last, t.id limit 300`, [lista, u.id]) };
@@ -261,13 +284,13 @@ const ACOES = {
   tarefa_status: [T, async (b, u) => {
     const novo = umDe(b.status, ["aberta", "andamento", "feita", "arquivada"], "aberta"), feita = novo === "feita";
     if (novo === "arquivada") {
-      const r = await q(`update tarefas set status = 'arquivada' where id = $1 and status = 'feita' and ($3 <> 'equipe' or responsavel_id is null or responsavel_id = $2) returning id`, [int(b.id, 1), u.id, u.papel], u.id);
+      const r = await q(`update tarefas set status = 'arquivada' where id = $1 and status = 'feita' and ($3 <> 'equipe' or responsavel_id is null or responsavel_id = $2) returning id`, [int(b.id, 1), u.id, areasDe(u).includes("tarefas_gerir") ? "gerente" : "equipe"], u.id);
       if (!r.length) throw Object.assign(new Error("Só dá para arquivar tarefa concluída."), { status: 400 });
       return { ok: true };
     }
     const r = await q(`update tarefas set status = $2, feita_em = case when $3 then now() end, feita_por = case when $3 then $4::int end
                         where id = $1 and ($5 <> 'equipe' or responsavel_id is null or responsavel_id = $4) returning id`,
-      [int(b.id, 1), novo, feita, u.id, u.papel], u.id);
+      [int(b.id, 1), novo, feita, u.id, areasDe(u).includes("tarefas_gerir") ? "gerente" : "equipe"], u.id);
     if (!r.length) throw Object.assign(new Error("Tarefa não encontrada."), { status: 404 });
     return { ok: true };
   }],
@@ -297,7 +320,7 @@ const ACOES = {
       q(`select id, nome, lower(periodo) ini, upper(periodo) - 1 fim, ajuste_pct, min_noites from temporadas order by lower(periodo)`),
       q(`select id, lower(periodo) ini, upper(periodo) - 1 fim, motivo from fechamentos_site where upper(periodo) >= current_date order by lower(periodo)`),
       q(`select * from videos order by ordem, id`),
-      q(`select id, nome, login, papel, ativo, criado_em from usuarios order by ativo desc, nome`),
+      q(`select id, nome, login, papel, areas, ativo, criado_em from usuarios order by ativo desc, nome`),
       q(`select * from categorias order by ordem`),
     ]);
     return { tarifas, temporadas, fechamentos, videos, usuarios, categorias };
@@ -365,14 +388,15 @@ const ACOES = {
     const login = txt(b.login, 40).toLowerCase(), papel = umDe(b.papel, ["dono", "recepcao", "equipe"]);
     if (!/^[a-z0-9._-]{3,40}$/.test(login)) throw Object.assign(new Error("Login: use 3 a 40 letras minúsculas, números, ponto ou traço."), { status: 400 });
     if (b.id && int(b.id, 1) === u.id && (papel !== "dono" || b.ativo === false)) throw Object.assign(new Error("Você não pode tirar o seu próprio acesso de dono."), { status: 400 });
+    const areas = papel === "dono" ? null : (Array.isArray(b.areas) ? [...new Set(b.areas.map(String).filter((x) => AREAS.includes(x)))] : null);
     if (b.senha) { const f = senhaForte(b.senha); if (f) throw Object.assign(new Error(f), { status: 400 }); }
     if (b.id) {
-      await q(`update usuarios set nome=$2, login=$3, papel=$4, ativo=$5 where id=$1`, [int(b.id, 1), txt(b.nome, 80), login, papel, b.ativo !== false], u.id);
+      await q(`update usuarios set nome=$2, login=$3, papel=$4, ativo=$5, areas=$6 where id=$1`, [int(b.id, 1), txt(b.nome, 80), login, papel, b.ativo !== false, areas], u.id);
       if (b.senha) await q(`update usuarios set senha_hash=$2 where id=$1`, [int(b.id, 1), hashSenha(b.senha)], u.id);
       if (b.senha || b.ativo === false) await q(`delete from sessoes where usuario_id = $1`, [int(b.id, 1)]);
     } else {
       if (!b.senha) throw Object.assign(new Error("Defina uma senha inicial."), { status: 400 });
-      await q(`insert into usuarios(nome, login, senha_hash, papel) values ($1,$2,$3,$4)`, [txt(b.nome, 80), login, hashSenha(b.senha), papel], u.id);
+      await q(`insert into usuarios(nome, login, senha_hash, papel, areas) values ($1,$2,$3,$4,$5)`, [txt(b.nome, 80), login, hashSenha(b.senha), papel, areas], u.id);
     }
     return { ok: true };
   }],
@@ -387,7 +411,7 @@ export default async function handler(req, res) {
     const b = corpo(req);
     const acao = ACOES[String(b.a || "")];
     if (!acao) return responde(res, 400, { erro: "Ação desconhecida." });
-    if (!acao[0].includes(u.papel)) return responde(res, 403, { erro: "Seu usuário não tem permissão para isso." });
+    if (!podeAcao(String(b.a), acao, u)) return responde(res, 403, { erro: "Seu usuário não tem permissão para isso." });
     return responde(res, 200, await acao[1](b, u));
   } catch (e) { return falha(res, e); }
 }

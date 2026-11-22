@@ -61,6 +61,6 @@ export async function usuarioDe(req) {
     `update sessoes s set expira_em = now() + make_interval(hours => $2)
        from usuarios u
       where s.token_hash = $1 and s.expira_em > now() and u.id = s.usuario_id and u.ativo
-     returning u.id, u.nome, u.login, u.papel`, [hash(t), HORAS]);
+     returning u.id, u.nome, u.login, u.papel, u.areas`, [hash(t), HORAS]);
   return u;
 }

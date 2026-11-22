@@ -588,3 +588,6 @@ do $$ begin
   alter table tarefas drop constraint if exists tarefas_status_check;
   alter table tarefas add constraint tarefas_status_check check (status in ('aberta','andamento','feita','arquivada'));
 end $$;
+
+-- Áreas liberadas por pessoa (Ajustes › Usuários). Vazio = padrão do papel.
+alter table usuarios add column if not exists areas text[];
