@@ -1400,6 +1400,7 @@ VIEWS.reservas=function(){
   var bus=function(){var q=$("#rb-q").value.trim(),H=hojeStr();G("reservas_busca",{q:q,status:q?"":$("#rb-s").value,origem:q?"":$("#rb-o").value,ini:q?"":$("#rb-i").value,fim:q?"":$("#rb-f").value}).then(function(r){
     var it=r.itens;if(q){var nq=nrm(q),dq=q.replace(/\D/g,"");it=it.filter(function(x){return (" "+nrm(x.nome)+" "+nrm(x.grupo_nome)).indexOf(" "+nq)>=0||nrm(x.codigo).indexOf(nq)===0||dq.length>=3});var vis={};it=it.filter(function(x){if(vis[x.id])return false;vis[x.id]=1;return true})}
     if(S._rbFiltro==="canc"&&!q)it=it.filter(function(x){return x.status==="cancelada"||x.status==="no_show"});
+    if(S._rbQ==="todas"&&!q&&!$("#rb-s").value)it=it.filter(function(x){return["cancelada","no_show"].indexOf(x.status)<0});
     var hist=S._rbQ==="hist"||S._rbQ==="canc"||!!q;
     it=it.slice().sort(function(a,b){return hist?(a.checkin<b.checkin?1:-1):(a.checkin<b.checkin?-1:a.checkin>b.checkin?1:0)});
     var vivas=it.filter(function(x){return["cancelada","no_show"].indexOf(x.status)<0});
