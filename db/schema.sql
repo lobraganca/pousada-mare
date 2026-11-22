@@ -261,6 +261,7 @@ alter table reservas add column if not exists checkin_token text unique;        
 alter table reservas add column if not exists ficha jsonb;                        -- ficha preenchida pelo hóspede
 alter table reservas add column if not exists ficha_em timestamptz;
 alter table reservas add column if not exists ficha_conferida_em timestamptz;
+alter table reservas add column if not exists acompanhantes_dados jsonb not null default '[]';   -- demais hóspedes: nome, documento, nascimento, parentesco
 
 -- ---------- Calendário de preços: valor definido pelo dono para um dia (diária para 2 pessoas) ----------
 create table if not exists precos_dia (

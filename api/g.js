@@ -1,6 +1,7 @@
 import { q, q1, corpo, responde, falha, txt, num, int, data, umDe, hoje, isData } from "./_db.js";
 import { usuarioDe, origemOk, hashSenha, senhaForte } from "./_auth.js";
 import { chaveBusca } from "./public.js";
+import { validaAcompanhantes } from "./_ficha.js";
 import crypto from "node:crypto";
 import { channexOn, listas as cxListas, enviaARI, puxaReservas } from "./_channex.js";
 
@@ -33,6 +34,11 @@ const podeAcao = (nome, acao, u) => {
   if (AREA_DE[nome]) { const a = areasDe(u); return AREA_DE[nome].some((x) => a.includes(x)); }
   return acao[0].includes(u.papel);
 };
+// Grava os demais hóspedes (com documento). Se o banco ainda não tiver a coluna, avisa em vez de quebrar.
+async function salvaDados(id, dados, uid) {
+  try { await q(`update reservas set acompanhantes_dados = $2::jsonb where id = $1`, [id, JSON.stringify(dados)], uid); }
+  catch (e) { if (/acompanhantes_dados/.test(String(e.message))) throw Object.assign(new Error("Falta atualizar o banco: rode no Neon a linha de db/atendimento-automatico.sql que cria acompanhantes_dados. Os nomes foram salvos."), { status: 400, amigavel: true }); throw e; }
+}
 const SYNC_CHANNEX = new Set(["reserva_salvar", "reserva_status", "mover", "bloqueio_criar", "bloqueio_remover", "quarto_salvar", "precos_salvar", "tarifas_salvar", "temporada_salvar", "temporada_del"]);
 const MSG_TIPOS = ["pix", "confirmacao", "checkin", "chegar", "vespera", "avaliacao"];
 const ORIGENS = ["site", "whatsapp", "booking", "telefone", "balcao", "outro"];
@@ -155,7 +161,11 @@ const ACOES = {
       grupo_nome: txt(b.grupo_nome, 80), desconto: num(b.desconto || 0, 0, 1e6), condicoes_pagamento: txt(b.condicoes_pagamento, 500),
       sinal_previsto: num(b.sinal_previsto || 0, 0, 1e6), obs: txt(b.obs, 1000), acompanhantes: String(b.acompanhantes ?? "").replace(/[<>]/g, "").split(/\n+/).map((x) => x.trim()).filter(Boolean).slice(0, 12).join("\n").slice(0, 1000), lead_id: b.lead_id ? txt(b.lead_id, 40) : null, quartos,
     };
+    // Demais hóspedes com documento: os nomes também vão para a lista simples (usada no Bar)
+    const dados = validaAcompanhantes(b.acompanhantes_dados);
+    if (dados) p.acompanhantes = dados.map((x) => x.nome).join("\n").slice(0, 1000);
     const r = await q1(`select reserva_salvar($1::jsonb, $2) r`, [JSON.stringify(p), u.id], u.id);
+    if (dados) await salvaDados(r.r.id, dados, u.id);
     return r.r;
   }],
 
@@ -228,9 +238,12 @@ const ACOES = {
     return { itens: await q(`select * from leads where ${w} and (length(telefone) >= 8 or length(nome) >= 2) order by atualizado_em desc limit 300`) };
   }],
   acompanhantes: [DR, async (b, u) => {
-    const lista = String(b.acompanhantes ?? "").replace(/[<>]/g, "").split(/\n+/).map((x) => x.trim()).filter(Boolean).slice(0, 12).join("\n").slice(0, 1000);
+    const dados = validaAcompanhantes(b.acompanhantes_dados);
+    const lista = dados ? dados.map((x) => x.nome).join("\n").slice(0, 1000)
+      : String(b.acompanhantes ?? "").replace(/[<>]/g, "").split(/\n+/).map((x) => x.trim()).filter(Boolean).slice(0, 12).join("\n").slice(0, 1000);
     await q(`update reservas set acompanhantes = $2 where id = $1`, [int(b.id, 1), lista], u.id);
-    return { ok: true, acompanhantes: lista };
+    if (dados) await salvaDados(int(b.id, 1), dados, u.id);
+    return { ok: true, acompanhantes: lista, acompanhantes_dados: dados };
   }],
   lead_status: [DR, async (b, u) => {
     await q(`update leads set status = $2, obs = case when $3 = '' then obs else $3 end, atualizado_em = now() where id = $1`,

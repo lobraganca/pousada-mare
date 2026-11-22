@@ -98,6 +98,8 @@
   }
   // tarifa de referência do Calendário de preços: a de 2 pessoas (ou a mais próxima)
   function refTarifa(db, c) { var ts = db.tarifas.filter(function (t) { return t.categoria_id === c; }).sort(function (a, b) { return a.pessoas - b.pessoas; }); return ts.filter(function (t) { return t.pessoas >= 2; })[0] || ts[ts.length - 1]; }
+  function demoAcomp(l) { var cpfOk = function (v) { var d = String(v || "").replace(/\D/g, ""); if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false; for (var n = 9; n <= 10; n++) { var s = 0; for (var i = 0; i < n; i++) s += +d[i] * (n + 1 - i); if ((s * 10 % 11) % 10 !== +d[n]) return false; } return true; };
+    return l.slice(0, 12).map(function (p, i) { var nome = String(p.nome || "").trim(); if (!nome) return null; if (p.doc && (p.doc_tipo || "cpf") === "cpf" && !cpfOk(p.doc)) erro("Hóspede " + (i + 1) + " (" + nome + "): o CPF não confere."); return { nome: nome, doc_tipo: p.doc_tipo || "cpf", doc: String(p.doc || "").trim(), nascimento: p.nascimento || "", parentesco: String(p.parentesco || "").trim() }; }).filter(Boolean); }
   function precoEstadia(db, c, p, i, o) { var s = 0; for (var d = i; d < o; d = add(d, 1)) s += precoNoite(db, c, p, d); return Math.round(s * 100) / 100; }
   var sobrepoe = function (a1, b1, a2, b2) { return a1 < b2 && a2 < b1; };
   function conflito(db, qid, i, o, ignorar) {
@@ -209,6 +211,7 @@
       if (!r) { r = { id: ++db.seq.reservas, codigo: codigo(), criado_em: new Date().toISOString(), status: b.status || "pre", desconto: 0, sinal_previsto: 0, condicoes_pagamento: "", obs: "", grupo_nome: "", motivo_status: "" }; db.reservas.push(r); }
       r.hospede_id = hid; r.origem = b.origem || r.origem || "whatsapp"; if (b.status) r.status = b.status;
       ["grupo_nome", "condicoes_pagamento", "obs", "acompanhantes"].forEach(function (k) { if (b[k] !== undefined) r[k] = b[k]; });
+      if (Array.isArray(b.acompanhantes_dados)) { r.acompanhantes_dados = demoAcomp(b.acompanhantes_dados); r.acompanhantes = r.acompanhantes_dados.map(function (x) { return x.nome; }).join("\n"); }
       ["desconto", "sinal_previsto"].forEach(function (k) { if (b[k] !== undefined && b[k] !== "") r[k] = +b[k] || 0; });
       if (b.lead_id) { r.lead_id = b.lead_id; var l = db.leads.filter(function (x) { return x.id === b.lead_id; })[0]; if (l) { l.status = "convertido"; l.reserva_id = r.id; } }
       novas.forEach(function (o) { o.reserva_id = r.id; });
@@ -251,7 +254,7 @@
       var f = b.filtro || "abertos";
       return { itens: db.leads.filter(function (l) { var ab = l.status === "novo" || l.status === "contatado"; return (f === "todos" && l.status !== "arquivado") || (f === "arquivados" && l.status === "arquivado") || (f === "abertos" && ab) || (f === "enviados" && ab && l.enviado) || (f === "abandonados" && ab && !l.enviado); }).sort(function (a, b) { return a.atualizado_em < b.atualizado_em ? 1 : -1; }) };
     },
-    acompanhantes: function (b, u, db) { var r = byId(db.reservas, b.id); var l = String(b.acompanhantes || "").split(/\n+/).map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 12).join("\n"); if (r) r.acompanhantes = l; return { ok: true, acompanhantes: l }; },
+    acompanhantes: function (b, u, db) { var r = byId(db.reservas, b.id); if (Array.isArray(b.acompanhantes_dados)) { var d = demoAcomp(b.acompanhantes_dados); if (r) { r.acompanhantes_dados = d; r.acompanhantes = d.map(function (x) { return x.nome; }).join("\n"); } return { ok: true, acompanhantes: r ? r.acompanhantes : "", acompanhantes_dados: d }; } var l = String(b.acompanhantes || "").split(/\n+/).map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 12).join("\n"); if (r) r.acompanhantes = l; return { ok: true, acompanhantes: l }; },
     lead_status: function (b, u, db) { db.leads.forEach(function (l) { if (l.id === b.id) { l.status = b.status; if (b.obs) l.obs = b.obs; } }); return { ok: true }; },
     lead_del: function (b, u, db) { db.leads = db.leads.filter(function (l) { return l.id !== b.id; }); return { ok: true }; },
     hospedados: function (b, u, db) { return { itens: A.hoje({ data: b.data }, { papel: "dono" }, db).hospedados.map(function (h) { return { reserva_id: h.id, codigo: h.codigo, nome: h.nome, acompanhantes: (byId(db.reservas, h.id) || {}).acompanhantes || "", quarto_id: h.quarto_id, quarto: h.quarto }; }) }; },
@@ -399,7 +402,7 @@
       if (f.aceite !== true) erro("Para enviar, marque que leu a Política de Privacidade.");
       f.placa = pl; f.aceite_em = new Date().toISOString(); delete f.aceite;
       r.ficha = f; r.ficha_em = new Date().toISOString(); r.ficha_conferida_em = null;
-      if ((f.acompanhantes || []).length) r.acompanhantes = f.acompanhantes.map(function (a) { return a.nome; }).join("\n");
+      if ((f.acompanhantes || []).length) { r.acompanhantes = f.acompanhantes.map(function (a) { return a.nome; }).join("\n"); r.acompanhantes_dados = f.acompanhantes.map(function (a) { return { nome: a.nome, doc_tipo: a.doc_tipo, doc: a.doc, nascimento: a.nascimento, parentesco: a.parentesco || "" }; }); }
       save(); return { ok: true };
     },
     faq: function () { var db = load(); return { itens: db.faq.filter(function (f) { return f.ativo; }).sort(function (a, b) { return a.ordem - b.ordem || a.id - b.id; }), config: db.config }; },

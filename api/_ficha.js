@@ -56,3 +56,19 @@ export function validaFicha(f, r) {
   if (f.aceite !== true) throw erro("Para enviar, marque que leu a Política de Privacidade.");
   return { titular: t, acompanhantes, placa, carro: txt(f.carro, 40), chegada_hora, obs: txt(f.obs, 400), aceite_em: new Date().toISOString() };
 }
+
+// Demais hóspedes cadastrados pela recepção (na reserva). Documento e nascimento são opcionais,
+// mas se vier CPF ele precisa ser válido.
+export function validaAcompanhantes(lista) {
+  if (!Array.isArray(lista)) return null;
+  return lista.slice(0, 12).map((p, i) => {
+    p = p && typeof p === "object" ? p : {};
+    const nome = txt(p.nome, 120).replace(/\s+/g, " ");
+    if (!nome) return null;
+    const doc_tipo = TIPOS.includes(p.doc_tipo) ? p.doc_tipo : "cpf";
+    let doc = txt(p.doc, 30);
+    if (doc && doc_tipo === "cpf") { const d = doc.replace(/\D/g, ""); if (!cpfValido(d)) throw erro(`Hóspede ${i + 1} (${nome}): o CPF não confere.`); doc = d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"); }
+    const nascimento = isData(String(p.nascimento || "")) && p.nascimento >= "1900-01-01" && p.nascimento <= hoje() ? p.nascimento : "";
+    return { nome, doc_tipo, doc, nascimento, parentesco: txt(p.parentesco, 40) };
+  }).filter(Boolean);
+}
