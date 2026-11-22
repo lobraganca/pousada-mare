@@ -7,10 +7,13 @@ async function sql() {
   if (_sql) return _sql;
   const url = String(process.env.DATABASE_URL || process.env.POSTGRES_URL || "").trim().replace(/^["']|["']$/g, "");
   if (!url) throw Object.assign(new Error("Banco de dados não configurado (falta DATABASE_URL na Vercel)."), { status: 503 });
-  const { neon } = await import("@neondatabase/serverless");
+  const { neon, types } = await import("@neondatabase/serverless");
+  // Colunas "date" voltam como texto AAAA-MM-DD (sem virar data com hora e fuso, que quebrava as telas)
+  TIPOS = { getTypeParser: (oid, fmt) => (oid === 1082 ? (v) => v : types.getTypeParser(oid, fmt)) };
   _sql = neon(url);
   return _sql;
 }
+let TIPOS;
 
 // Executa SQL SEMPRE com parâmetros ($1, $2…) — nunca concatenando texto do usuário.
 // Quando há um usuário logado, a consulta roda numa transação que grava quem fez (auditoria).
@@ -18,10 +21,10 @@ export async function q(text, params = [], uid = null) {
   try {
     if (globalThis.__TEST_DB) return await globalThis.__TEST_DB(text, params, uid);
     const s = await sql();
-    if (uid == null) return await s.query(text, params);
+    if (uid == null) return await s.query(text, params, { types: TIPOS });
     const r = await s.transaction([
-      s.query("select set_config('app.usuario', $1, true)", [String(uid)]),
-      s.query(text, params),
+      s.query("select set_config('app.usuario', $1, true)", [String(uid)], { types: TIPOS }),
+      s.query(text, params, { types: TIPOS }),
     ]);
     return r[1];
   } catch (e) { throw traduz(e); }
