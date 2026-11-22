@@ -697,6 +697,15 @@ body.demo-x-on .demo-bar{display:none!important}
 .us-ck b{display:block;font-size:14.5px}.us-ck small{display:block;font-size:12px;opacity:.7;line-height:1.3}
 .tk-av{position:fixed;z-index:90;left:50%;top:14px;width:min(440px,calc(100vw - 20px));transform:translate(-50%,-30px);opacity:0;transition:transform .45s var(--ease,ease),opacity .3s;background:rgba(255,255,255,.86);backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);border:1px solid rgba(255,255,255,.9);border-radius:22px;box-shadow:0 24px 60px -20px rgba(11,59,69,.45);padding:14px 16px}
 .tk-av.on{transform:translate(-50%,0);opacity:1}
+.kpi.cx-e b{color:var(--ok)}.kpi.cx-s b{color:var(--err)}
+.cx-dias{display:flex;gap:4px;align-items:flex-end;height:150px;overflow-x:auto;padding-bottom:2px}
+.cx-d{flex:1 0 18px;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%}
+.cx-bs{flex:1;width:100%;display:flex;gap:2px;align-items:flex-end;justify-content:center}
+.cx-bs i{display:block;width:45%;max-width:14px;border-radius:4px 4px 0 0;min-height:1px}
+.cx-bs i.e,.cx-lg.e{background:#1FAF5C}.cx-bs i.s,.cx-lg.s{background:#D9534A}
+.cx-d small{font-size:10.5px;color:var(--txt3)}
+.cx-lg{display:inline-block;width:10px;height:10px;border-radius:3px;margin:0 4px 0 10px;vertical-align:-1px}
+button.li.cx-r{width:100%;text-align:left;font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .rs-av{z-index:91;border:2px solid #1FAF5C;box-shadow:0 24px 60px -16px rgba(31,175,92,.45)}
 .rs-av .tk-i{background:#1FAF5C!important;color:#fff}
 .rs-it{all:unset;display:block;cursor:pointer;width:100%}.rs-it:hover b{text-decoration:underline}
@@ -828,6 +837,7 @@ var ICON={
   consumo:'<path d="M5 3h14l-1.5 9a5.5 5.5 0 0 1-11 0Z"/><path d="M12 17v4M8 21h8"/>',
   tarefas:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="m8 12 2.5 2.5L16 9"/>',
   relatorios:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  caixa:'<rect x="2.5" y="6" width="19" height="13" rx="2.5"/><path d="M2.5 10.5h19M7 15h3M16.5 15h1"/><path d="M6 6l9-3 1.2 3"/>',
   ajustes:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z"/>',
   duvidas:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.6 2.6 0 0 1 5 .8c0 1.7-2.5 2.2-2.5 3.6"/><path d="M12 17h.01"/>',
   busca:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',filtro:'<path d="M4 6h16M7 12h10M10 18h4"/>',plus:'<path d="M12 5v14M5 12h14"/>', wa:'<path d="M21 12a8 8 0 0 1-11.8 7L4 20l1.1-4.6A8 8 0 1 1 21 12Z"/>', lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
@@ -865,8 +875,8 @@ function tenta(p,okMsg){return p.then(function(r){if(okMsg)toast(okMsg);return r
 var S={u:null,boot:null,tab:"hoje",mapIni:hojeStr().slice(0,8)+"01",mapDias:31};
 var P=function(){return S.u?S.u.papel:""};
 var podeDR=function(){return P()==="dono"||P()==="recepcao"};
-var TABS=[["hoje","Hoje","*"],["mapa","Mapa","mapa"],["reservas","Reservas","reservas"],["leads","Pré-reservas","leads"],["consumo","Bar & consumo","consumo"],["tarefas","Tarefas","tarefas"],["relatorios","Relatórios","relatorios"],["duvidas","Dúvidas do site","duvidas"],["ajustes","Ajustes","ajustes"]];
-var AREAS=[["mapa","Mapa de quartos","ver o mapa, mover reservas e bloquear quartos"],["reservas","Reservas","criar, editar, check-in e check-out"],["leads","Pré-reservas do site","pedidos que chegam pelo site"],["consumo","Bar: lançar pedidos","lançar o que o hóspede pediu"],["pagamentos","Valores e pagamentos","ver contas, receber pagamentos, cancelar lançamentos"],["tarefas","Tarefas","ver e concluir as próprias tarefas"],["tarefas_gerir","Distribuir tarefas","criar tarefas para a equipe e ver as de todos"],["relatorios","Relatórios","faturamento e ocupação"],["ajustes","Ajustes","preços, temporadas, site, quartos e cardápio"],["duvidas","Dúvidas do site","ver o que procuram no site e cadastrar respostas"]];
+var TABS=[["hoje","Hoje","*"],["mapa","Mapa","mapa"],["reservas","Reservas","reservas"],["leads","Pré-reservas","leads"],["consumo","Bar & consumo","consumo"],["tarefas","Tarefas","tarefas"],["relatorios","Relatórios","relatorios"],["caixa","Caixa","caixa"],["duvidas","Dúvidas do site","duvidas"],["ajustes","Ajustes","ajustes"]];
+var AREAS=[["mapa","Mapa de quartos","ver o mapa, mover reservas e bloquear quartos"],["reservas","Reservas","criar, editar, check-in e check-out"],["leads","Pré-reservas do site","pedidos que chegam pelo site"],["consumo","Bar: lançar pedidos","lançar o que o hóspede pediu"],["pagamentos","Valores e pagamentos","ver contas, receber pagamentos, cancelar lançamentos"],["tarefas","Tarefas","ver e concluir as próprias tarefas"],["tarefas_gerir","Distribuir tarefas","criar tarefas para a equipe e ver as de todos"],["relatorios","Relatórios","faturamento e ocupação"],["caixa","Caixa","entradas, saídas e saldo do dinheiro da pousada"],["ajustes","Ajustes","preços, temporadas, site, quartos e cardápio"],["duvidas","Dúvidas do site","ver o que procuram no site e cadastrar respostas"]];
 var AREAS_PADRAO={recepcao:["mapa","reservas","leads","consumo","pagamentos","tarefas","tarefas_gerir"],equipe:["consumo","tarefas"]};
 function minhasAreas(){var u=(S.boot&&S.boot.usuario)||S.u||{};if(u.papel==="dono")return AREAS.map(function(a){return a[0]});return u.areas&&u.areas.length?u.areas:(AREAS_PADRAO[u.papel]||[])}
 function pode(a){return P()==="dono"||minhasAreas().indexOf(a)>=0}
@@ -1711,6 +1721,52 @@ function formTarefa(t,depois){
 }
 
 /* =================== RELATÓRIOS =================== */
+/* =================== CAIXA (dono): entradas, saídas, saldo e o que falta receber =================== */
+var CX_FORMA={pix:"PIX",cartao:"Cartão",dinheiro:"Dinheiro",transferencia:"Transferência",booking:"Booking",boleto:"Boleto",outro:"Outro"};
+var CX_TIPO={sinal:"Sinal",saldo:"Saldo",extra:"Consumo",reembolso:"Reembolso"};
+var CX_CAT=[["compras","Compras (mercado, peixaria, bebidas)"],["funcionarios","Funcionários"],["contas","Contas (luz, água, internet, gás)"],["manutencao","Manutenção e limpeza"],["impostos","Impostos e taxas"],["outros","Outros"]];
+VIEWS.caixa=function(){
+  var H=hojeStr(),m0=H.slice(0,8)+"01";
+  S._cx=S._cx||{ini:H,fim:H,q:"hoje"};var cx=S._cx;
+  var Q={hoje:[H,H],sem:[add(H,-6),H],mes:[m0,H],mesant:[add(m0,-1).slice(0,8)+"01",add(m0,-1)]};
+  V.innerHTML=topo("Caixa",'<button class="btn sec" id="cx-csv">Baixar planilha</button><button class="btn agua" id="cx-sai">'+ic("plus",16)+'Lançar saída</button>')+
+    '<div class="card" style="margin-bottom:14px"><div class="chips cx-q">'+[["hoje","Hoje"],["sem","Últimos 7 dias"],["mes","Este mês"],["mesant","Mês passado"]].map(function(x){return'<button class="btn sm '+(cx.q===x[0]?"agua":"sec")+'" data-cq="'+x[0]+'">'+x[1]+'</button>'}).join("")+'</div><div class="row" style="margin-top:10px"><label class="f">De<input type="date" id="cx-i" value="'+cx.ini+'"></label><label class="f">Até<input type="date" id="cx-f" value="'+cx.fim+'"></label></div></div><div id="cx-o"><div class="empty">Calculando…</div></div>';
+  $$("[data-cq]").forEach(function(b){b.onclick=function(){cx.q=b.dataset.cq;cx.ini=Q[cx.q][0];cx.fim=Q[cx.q][1];VIEWS.caixa()}});
+  ["#cx-i","#cx-f"].forEach(function(s){$(s).onchange=function(){cx.ini=$("#cx-i").value;cx.fim=$("#cx-f").value;cx.q="";if(cx.ini&&cx.fim&&cx.fim>=cx.ini)VIEWS.caixa()}});
+  $("#cx-sai").onclick=function(){cxSaida(VIEWS.caixa)};
+  var D0=null;
+  $("#cx-csv").onclick=function(){if(!D0)return;var lin=[["Data","Tipo","Descrição","Forma","Valor","Registrado por"]];
+    cxMov(D0).forEach(function(m){lin.push([m.data,m.ent?"Entrada":"Saída",m.desc,CX_FORMA[m.forma]||m.forma,(m.ent?"":"-")+m.valor.toFixed(2).replace(".",","),m.por||""])});
+    var csv="﻿"+lin.map(function(l){return l.map(function(c){c=String(c==null?"":c);return/[;"\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(";")}).join("\r\n");
+    var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download="caixa-pousada-mare_"+cx.ini+"_a_"+cx.fim+".csv";document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500)};
+  G("caixa",{ini:cx.ini,fim:cx.fim}).then(function(d){D0=d;
+    var mov=cxMov(d),ent=0,sai=0,porF={},porDia={};
+    mov.forEach(function(m){var v=m.ent?m.valor:-m.valor;if(m.ent)ent+=m.valor;else sai+=m.valor;porF[m.forma]=(porF[m.forma]||0)+v;var x=porDia[m.data]=porDia[m.data]||{e:0,s:0};if(m.ent)x.e+=m.valor;else x.s+=m.valor});
+    var saldo=ent-sai,rec=d.receber.reduce(function(s,x){return s+x.saldo},0),divida=d.receber.filter(function(x){return x.status==="finalizada"});
+    var per=cx.ini===cx.fim?(cx.ini===H?"hoje":fd(cx.ini,{day:"2-digit",month:"2-digit"})):fd(cx.ini,{day:"2-digit",month:"2-digit"})+" a "+fd(cx.fim,{day:"2-digit",month:"2-digit"});
+    var k=function(t,v,sub,cls){return'<div class="card kpi'+(cls?" "+cls:"")+'"><small>'+t+'</small><b>'+v+'</b><span>'+sub+'</span></div>'};
+    var nEnt=mov.filter(function(m){return m.ent}).length;
+    var h='<div class="grid g4">'+k("Entrou",brl(ent),nEnt+(nEnt===1?" recebimento":" recebimentos")+" · "+per,"cx-e")+k("Saiu",brl(sai),"despesas e reembolsos · "+per,"cx-s")+k("Saldo do período",(saldo<0?"− ":"")+brl(Math.abs(saldo)),saldo>=0?"entrou mais do que saiu":"saiu mais do que entrou",saldo>=0?"cx-e":"cx-s")+k("A receber",brl(rec),d.receber.length+(d.receber.length===1?" reserva":" reservas")+" com saldo"+(divida.length?" · "+divida.length+" já "+(divida.length===1?"saiu":"saíram"):""),"")+'</div>';
+    var fs=Object.keys(porF).sort(function(a,b){return Math.abs(porF[b])-Math.abs(porF[a])});
+    h+='<div class="grid g2" style="margin-top:14px"><div class="card"><h3>Por forma de pagamento</h3>'+(fs.length?'<div class="list">'+fs.map(function(f){return'<div class="li"><div class="m"><b>'+(CX_FORMA[f]||esc(f))+'</b>'+(f==="dinheiro"?'<small>confira com o dinheiro da gaveta</small>':"")+'</div><span class="num" style="font-weight:700;color:'+(porF[f]<0?"var(--err)":"inherit")+'">'+(porF[f]<0?"− ":"")+brl(Math.abs(porF[f]))+'</span></div>'}).join("")+'</div>':'<div class="empty">Nada no período.</div>')+'</div>';
+    var ds=Object.keys(porDia).sort(),mx=ds.reduce(function(m,x){return Math.max(m,porDia[x].e,porDia[x].s)},0)||1;
+    h+='<div class="card"><h3>Dia a dia</h3>'+(ds.length?'<div class="cx-dias">'+ds.slice(-31).map(function(x){var v=porDia[x];return'<div class="cx-d" title="'+fd(x,{day:"2-digit",month:"2-digit"})+': entrou '+brl(v.e)+', saiu '+brl(v.s)+'"><div class="cx-bs"><i class="e" style="height:'+(v.e/mx*100)+'%"></i><i class="s" style="height:'+(v.s/mx*100)+'%"></i></div><small>'+x.slice(8)+'</small></div>'}).join("")+'</div><p class="tiny muted" style="margin:8px 0 0"><span class="cx-lg e"></span>entrou <span class="cx-lg s"></span>saiu</p>':'<div class="empty">Nada no período.</div>')+'</div></div>';
+    h+='<div class="card" style="margin-top:14px"><h3>A receber <small class="muted tiny" style="font-family:inherit;font-weight:500">hospedados, chegadas dos próximos 7 dias e quem já saiu devendo</small></h3>'+(d.receber.length?'<div class="list">'+d.receber.map(function(x){var st=x.status==="finalizada"?'<span class="tag" style="background:#FDECEA;color:var(--err)">já saiu</span>':x.status==="hospedada"?'<span class="tag st-hospedada">hospedado</span>':'<span class="tag st-confirmada">chega '+fd(x.checkin,{day:"2-digit",month:"2-digit"})+'</span>';return'<button type="button" class="li cx-r" data-res="'+x.id+'"><div class="m"><b>'+esc(x.nome)+' '+st+'</b><small>#'+esc(x.codigo)+' · '+fd(x.checkin,{day:"2-digit",month:"2-digit"})+' → '+fd(x.checkout,{day:"2-digit",month:"2-digit"})+' · total '+brl(x.total_hospedagem+x.consumo)+' · pago '+brl(x.pago)+'</small></div><span class="num" style="font-weight:700;color:var(--err)">'+brl(x.saldo)+'</span></button>'}).join("")+'</div>':'<div class="empty">Ninguém devendo. 👏</div>')+'</div>';
+    h+='<div class="card" style="margin-top:14px"><h3>Movimentos <small class="muted tiny" style="font-family:inherit;font-weight:500">'+mov.length+' no período</small></h3>'+(mov.length?'<div class="list">'+mov.map(function(m){return'<div class="li cx-m"><div class="m"><b>'+esc(m.desc)+'</b><small>'+fd(m.data,{weekday:"short",day:"2-digit",month:"2-digit"})+' · '+(CX_FORMA[m.forma]||esc(m.forma))+(m.por?' · por '+esc(m.por):"")+'</small></div><span class="num" style="font-weight:700;color:'+(m.ent?"var(--ok)":"var(--err)")+'">'+(m.ent?"+ ":"− ")+brl(m.valor)+'</span>'+(m.saida?'<button class="btn ghost sm" data-cxdel="'+m.id+'" title="Apagar saída">×</button>':m.res?'<button class="btn ghost sm" data-res="'+m.res+'" title="Abrir reserva">›</button>':"")+'</div>'}).join("")+'</div>':'<div class="empty">Nenhum recebimento ou saída no período.</div>')+'</div>';
+    $("#cx-o").innerHTML=h;
+    $$("#cx-o [data-cxdel]").forEach(function(b){b.onclick=function(){confirma("Apagar esta saída?","Ela sai do caixa. Fica registrado no histórico de alterações.","Apagar","danger").then(function(s){if(s)tenta(G("caixa_saida_del",{id:+b.dataset.cxdel}),"Saída apagada").then(VIEWS.caixa)})}});
+  }).catch(function(e){$("#cx-o").innerHTML='<div class="empty">'+esc((e&&e.message)||"Não foi possível carregar o caixa.")+'</div>'});
+};
+function cxMov(d){
+  return d.entradas.map(function(p){var re=p.tipo==="reembolso";return{data:String(p.data).slice(0,10),ent:!re,valor:+p.valor,forma:p.forma,por:p.por,res:p.reserva_id,desc:(CX_TIPO[p.tipo]||p.tipo)+" · "+(p.nome||"")+(p.codigo?" #"+p.codigo:""),ord:String(p.criado_em||"")}})
+    .concat(d.saidas.map(function(s){var c=CX_CAT.filter(function(x){return x[0]===s.categoria})[0];return{data:String(s.data).slice(0,10),ent:false,saida:true,id:s.id,valor:+s.valor,forma:s.forma,por:s.por,desc:s.descricao+(c?" · "+c[1].split(" (")[0]:""),ord:String(s.criado_em||"")}}))
+    .sort(function(a,b){return a.data<b.data?1:a.data>b.data?-1:(a.ord<b.ord?1:-1)});
+}
+function cxSaida(depois){
+  modal('<h3>Lançar saída do caixa</h3><p class="muted tiny" style="margin:-4px 0 12px">Compras, contas, pagamento de funcionários… tudo o que saiu do dinheiro da pousada.</p><form id="cs-f" class="grid" style="gap:10px"><label class="f">O que foi pago<input name="descricao" required minlength="2" maxlength="120" placeholder="ex.: peixe para o restaurante"></label><div class="row"><label class="f">Valor (R$)<input name="valor" type="number" step="0.01" min="0.01" required></label><label class="f">Data<input name="data" type="date" value="'+hojeStr()+'" max="'+hojeStr()+'"></label></div><div class="row"><label class="f">Tipo<select name="categoria">'+CX_CAT.map(function(c){return'<option value="'+c[0]+'">'+c[1]+'</option>'}).join("")+'</select></label><label class="f">Pago com<select name="forma"><option value="dinheiro">Dinheiro</option><option value="pix">PIX</option><option value="cartao">Cartão</option><option value="transferencia">Transferência</option><option value="boleto">Boleto</option><option value="outro">Outro</option></select></label></div><div class="acts"><button type="button" class="btn sec" id="cs-x">Cancelar</button><button class="btn agua">Lançar saída</button></div></form>');
+  $("#cs-x").onclick=fechaModal;setTimeout(function(){var i=$("#cs-f [name=descricao]");if(i)i.focus()},80);
+  $("#cs-f").onsubmit=function(e){e.preventDefault();var f=e.target;tenta(G("caixa_saida_salvar",{descricao:f.descricao.value,valor:f.valor.value,data:f.data.value,categoria:f.categoria.value,forma:f.forma.value}),"Saída lançada ✓").then(function(){fechaModal();if(depois)depois()})};
+}
 VIEWS.relatorios=function(){
   var H=hojeStr(),m0=H.slice(0,8)+"01";
   S._rp=S._rp||{ini:m0,fim:add(add(m0,32).slice(0,8)+"01",-1),comp:"ant"};

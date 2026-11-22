@@ -199,6 +199,19 @@ create table if not exists pagamentos (
 );
 create index if not exists pagamentos_reserva on pagamentos(reserva_id);
 
+-- Caixa: saídas de dinheiro (compras, contas, funcionários…). As entradas são os pagamentos das reservas.
+create table if not exists caixa_saidas (
+  id serial primary key,
+  data date not null default current_date,
+  descricao text not null check (length(descricao) between 2 and 120),
+  categoria text not null default 'outros',
+  valor numeric(10,2) not null check (valor > 0),
+  forma text not null default 'dinheiro' check (forma in ('pix','cartao','dinheiro','transferencia','boleto','outro')),
+  criado_por int references usuarios(id),
+  criado_em timestamptz not null default now()
+);
+create index if not exists caixa_saidas_data on caixa_saidas(data);
+
 -- ---------- Bar, restaurante, produtos e lançamentos ----------
 create table if not exists produtos (
   id serial primary key,
@@ -348,7 +361,7 @@ end $$;
 
 do $$ declare t text; begin
   foreach t in array array['reservas','ocupacoes','pagamentos','lancamentos','tarifas','temporadas',
-                           'quartos','usuarios','produtos','hospedes','fechamentos_site','categorias','config','faq','precos_dia'] loop
+                           'quartos','usuarios','produtos','hospedes','fechamentos_site','categorias','config','faq','precos_dia','caixa_saidas'] loop
     execute format('drop trigger if exists tg_audit on %I', t);
     execute format('create trigger tg_audit after insert or update or delete on %I for each row execute function fn_auditoria()', t);
   end loop;

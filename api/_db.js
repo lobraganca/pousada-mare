@@ -37,6 +37,23 @@ const COLUNAS = [
   ["reservas", "acompanhantes_dados", "jsonb not null default '[]'"],
   ["hospedes", "nascimento", "date"],
 ];
+// Tabelas novas, criadas sozinhas na primeira vez
+const TABELAS = {
+  caixa_saidas: [
+    `create table if not exists caixa_saidas (
+  id serial primary key,
+  data date not null default current_date,
+  descricao text not null check (length(descricao) between 2 and 120),
+  categoria text not null default 'outros',
+  valor numeric(10,2) not null check (valor > 0),
+  forma text not null default 'dinheiro' check (forma in ('pix','cartao','dinheiro','transferencia','boleto','outro')),
+  criado_por int references usuarios(id),
+  criado_em timestamptz not null default now()
+)`,
+    `create index if not exists caixa_saidas_data on caixa_saidas(data)`,
+    `create trigger tg_audit after insert or update or delete on caixa_saidas for each row execute function fn_auditoria()`,
+  ],
+};
 let _colunas = null;
 export function garanteColunas() {
   if (globalThis.__TEST_DB) return Promise.resolve();
@@ -44,6 +61,8 @@ export function garanteColunas() {
     const tem = await q(`select table_name || '.' || column_name c from information_schema.columns where table_schema = current_schema() and (table_name, column_name) in (${COLUNAS.map((_, i) => `($${2 * i + 1}, $${2 * i + 2})`).join(", ")})`, COLUNAS.flatMap((x) => [x[0], x[1]]));
     const ja = new Set(tem.map((x) => x.c));
     for (const [t, c, tipo] of COLUNAS) if (!ja.has(t + "." + c)) await q(`alter table ${t} add column if not exists ${c} ${tipo}`);
+    const tabs = new Set((await q(`select table_name t from information_schema.tables where table_schema = current_schema() and table_name = any($1::text[])`, [Object.keys(TABELAS)])).map((x) => x.t));
+    for (const [nome, sqls] of Object.entries(TABELAS)) if (!tabs.has(nome)) for (const s of sqls) await q(s).catch((e) => console.error("tabela " + nome + ":", e.message));
   })().catch((e) => { _colunas = null; console.error("garanteColunas:", e.message); });
   return _colunas;
 }

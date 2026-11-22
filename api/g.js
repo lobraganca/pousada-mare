@@ -10,7 +10,7 @@ import { channexOn, listas as cxListas, enviaARI, puxaReservas } from "./_channe
 const D = ["dono"], DR = ["dono", "recepcao"], T = ["dono", "recepcao", "equipe"];
 // Áreas que o dono libera para cada pessoa (Ajustes › Usuários). Dono vê tudo.
 // Sem áreas marcadas, vale o padrão do papel.
-const AREAS = ["mapa", "reservas", "leads", "consumo", "pagamentos", "tarefas", "tarefas_gerir", "relatorios", "ajustes", "duvidas"];
+const AREAS = ["mapa", "reservas", "leads", "consumo", "pagamentos", "tarefas", "tarefas_gerir", "relatorios", "caixa", "ajustes", "duvidas"];
 const AREAS_PADRAO = { recepcao: ["mapa", "reservas", "leads", "consumo", "pagamentos", "tarefas", "tarefas_gerir"], equipe: ["consumo", "tarefas"] };
 const so_dono = ["usuario_salvar", "pagamento_del", "lead_del"];
 const AREA_DE = {
@@ -20,7 +20,7 @@ const AREA_DE = {
   reserva_get: ["reservas", "mapa", "leads", "pagamentos"], leads: ["leads"], lead_status: ["leads"],
   lancar: ["consumo"], consumo: ["pagamentos"], lancamento_cancelar: ["pagamentos"], pagamento_add: ["pagamentos"],
   tarefas: ["tarefas", "tarefas_gerir"], tarefa_status: ["tarefas", "tarefas_gerir"], tarefa_salvar: ["tarefas_gerir"], tarefa_del: ["tarefas_gerir"],
-  relatorios: ["relatorios"], auditoria: ["relatorios"],
+  relatorios: ["relatorios"], auditoria: ["relatorios"], caixa: ["caixa"], caixa_saida_salvar: ["caixa"], caixa_saida_del: ["caixa"],
   ajustes: ["ajustes"], tarifas_salvar: ["ajustes"], temporada_salvar: ["ajustes"], temporada_del: ["ajustes"], fechamento_salvar: ["ajustes"], fechamento_del: ["ajustes"],
   config_salvar: ["ajustes"], quarto_salvar: ["ajustes"], categoria_salvar: ["ajustes"], video_salvar: ["ajustes"], video_del: ["ajustes"], produto_salvar: ["ajustes"],
   precos_mes: ["ajustes"], precos_salvar: ["ajustes"],
@@ -399,6 +399,31 @@ const ACOES = {
     ]);
     return { diario, resumo: resumo.r, comparativo: resumo2 ? resumo2.r : null, cafe, top_consumo: top };
   }],
+  // ---------------- Caixa: entradas (pagamentos), saídas (despesas) e o que falta receber ----------------
+  caixa: [D, async (b) => {
+    const [ini, fim] = intervalo(b, 400);
+    const [entradas, saidas, abertas] = await Promise.all([
+      q(`select p.id, p.data, p.tipo, p.forma, p.valor, p.obs, p.criado_em, r.id reserva_id, r.codigo, h.nome, us.nome por
+           from pagamentos p join reservas r on r.id = p.reserva_id join hospedes h on h.id = r.hospede_id left join usuarios us on us.id = p.criado_por
+          where p.data between $1::date and $2::date order by p.data desc, p.id desc`, [ini, fim]),
+      q(`select s.id, s.data, s.descricao, s.categoria, s.valor, s.forma, s.criado_em, us.nome por from caixa_saidas s left join usuarios us on us.id = s.criado_por
+          where s.data between $1::date and $2::date order by s.data desc, s.id desc`, [ini, fim]).catch(() => []),
+      q(`select r.id, r.codigo, r.status, r.checkin, r.checkout, h.nome, h.telefone, ${FIN} from reservas r join hospedes h on h.id = r.hospede_id
+          where r.status in ('confirmada','hospedada','finalizada') and r.checkin <= current_date + 7 and r.checkout >= current_date - 365`),
+    ]);
+    const receber = abertas.map((r) => ({ ...r, saldo: Math.round((Number(r.total_hospedagem) + Number(r.consumo) - Number(r.pago)) * 100) / 100 }))
+      .filter((r) => r.saldo > 0.009).sort((a, b) => (a.checkin < b.checkin ? -1 : 1));
+    return { entradas, saidas, receber };
+  }],
+  caixa_saida_salvar: [D, async (b, u) => {
+    const descricao = txt(b.descricao, 120);
+    if (descricao.length < 2) throw Object.assign(new Error("Escreva o que foi pago."), { status: 400 });
+    const r = await q1(`insert into caixa_saidas(data, descricao, categoria, valor, forma, criado_por) values ($1,$2,$3,$4,$5,$6) returning id`,
+      [isData(b.data) ? b.data : hoje(), descricao, umDe(b.categoria, ["compras", "funcionarios", "contas", "manutencao", "impostos", "outros"], "outros"),
+       num(b.valor, 0.01, 1e6), umDe(b.forma, ["pix", "cartao", "dinheiro", "transferencia", "boleto", "outro"], "dinheiro"), u.id], u.id);
+    return r;
+  }],
+  caixa_saida_del: [D, async (b, u) => { await q(`delete from caixa_saidas where id = $1`, [int(b.id, 1)], u.id); return { ok: true }; }],
   auditoria: [D, async (b) => ({ itens: await q(
     `select a.id, a.em, a.acao, a.tabela, a.registro_id, us.nome por, a.antes, a.depois from auditoria a left join usuarios us on us.id = a.usuario_id
       where a.tabela <> 'config' or true order by a.em desc limit $1`, [int(b.limite || 150, 1, 1000)]) })],
