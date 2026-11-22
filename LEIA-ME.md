@@ -88,3 +88,10 @@ Reservas do Booking entram manualmente com origem **Booking** (o sistema bloquei
 - Dia com valor definido à mão fica com borda e mostra a diferença em % para o padrão. Para mais pessoas, o preço mantém a proporção da tabela base (ex.: se a tabela tem 4 pessoas = 1,56 × o casal, continua assim).
 - A tabela base e as temporadas continuam valendo para os dias sem valor definido.
 
+## Tarefas automáticas (rotina das 7h)
+Além de preparar quartos e avisar no-show, a rotina cria lembretes para a recepção, um por reserva, sem repetir enquanto a tarefa estiver aberta:
+- **Cobrar sinal:** pré-reserva com mais de 24h e sem pagamento.
+- **Lembrete da véspera:** hóspede chega amanhã e a mensagem da véspera ainda não foi enviada. Avisa também se ele não fez o check-in online.
+- **Sem check-in online:** chega hoje e não preencheu a ficha.
+- **Pedir avaliação:** saiu ontem e ainda não recebeu o pedido.
+
