@@ -616,6 +616,14 @@ body.demo-x-on .demo-bar{display:none!important}
   #bnav .nv.on{background:linear-gradient(135deg,#0A97B4,#16B48A);color:#fff;box-shadow:0 6px 16px -8px rgba(10,151,180,.9)}
   #bnav .nv .bdg{background:#F2B544;color:#0B3B45}
 }
+
+/* Filtro rápido de reservas */
+.rb-qk{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.rb-qk button{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;border:1.5px solid rgba(11,59,69,.12);background:rgba(255,255,255,.85);font-weight:700;font-size:14px;color:var(--mar);transition:.2s}
+.rb-qk button.on{background:var(--mar);border-color:var(--mar);color:#fff;box-shadow:0 8px 20px -10px rgba(11,59,69,.6)}
+.rb-qk .dt{width:10px;height:10px;border-radius:50%;background:var(--txt3)}
+.rb-qk .dt.h{background:#0B3B45;box-shadow:0 0 0 2px #fff}.rb-qk .dt.p{background:#E3A33B}.rb-qk .dt.c{background:#0A97B4}.rb-qk .dt.x{background:#D9534A}
+@media (max-width:900px){.rb-qk{display:grid;grid-template-columns:1fr 1fr;gap:6px}.rb-qk button{justify-content:center;padding:10px 8px;font-size:13px}.rb-qk button:first-child{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -1056,6 +1064,7 @@ function formReserva(p){
 /* =================== RESERVAS (lista e histórico) =================== */
 VIEWS.reservas=function(){
   V.innerHTML=topo("Reservas",'<button class="btn agua" data-nova="1">'+ic("plus",16)+'Nova reserva</button>')+
+  '<div class="rb-qk" id="rb-qk"><button data-qk="todas"><i class="dt"></i>Próximas</button><button data-qk="hosp"><i class="dt h"></i>Hospedados agora</button><button data-qk="pre"><i class="dt p"></i>Pré-reservas</button><button data-qk="conf"><i class="dt c"></i>Confirmadas</button><button data-qk="canc"><i class="dt x"></i>Canceladas</button></div>'+
   '<div class="card rb-card fl-off" style="margin-bottom:14px"><div class="row"><label class="f" style="flex:2 1 220px">Buscar<input id="rb-q" type="search" placeholder="Nome, telefone, código ou grupo"></label><button type="button" class="btn sec rb-tg" data-rbtg="1">Filtros</button><label class="f">Situação<select id="rb-s"><option value="">Todas</option>'+Object.keys(STAT).map(function(s){return'<option value="'+s+'">'+STAT[s]+'</option>'}).join("")+'</select></label><label class="f">Origem<select id="rb-o"><option value="">Todas</option>'+Object.keys(ORIG).map(function(s){return'<option value="'+s+'">'+ORIG[s]+'</option>'}).join("")+'</select></label><label class="f">De<input type="date" id="rb-i"></label><label class="f">Até<input type="date" id="rb-f"></label></div><div class="chips" style="margin-top:10px"><button class="btn sm sec" data-pr="prox">Próximas</button><button class="btn sm sec" data-pr="ant">Anteriores (histórico)</button><button class="btn sm sec" data-pr="pre">Aguardando pagamento</button><button class="btn sm sec" data-pr="canc">Canceladas / no-show</button><button class="btn sm ghost" data-pr="limpa">Limpar</button></div></div><div class="card scroll-x" id="rb-l"><div class="empty">Carregando…</div></div>';
   var nrm=function(x){return String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()};
   var bus=function(){var q=$("#rb-q").value.trim();G("reservas_busca",{q:q,status:$("#rb-s").value,origem:$("#rb-o").value,ini:q?"":$("#rb-i").value,fim:q?"":$("#rb-f").value}).then(function(r){
@@ -1065,7 +1074,10 @@ VIEWS.reservas=function(){
   var t;["#rb-q"].forEach(function(s){$(s).oninput=function(){clearTimeout(t);t=setTimeout(bus,300)}});["#rb-s","#rb-o","#rb-i","#rb-f"].forEach(function(s){$(s).onchange=function(){S._rbFiltro="";bus()}});
   $$("[data-pr]").forEach(function(b){b.onclick=function(){var k=b.dataset.pr,H=hojeStr();S._rbFiltro=k;$("#rb-s").value="";$("#rb-i").value="";$("#rb-f").value="";
     if(k==="prox"){$("#rb-i").value=H}if(k==="ant"){$("#rb-f").value=add(H,-1);$("#rb-s").value="finalizada"}if(k==="pre")$("#rb-s").value="pre";if(k==="limpa")$("#rb-q").value="";bus()}});
-  $("#rb-i").value=hojeStr();bus();
+  var qk=function(k){S._rbQ=k;$$("#rb-qk button").forEach(function(b){b.classList.toggle("on",b.dataset.qk===k)});var H=hojeStr();S._rbFiltro="";$("#rb-i").value="";$("#rb-f").value="";$("#rb-o").value="";
+    $("#rb-s").value={hosp:"hospedada",pre:"pre",conf:"confirmada"}[k]||"";if(k==="todas"||k==="conf")$("#rb-i").value=H;if(k==="canc")S._rbFiltro="canc";bus()};
+  $("#rb-qk").onclick=function(e){var b=e.target.closest("[data-qk]");if(b)qk(b.dataset.qk)};
+  $("#rb-i").value=hojeStr();qk(S._rbQ||"todas");
   if(S._busca){S._busca=0;setTimeout(function(){$("#rb-q").focus()},60)}
 };
 
