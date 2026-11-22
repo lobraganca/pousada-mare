@@ -59,7 +59,8 @@ insert into config (chave, valor) values
 ('politica_pets', '"Pets são bem-vindos com aviso prévio. Pedimos que fiquem sempre acompanhados, fora das camas e da área da piscina e do restaurante. Consulte a recepção."')
 on conflict (chave) do nothing;
 
-insert into produtos (tipo, grupo, nome, descricao, preco, ordem) values
+insert into produtos (tipo, grupo, nome, descricao, preco, ordem)
+select * from (values
 ('restaurante','Pratos da casa','Paella de frutos do mar','Receita espanhola do Isidro, para 2 pessoas',189,1),
 ('restaurante','Pratos da casa','Moqueca de peixe','Com pirão, arroz e farofa de dendê, para 2 pessoas',159,2),
 ('restaurante','Pratos da casa','Arroz de polvo','Polvo macio, arroz cremoso e azeite',149,3),
@@ -78,7 +79,9 @@ insert into produtos (tipo, grupo, nome, descricao, preco, ordem) values
 ('produto','Lojinha','Protetor solar','FPS 50',45,30),
 ('produto','Lojinha','Canga Pousada Maré','',60,31),
 ('servico','Serviços','Lavanderia (peça)','',8,40),
-('servico','Serviços','Taxa de rolha','Vinho ou espumante',40,41);
+('servico','Serviços','Taxa de rolha','Vinho ou espumante',40,41)
+) v(tipo, grupo, nome, descricao, preco, ordem)
+where not exists (select 1 from produtos);
 
 -- Central de dúvidas: perguntas iniciais (só se ainda não houver nenhuma).
 -- {condicoes}, {pets}, {checkin} e {checkout} são trocados pelo texto de Ajustes › Site.
