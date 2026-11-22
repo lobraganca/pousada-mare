@@ -26,7 +26,8 @@
   var D = {
     /* menu e cabeçalho */
     "Suítes": ["Suites", "Suites"], "Restaurante": ["Restaurante", "Restaurant"], "A pousada": ["La posada", "The inn"],
-    "Como chegar": ["Cómo llegar", "Getting here"], "Dúvidas": ["Preguntas", "FAQ"], "Cardápio": ["Menú", "Menu"], "Montar reserva": ["Reservar", "Book your stay"],
+    "Como chegar": ["Cómo llegar", "Getting here"], "Esgotada nessas datas": ["Agotada en estas fechas", "Sold out for these dates"], "Só resta 1 suíte": ["Queda solo 1 suite", "Only 1 suite left"], "Últimas 2 suítes": ["Últimas 2 suites", "Last 2 suites"],
+    "Todas as suítes já estão reservadas nessas datas.": ["Todas las suites ya están reservadas en estas fechas.", "All suites are already booked for these dates."], "Escolher outras datas": ["Elegir otras fechas", "Choose other dates"], "Dúvidas": ["Preguntas", "FAQ"], "Cardápio": ["Menú", "Menu"], "Montar reserva": ["Reservar", "Book your stay"],
     "Principal": ["Principal", "Main"], "Menu": ["Menú", "Menu"], "Abrir menu": ["Abrir menú", "Open menu"], "Fechar menu": ["Cerrar menú", "Close menu"],
     "Pousada Maré, início": ["Pousada Maré, inicio", "Pousada Maré, home"],
     /* abertura */
@@ -189,6 +190,7 @@
     [/^Suíte (\d+)(.*)$/, function (m) { return "Suite " + m[1] + (m[2] ? m[2].replace("Acessível", I ? "Accessible" : "Accesible") : ""); }],
     [/^Para confirmar, a recepção pede um sinal de (\d+)% \((R\$ [^)]+)\) e envia os dados para pagamento pelo WhatsApp\.$/, function (m) { return I ? "To confirm, the front desk asks for a " + m[1] + "% deposit (" + m[2] + ") and sends payment details on WhatsApp." : "Para confirmar, la recepción pide una seña del " + m[1] + "% (" + m[2] + ") y envía los datos para el pago por WhatsApp."; }],
     [/^Essas suítes acomodam (\d+) pessoas e vocês são (\d+)\. Escolha mais uma\.$/, function (m) { return I ? "These suites fit " + m[1] + " people and you are " + m[2] + ". Choose one more." : "Estas suites alojan a " + m[1] + " personas y ustedes son " + m[2] + ". Elige una más."; }],
+    [/^Nessas datas, as suítes livres acomodam até (\d+) pessoas?\.$/, function (m) { return I ? "For these dates, the available suites fit up to " + pl(m[1], PES, PESS) + "." : "En estas fechas, las suites libres alojan hasta " + pl(m[1], PES, PESS) + "."; }],
     [/^Nesse período a estadia mínima é de (\d+) noites\.$/, function (m) { return I ? "For these dates the minimum stay is " + m[1] + " nights." : "En este período la estadía mínima es de " + m[1] + " noches."; }],
     [/^(\d+) de (janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)$/, function (m) { var k = MES.pt.indexOf(m[2]); return I ? MES.en[k] + " " + m[1] : m[1] + " de " + MES.es[k]; }],
     [/^(janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro) de (\d{4})$/, function (m) { var k = MES.pt.indexOf(m[1]); return I ? MES.en[k] + " " + m[2] : MES.es[k] + " de " + m[2]; }]

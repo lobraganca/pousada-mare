@@ -329,6 +329,9 @@ body.rolou .zap{opacity:1;transform:none}
 .op .pr{font-weight:500}
 .op .pr small{color:var(--muted);font-weight:400}
 .op.sel h4{color:var(--turq)}
+.op.esg{opacity:.55}.op.esg .ph{filter:grayscale(.7)}
+.esg-t,.ult-t{display:inline-block;margin-top:6px;font-size:12px;font-weight:700;letter-spacing:.02em;padding:3px 10px;border-radius:999px}
+.esg-t{background:#EEE8E1;color:#7A6A58}.ult-t{background:#FFF1DC;color:#9A5B00}
 .quem{background:#fff;border-radius:3px;padding:16px 18px;margin-top:12px;box-shadow:inset 0 0 0 1px var(--areia)}
 .quem h5{margin:0 0 6px;font-family:var(--serif);font-weight:400;font-size:18px;display:flex;justify-content:space-between;gap:10px}
 .quem .lin{display:flex;gap:24px;flex-wrap:wrap}
@@ -1089,10 +1092,19 @@ function desenha(){
       var h="";
       if(d.min_noites>noites())h+='<div class="aviso">Nesse período a estadia mínima é de '+d.min_noites+' noites. <button class="link" id="aj-min">Ajustar a saída</button></div>';
       if(d.fechado)h+='<div class="calmo">Essas datas ainda não estão abertas no site, mas você pode enviar o pedido: a recepção verifica e responde pelo WhatsApp.</div>';
-      (SITE.categorias||[]).forEach(function(c){var n=R.sel[c.id]||0,p2=precoQ(c.id,Math.min(c.capacidade,2)),pm=precoQ(c.id,c.capacidade);
-        h+='<div class="op'+(n?" sel":"")+'">'+ph(fotosCat(c)[0],"")+'<div><h4>'+esc(c.nome)+'</h4><div class="meta">Até '+c.capacidade+' pessoas. '+esc(c.resumo||"")+'</div><div class="lin"><span class="pr">'+(p2?brl(p2)+(pm!==p2?' <small>a '+brl(pm)+'</small>':"")+' <small>por '+noites()+(noites()>1?" noites":" noite")+'</small>':'<small>valor sob consulta</small>')+'</span>'+stp("c"+c.id,n,0,c.quartos||13)+'</div></div></div>'});
+      // Disponibilidade real: quantas suítes de cada tipo estão livres nessas datas
+      var livres=function(c){var x=(d.categorias||[]).filter(function(y){return y.id===c.id})[0];return d.fechado||!x||x.livres==null?(c.quartos||13):+x.livres};
+      var cats=(SITE.categorias||[]).slice().sort(function(a,b){return(livres(a)>0?0:1)-(livres(b)>0?0:1)});
+      cats.forEach(function(c){if((R.sel[c.id]||0)>livres(c)){if(livres(c)>0)R.sel[c.id]=livres(c);else delete R.sel[c.id]}});
+      var capLivre=cats.reduce(function(s,c){return s+livres(c)*c.capacidade},0),pess=R.adultos+R.criancas;
+      if(!d.fechado&&capLivre===0)h+='<div class="aviso">Todas as suítes já estão reservadas nessas datas. <button class="link" id="out-d">Escolher outras datas</button></div>';
+      else if(!d.fechado&&capLivre<pess)h+='<div class="aviso">Nessas datas, as suítes livres acomodam até '+capLivre+(capLivre>1?" pessoas":" pessoa")+'. <button class="link" id="out-d">Escolher outras datas</button></div>';
+      cats.forEach(function(c){var n=R.sel[c.id]||0,lv=livres(c),p2=precoQ(c.id,Math.min(c.capacidade,2)),pm=precoQ(c.id,c.capacidade);
+        var tag=d.fechado?"":lv===0?'<span class="esg-t">Esgotada nessas datas</span>':lv<=2?'<span class="ult-t">'+(lv===1?"Só resta 1 suíte":"Últimas 2 suítes")+'</span>':"";
+        h+='<div class="op'+(n?" sel":"")+(lv===0?" esg":"")+'">'+ph(fotosCat(c)[0],"")+'<div><h4>'+esc(c.nome)+'</h4>'+tag+'<div class="meta">Até '+c.capacidade+' pessoas. '+esc(c.resumo||"")+'</div><div class="lin"><span class="pr">'+(p2?brl(p2)+(pm!==p2?' <small>a '+brl(pm)+'</small>':"")+' <small>por '+noites()+(noites()>1?" noites":" noite")+'</small>':'<small>valor sob consulta</small>')+'</span>'+(lv>0?stp("c"+c.id,n,0,lv):"")+'</div></div></div>'});
       b.innerHTML=h;distribui();
       if($("#aj-min"))$("#aj-min").onclick=function(){R.checkout=add(R.checkin,d.min_noites);desenha()};
+      if($("#out-d"))$("#out-d").onclick=function(){R.sel={};R.dist=[];passo=2;desenha()};
       var sel=qsel().length,falta=R.adultos+R.criancas-cap();
       if(sel&&falta>0)b.insertAdjacentHTML("beforeend",'<div class="aviso">Essas suítes acomodam '+cap()+' pessoas e vocês são '+(R.adultos+R.criancas)+'. Escolha mais uma.</div>');
       if(sel&&falta<=0)b.insertAdjacentHTML("beforeend",'<h4 class="serif" style="font-size:22px;margin:26px 0 4px">Quem fica em cada suíte</h4>'+R.dist.map(function(x,i){var c=cat(x.cid);return'<div class="quem"><h5><span>'+esc(c.nome)+'</span><span>'+brl(precoQ(x.cid,x.a+x.c))+'</span></h5><div class="lin"><div>Adultos '+stp("a"+i,x.a,0,c.capacidade-x.c)+'</div><div>Crianças '+stp("k"+i,x.c,0,c.capacidade-x.a)+'</div></div></div>'}).join(""));
