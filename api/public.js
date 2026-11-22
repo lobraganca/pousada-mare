@@ -103,6 +103,7 @@ export default async function handler(req, res) {
       await q(`update hospedes set documento = $2, email = case when $3 <> '' then $3 else email end, cidade = case when $4 <> '' then $4 else cidade end
                 where id = (select hospede_id from reservas where id = $1)`,
         [r.id, (f.titular.doc_tipo === "cpf" ? "CPF " : f.titular.doc_tipo.toUpperCase() + " ") + f.titular.doc, f.titular.email, [f.titular.cidade, f.titular.uf].filter(Boolean).join(" / ").slice(0, 60)]);
+      if (f.titular.nascimento) await q(`update hospedes set nascimento = $2::date where id = (select hospede_id from reservas where id = $1)`, [r.id, f.titular.nascimento]).catch(() => {});
       return responde(res, 200, { ok: true });
     }
 

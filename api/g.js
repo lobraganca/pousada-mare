@@ -180,6 +180,11 @@ const ACOES = {
     if (dados) p.acompanhantes = dados.map((x) => x.nome).join("\n").slice(0, 1000);
     const r = await q1(`select reserva_salvar($1::jsonb, $2) r`, [JSON.stringify(p), u.id], u.id);
     if (dados) await salvaDados(r.r.id, dados, u.id);
+    const nasc = String(h.nascimento || "");
+    if (/^\d{4}-\d{2}-\d{2}$/.test(nasc) && nasc >= "1900-01-01" && nasc <= new Date().toISOString().slice(0, 10)) {
+      try { await q(`update hospedes h set nascimento = $2::date from reservas r where r.id = $1 and h.id = r.hospede_id`, [r.r.id, nasc], u.id); }
+      catch (e) { if (/nascimento/.test(e.message || "")) throw Object.assign(new Error("A reserva foi salva, mas falta atualizar o banco para guardar a data de nascimento. Rode a linha nova do LEIA-ME no Neon."), { status: 400 }); throw e; }
+    }
     return r.r;
   }],
 
@@ -205,6 +210,7 @@ const ACOES = {
     await q(`update hospedes set nome = $2, documento = $3, email = case when $4 <> '' then $4 else email end, cidade = case when $5 <> '' then $5 else cidade end
               where id = (select hospede_id from reservas where id = $1)`,
       [id, t.nome, (t.doc_tipo === "cpf" ? "CPF " : t.doc_tipo.toUpperCase() + " ") + t.doc, t.email, [t.cidade, t.uf].filter(Boolean).join(" / ").slice(0, 60)], u.id);
+    if (t.nascimento) await q(`update hospedes set nascimento = $2::date where id = (select hospede_id from reservas where id = $1)`, [id, t.nascimento], u.id).catch(() => {});
     return { ok: true };
   }],
   fnrh_marcar: [DR, async (b, u) => {
@@ -242,7 +248,7 @@ const ACOES = {
     const t = txt(b.q, 60);
     if (t.length < 2) return { itens: [] };
     return { itens: await q(
-      `select h.*, (select count(*) from reservas r where r.hospede_id = h.id and r.status in ${ATIVOS})::int estadias,
+      `select h.*, to_jsonb(h)->>'nascimento' nascimento, (select count(*) from reservas r where r.hospede_id = h.id and r.status in ${ATIVOS})::int estadias,
               (select max(checkout) from reservas r where r.hospede_id = h.id and r.status in ${ATIVOS}) ultima
          from hospedes h where h.nome ilike '%' || $1 || '%' or (length(regexp_replace($1, '\\D', '', 'g')) >= 4 and h.telefone like '%' || regexp_replace($1, '\\D', '', 'g') || '%')
         order by h.nome limit 15`, [t]) };

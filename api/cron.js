@@ -65,6 +65,8 @@ export default async function handler(req, res) {
     await q(`update reservas set ficha = null, acompanhantes = '', checkin_token = null
               where checkout < current_date - interval '5 years' and (ficha is not null or acompanhantes <> '' or checkin_token is not null)`);
     await q(`update reservas set acompanhantes_dados = '[]' where checkout < current_date - interval '5 years' and acompanhantes_dados <> '[]'`).catch(() => {});
+    await q(`update hospedes h set nascimento = null where nascimento is not null
+              and not exists (select 1 from reservas r where r.hospede_id = h.id and r.checkout >= current_date - interval '5 years')`).catch(() => {});
     await q(`update hospedes h set documento = '' where documento <> ''
               and not exists (select 1 from reservas r where r.hospede_id = h.id and r.checkout >= current_date - interval '5 years')`);
     return responde(res, 200, { ok: true });

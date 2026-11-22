@@ -26,6 +26,9 @@ duvidas.js          Central de dúvidas do site (busca, respostas, WhatsApp com 
 1. Suba esta pasta para um repositório (ex.: `lobraganca/pousada-mare`) e importe na Vercel.
 2. **Banco:** Vercel › Storage › *Create Database* › **Neon (Postgres)** › conectar ao projeto. Isso cria a `DATABASE_URL`.
 3. No Neon › **SQL Editor**: cole e rode `db/schema.sql`, depois `db/dados-iniciais.sql`.
+   - Banco já criado antes? Rode só as linhas novas (podem ser rodadas mais de uma vez):
+     `alter table reservas add column if not exists acompanhantes_dados jsonb not null default '[]';`
+     `alter table hospedes add column if not exists nascimento date;`
 4. **Vídeos:** Vercel › Storage › **Blob** › conectar ao projeto (cria `BLOB_READ_WRITE_TOKEN`).
 5. **Variáveis** (Settings › Environment Variables):
    - `ADMIN_USER` = login do dono (ex.: `isidro`)

@@ -219,8 +219,8 @@
           db.ocupacoes.push(o); return o;
         });
       } catch (e) { db.ocupacoes = JSON.parse(snapshot); throw e; }
-      if (!hid) { hid = ++db.seq.hospedes; db.hospedes.push({ id: hid, nome: h.nome, telefone: tel, email: h.email || "", documento: h.documento || "", cidade: h.cidade || "", obs: "" }); }
-      else { var hh = byId(db.hospedes, hid); hh.nome = h.nome; if (tel) hh.telefone = tel; ["email", "documento", "cidade"].forEach(function (k) { if (h[k]) hh[k] = h[k]; }); }
+      if (!hid) { hid = ++db.seq.hospedes; db.hospedes.push({ id: hid, nome: h.nome, telefone: tel, email: h.email || "", documento: h.documento || "", cidade: h.cidade || "", nascimento: h.nascimento || "", obs: "" }); }
+      else { var hh = byId(db.hospedes, hid); hh.nome = h.nome; if (tel) hh.telefone = tel; ["email", "documento", "cidade", "nascimento"].forEach(function (k) { if (h[k]) hh[k] = h[k]; }); }
       if (!r) { r = { id: ++db.seq.reservas, codigo: codigo(), criado_em: new Date().toISOString(), status: b.status || "pre", desconto: 0, sinal_previsto: 0, condicoes_pagamento: "", obs: "", grupo_nome: "", motivo_status: "" }; db.reservas.push(r); }
       r.hospede_id = hid; r.origem = b.origem || r.origem || "whatsapp"; if (b.status) r.status = b.status;
       ["grupo_nome", "condicoes_pagamento", "obs", "acompanhantes"].forEach(function (k) { if (b[k] !== undefined) r[k] = b[k]; });
@@ -320,7 +320,7 @@
       var f = Object.assign({}, r.ficha || {}, { titular: Object.assign({}, (r.ficha && r.ficha.titular) || {}, t), placa: String(b.placa || "").toUpperCase().replace(/[^A-Z0-9]/g, ""), carro: b.carro || "", motivo: b.motivo || "", transporte: b.transporte || "", procedencia: b.procedencia || "", destino: b.destino || "", origem: (r.ficha && r.ficha.origem) || "balcao" });
       if (!f.acompanhantes) f.acompanhantes = [];
       r.ficha = f; r.ficha_em = r.ficha_em || new Date().toISOString(); r.ficha_conferida_em = new Date().toISOString();
-      var hh = byId(db.hospedes, r.hospede_id); if (hh) { hh.nome = nome; hh.documento = (dt === "cpf" ? "CPF " : dt.toUpperCase() + " ") + doc; if (t.email) hh.email = t.email; if (t.cidade) hh.cidade = [t.cidade, t.uf].filter(Boolean).join(" / "); }
+      var hh = byId(db.hospedes, r.hospede_id); if (hh) { hh.nome = nome; hh.documento = (dt === "cpf" ? "CPF " : dt.toUpperCase() + " ") + doc; if (t.nascimento) hh.nascimento = t.nascimento; if (t.email) hh.email = t.email; if (t.cidade) hh.cidade = [t.cidade, t.uf].filter(Boolean).join(" / "); }
       audit(db, u, "update", "reservas", r.id, null); return { ok: true };
     },
     fnrh_marcar: function (b, u, db) { var r = byId(db.reservas, b.id); if (!r) erro("Reserva não encontrada."); if (!r.ficha) erro("Preencha a ficha do titular antes de marcar o registro na FNRH."); if (b.ok === false) delete r.ficha.fnrh; else r.ficha.fnrh = { em: new Date().toISOString(), por: u.nome, protocolo: String(b.protocolo || "").trim() }; audit(db, u, "update", "reservas", r.id, null); return { ok: true }; },
