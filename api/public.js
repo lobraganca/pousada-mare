@@ -47,9 +47,10 @@ export default async function handler(req, res) {
       const b = corpo(req);
       const id = txt(b.id, 40).replace(/[^\w-]/g, "");
       const nome = txt(b.nome, 80), tel = String(b.telefone || "").replace(/\D/g, "").slice(0, 15);
-      if (id.length < 6 || (nome.length < 2 && tel.length < 8)) return responde(res, 204, {});
+      if (id.length < 6 || (nome.length < 2 && tel.length < 8)) { console.log("lead ignorado: sem nome/WhatsApp ainda", { etapa: b.etapa }); return responde(res, 204, {}); }
       const existe = await q1(`select status from leads where id = $1`, [id]);
-      if (!existe && !(await limite(`lead:${ipDe(req)}`, 15, 3600))) return responde(res, 204, {});
+      if (!existe && !(await limite(`lead:${ipDe(req)}`, 15, 3600))) { console.log("lead ignorado: limite de 15 por hora neste IP"); return responde(res, 204, {}); }
+      if (existe && !["novo", "contatado"].includes(existe.status)) console.log("lead já tratado, não atualiza", { status: existe.status });
       const itens = Array.isArray(b.itens) ? b.itens.slice(0, 13).map((x) => ({
         categoria: txt(x.categoria, 80), quartos: Math.max(1, Math.min(13, parseInt(x.quartos) || 1)),
         adultos: Math.max(0, Math.min(12, parseInt(x.adultos) || 0)), criancas: Math.max(0, Math.min(12, parseInt(x.criancas) || 0)),
@@ -70,6 +71,7 @@ export default async function handler(req, res) {
          where leads.status in ('novo','contatado')`,
         [id, nome, tel, txt(b.cidade, 60), ci, co, Math.min(60, parseInt(b.adultos) || 0), Math.min(60, parseInt(b.criancas) || 0),
          JSON.stringify(itens), Math.max(0, Math.min(1e6, Number(b.valor) || 0)), txt(b.obs, 400), Math.min(4, parseInt(b.etapa) || 1), !!b.enviado, cidade]);
+      console.log("lead salvo", { novo: !existe, etapa: b.etapa, enviado: !!b.enviado });
       return responde(res, 204, {});
     }
 
