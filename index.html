@@ -662,6 +662,21 @@ body.rolou .regua{opacity:1}
 .aceite-r{display:flex;gap:10px;align-items:flex-start;margin:14px 0 4px;font-size:14.5px;color:var(--ink2);cursor:pointer}.aceite-r input{width:20px;height:20px;flex:none;margin-top:1px;accent-color:#1FAF5C}.aceite-r a{color:var(--turq)}
 .eca-n{font-size:14px;padding:12px 14px;border-left:2px solid #E3A33B;background:#FFF6E6;margin:12px 0;color:#6B4A0E}
 .cond-r{font-size:14px;color:var(--muted);background:#F6F2EA;border-radius:12px;padding:12px 14px;margin:12px 0}.cond-r b{display:block;color:var(--ink2);margin-bottom:4px}
+/* reserva em 3 passos */
+.op1{width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;appearance:none;-webkit-appearance:none;transition:border-color .2s,background .2s,transform .15s}
+.op1:not(:disabled):hover{border-color:var(--turq)}.op1:not(:disabled):active{transform:scale(.99)}.op1:disabled{cursor:default}
+.op1 .esc-b{font-size:14px;font-weight:700;padding:8px 16px;border-radius:999px;border:1.5px solid var(--turq);color:var(--turq);white-space:nowrap}
+.op1.sel .esc-b{background:var(--turq);color:#fff}
+.op1.sel{box-shadow:0 0 0 2px var(--turq),0 10px 24px -18px rgba(11,59,69,.4)}
+.bom-t{display:inline-block;margin:6px 6px 0 0;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:#E3F6EA;color:#17733F}
+.mix-l{text-align:center;margin:16px 0 4px;font-size:14px}
+.res-c{display:grid;grid-template-columns:1fr auto;gap:6px 12px;background:#F6F2EA;border-radius:14px;padding:14px 16px;margin-bottom:16px}
+.res-c>div{grid-column:1}.res-c b{display:block;font-weight:600}.res-c small{color:var(--muted);font-size:13.5px}
+.res-c #r-alt{grid-column:2;grid-row:1/span 2;align-self:center;font-size:14px}
+.mais-d{margin:4px 0 8px}.mais-d summary,.cond-r summary{cursor:pointer;font-size:14px;color:var(--turq);font-weight:600;list-style:none;padding:6px 0}
+.mais-d summary::-webkit-details-marker,.cond-r summary::-webkit-details-marker{display:none}
+.mais-d summary::before,.cond-r summary::before{content:"+ "}.mais-d[open] summary::before,.cond-r[open] summary::before{content:"− "}
+.cond-r summary b{display:inline;margin:0;color:var(--turq)}.cond-r>span{display:block;margin-top:6px}
 .ac-dica{font-size:12.5px;color:var(--muted);line-height:1.3;display:block;max-width:22ch}
 </style>
 </head>
@@ -872,7 +887,7 @@ body.rolou .regua{opacity:1}
 <div class="veu" id="veu"></div>
 <aside class="reserva" id="reserva" role="dialog" aria-modal="true" aria-labelledby="r-t">
   <div class="r-top"><div style="flex:1"><h3 id="r-t">Sua estadia</h3><small id="r-s">Escolha as datas e quantas pessoas vêm.</small></div><button class="fecha" id="r-x" aria-label="Fechar"><svg width="16" height="16" viewBox="0 0 18 18" stroke="currentColor" stroke-width="1.5"><path d="M3 3l12 12M15 3 3 15"/></svg></button></div>
-  <div class="r-passos"><span>Seus dados</span><span>Datas</span><span>Suítes</span><span>Enviar</span></div>
+  <div class="r-passos"><span>Datas</span><span>Suíte</span><span>Enviar</span></div>
   <div class="r-corpo" id="r-corpo"></div>
   <div class="r-pe" id="r-pe"></div>
 </aside>
@@ -993,7 +1008,7 @@ function renderSuites(){var cs=SITE.categorias||[];
     box.addEventListener("click",function(e){var k=e.target.closest("[data-k]");if(k){vai(+k.dataset.k);return}vai(i+1)})});
   desliza("t-suites");
 }
-document.addEventListener("click",function(e){var b=e.target.closest("[data-suite]");if(b){R.pref=+b.dataset.suite;abreReserva(!temDados()?1:R.checkin&&R.checkout?3:2)}});
+document.addEventListener("click",function(e){var b=e.target.closest("[data-suite]");if(b){R.pref=+b.dataset.suite;abreReserva(R.checkin&&R.checkout?2:1)}});
 
 /* experiências, pratos, galeria, faixa */
 $("#t-exp").innerHTML=[[F.piscinaAlto,"Piscina ampla com sauna","Para nadar sem pressa, entre jardins e amendoeiras."],[F.praia,"Bar na praia","Pé na areia, onde o rio encontra o mar."],[F.praiaGrama,"Quadra de beach tennis","Na areia, para o fim da tarde."],[F.quarto,"Quartos para famílias","Suítes conjugadas e reversíveis."],[F.fachada,"Acessível de ponta a ponta","Todas as áreas planejadas, suíte adaptada no térreo."],[F.jardim,"Copa baby e salão de jogos","Copa para os pequenos, playground e sinuca."],[F.cafe2,"Café e chá da tarde","Buffet à beira-mar e chá cortesia da casa."]].map(function(x){return'<article class="cartao-e">'+ph(x[0],x[1])+'<div class="t"><h3>'+x[1]+'</h3><p>'+x[2]+'</p></div></article>'}).join("");
@@ -1063,11 +1078,11 @@ function temDados(){return(R.nome||"").length>=2&&String(R.tel||"").replace(/\D/
 function abreReserva(p){passo=p||1;$("#veu").classList.add("on");$("#reserva").classList.add("on");document.body.style.overflow="hidden";desenha()}
 function fechaReserva(){$("#veu").classList.remove("on");$("#reserva").classList.remove("on");document.body.style.overflow="";guarda();resumoTopo()}
 $("#veu").onclick=fechaReserva;$("#r-x").onclick=fechaReserva;
-document.addEventListener("click",function(e){if(e.target.closest("[data-reservar]")){e.preventDefault();$("#menu-tela").classList.remove("on");R.pref=null;abreReserva(temDados()?2:1)}});
+document.addEventListener("click",function(e){if(e.target.closest("[data-reservar]")){e.preventDefault();$("#menu-tela").classList.remove("on");R.pref=null;abreReserva(1)}});
 document.addEventListener("keydown",function(e){if(e.key!=="Escape")return;fechaReserva();fechaCardapio();$("#vm").classList.remove("on");$("#vm-b").innerHTML="";$("#lb").classList.remove("on");$("#menu-tela").classList.remove("on")});
 var stp=function(id,v,mn,mx){return'<span class="passo"><button type="button" data-m="'+id+'" '+(v<=mn?"disabled":"")+' aria-label="Menos">−</button><span>'+v+'</span><button type="button" data-p="'+id+'" '+(v>=mx?"disabled":"")+' aria-label="Mais">+</button></span>'};
-var SUB=["Para começar, seu nome e WhatsApp. Assim a recepção fala com você.","Escolha as datas e quantas pessoas vêm.","Escolha as suítes. A recepção confirma a disponibilidade com você.","Confira e envie pelo WhatsApp."];
-function pe(txt,ok,esq){var t=total();$("#r-pe").innerHTML=(passo>1&&passo<5?'<button class="link" id="r-v">Voltar</button>':"")+'<div class="tot">'+(t&&passo>1&&passo<5?noites()+(noites()>1?" noites":" noite")+'<b>'+brl(t)+'</b>':(esq||""))+'</div>'+(txt?'<button class="act" id="r-n" '+(ok?"":"disabled")+'>'+txt+'</button>':"");if($("#r-v"))$("#r-v").onclick=function(){passo--;desenha()};if($("#r-n"))$("#r-n").onclick=function(){if(passo===1)sync(1);passo++;desenha()}}
+var SUB=["Escolha as datas e quantas pessoas vêm.","Toque na suíte que preferir. O valor já é o total da estadia.","Falta pouco: seu nome e WhatsApp para a recepção confirmar."];
+function pe(txt,ok,esq){var t=total();$("#r-pe").innerHTML=(passo>1&&passo<4?'<button class="link" id="r-v">Voltar</button>':"")+'<div class="tot">'+(t&&passo>1&&passo<4?noites()+(noites()>1?" noites":" noite")+'<b>'+brl(t)+'</b>':(esq||""))+'</div>'+(txt?'<button class="act" id="r-n" '+(ok?"":"disabled")+'>'+txt+'</button>':"");if($("#r-v"))$("#r-v").onclick=function(){passo--;desenha()};if($("#r-n"))$("#r-n").onclick=function(){passo++;desenha()}}
 function temporadaEm(d){return(SITE.temporadas||[]).some(function(t){var i=String(t.ini).slice(0,10),f=String(t.fim).slice(0,10);return d>=i&&d<=f})}
 function calendario(){
   var h=hoje(),m0=h.slice(0,7)+"-01",base=mesCal||(R.checkin||h).slice(0,7)+"-01";if(base<m0)base=m0;mesCal=base;
@@ -1081,9 +1096,9 @@ function calendario(){
 }
 function desenha(){
   $$(".r-passos span").forEach(function(s,i){s.classList.toggle("on",i<passo)});
-  $("#r-t").textContent=passo<5?["Seus dados","Sua estadia","As suítes","Tudo certo?"][passo-1]:"Pedido enviado";$("#r-s").textContent=passo<5?SUB[passo-1]:"A recepção responde pelo WhatsApp.";
+  $("#r-t").textContent=passo<4?["Sua estadia","Escolha a suíte","Quase lá"][passo-1]:"Pedido enviado";$("#r-s").textContent=passo<4?SUB[passo-1]:"A recepção responde pelo WhatsApp.";
   var b=$("#r-corpo");b.scrollTop=0;b.onclick=null;
-  if(passo===2){
+  if(passo===1){
     b.innerHTML=calendario()+'<div style="margin-top:22px"><div class="cont"><div><b>Adultos</b><small>a partir de 13 anos</small></div>'+stp("ad",R.adultos,1,40)+'</div><div class="cont"><div><b>Crianças</b><small>até 12 anos</small></div>'+stp("cr",R.criancas,0,30)+'</div><div class="cont"><div><b>Vou levar meu pet</b><small>a recepção explica os cuidados</small></div><button type="button" class="chave'+(R.pet?" on":"")+'" id="pet" aria-pressed="'+!!R.pet+'" aria-label="Vou levar meu pet"></button></div></div>';
     b.onclick=function(e){var d=e.target.closest("[data-d]");if(d&&!d.disabled){var v=d.dataset.d;if(!R.checkin||R.checkout||v<=R.checkin){R.checkin=v;R.checkout=null;if(R._noites){R.checkout=add(v,R._noites);delete R._noites}}else R.checkout=v;desenha();return}
       if(e.target.closest("#cal-e")){mesCal=add(mesCal,-1).slice(0,7)+"-01";desenha();return}if(e.target.closest("#cal-d")){mesCal=add(mesCal,32).slice(0,7)+"-01";desenha();return}
@@ -1091,7 +1106,7 @@ function desenha(){
       var m=e.target.closest("[data-m]"),p=e.target.closest("[data-p]");if(m){if(m.dataset.m==="ad")R.adultos--;else R.criancas--;desenha()}if(p){if(p.dataset.p==="ad")R.adultos++;else R.criancas++;desenha()}};
     var ok=R.checkin&&R.checkout&&noites()<=60;
     pe("Ver as suítes",ok,ok?fd(R.checkin,{weekday:"short",day:"numeric",month:"short"})+" a "+fd(R.checkout,{weekday:"short",day:"numeric",month:"short"})+'<b style="font-size:22px">'+noites()+(noites()>1?" noites":" noite")+'</b>':"Escolha a chegada e a saída");resumoTopo();return}
-  if(passo===3){
+  if(passo===2){
     b.innerHTML='<p style="color:var(--muted)">Calculando os valores…</p>';pe("",false);
     disp(R.checkin,R.checkout).then(function(d){DISP=d;
       if(R.pref){R.sel={};var c=cat(R.pref);if(c)R.sel[c.id]=Math.max(1,Math.ceil((R.adultos+R.criancas)/c.capacidade));R.pref=null}
@@ -1105,15 +1120,29 @@ function desenha(){
       var capLivre=cats.reduce(function(s,c){return s+livres(c)*c.capacidade},0),pess=R.adultos+R.criancas;
       if(!d.fechado&&capLivre===0)h+='<div class="aviso">Todas as suítes já estão reservadas nessas datas. <button class="link" id="out-d">Escolher outras datas</button></div>';
       else if(!d.fechado&&capLivre<pess)h+='<div class="aviso">Nessas datas, as suítes livres acomodam até '+capLivre+(capLivre>1?" pessoas":" pessoa")+'. <button class="link" id="out-d">Escolher outras datas</button></div>';
-      cats.forEach(function(c){var n=R.sel[c.id]||0,lv=livres(c),p2=precoQ(c.id,Math.min(c.capacidade,2)),pm=precoQ(c.id,c.capacidade);
+      // Modo simples: cada cartão já mostra o total da estadia para o grupo inteiro; um toque escolhe.
+      var opc=function(c){var q=Math.ceil(pess/c.capacidade),lv=livres(c);if(q>lv)return null;var a=R.adultos,k=R.criancas,tot=0;for(var i=0;i<q;i++){var vagas=q-i,pa=Math.ceil(a/vagas),pk=Math.min(k,c.capacidade-pa);if(i===q-1)pk=k;a-=pa;k-=pk;tot+=precoQ(c.id,pa+pk)}return{q:q,tot:tot}};
+      var selCats=Object.keys(R.sel),simples=!R.mix&&selCats.length<=1&&(!selCats.length||(opc(cat(selCats[0]))||{}).q===R.sel[selCats[0]]);
+      if(simples){
+        var ops=cats.map(function(c){return{c:c,o:opc(c)}}).sort(function(a,b){return(a.o?0:1)-(b.o?0:1)||((a.o&&a.o.tot)||1e9)-((b.o&&b.o.tot)||1e9)}),melhor=ops.filter(function(x){return x.o&&x.o.tot}).sort(function(a,b){return a.o.tot-b.o.tot})[0];
+        ops.forEach(function(x){var c=x.c,o=x.o,lv=livres(c),on=!!R.sel[c.id];
+          var tag=d.fechado?"":lv===0?'<span class="esg-t">Esgotada nessas datas</span>':!o?'<span class="esg-t">Não há suítes livres suficientes para o grupo</span>':lv<=2?'<span class="ult-t">'+(lv===1?"Só resta 1 suíte":"Últimas 2 suítes")+'</span>':"";
+          if(melhor&&melhor.c.id===c.id&&!d.fechado)tag='<span class="bom-t">Melhor preço</span>'+tag;
+          h+='<button type="button" class="op op1'+(on?" sel":"")+(!o?" esg":"")+'" data-esc="'+c.id+'"'+(!o?" disabled":"")+'>'+ph(fotosCat(c)[0],"")+'<div><h4>'+esc(c.nome)+'</h4>'+tag+'<div class="meta">Até '+c.capacidade+' pessoas por suíte. '+esc(c.resumo||"")+'</div><div class="lin"><span class="pr">'+(o&&o.tot?brl(o.tot)+' <small>no total · '+noites()+(noites()>1?" noites":" noite")+(o.q>1?" · "+o.q+" suítes":"")+'</small>':o?'<small>valor sob consulta</small>':"")+'</span>'+(o?'<span class="esc-b">'+(on?"✓ Escolhida":"Escolher")+'</span>':"")+'</div></div></button>'});
+        h+='<p class="mix-l"><button type="button" class="link" id="mix">Prefere combinar suítes diferentes?</button></p>';
+      }else cats.forEach(function(c){var n=R.sel[c.id]||0,lv=livres(c),p2=precoQ(c.id,Math.min(c.capacidade,2)),pm=precoQ(c.id,c.capacidade);
         var tag=d.fechado?"":lv===0?'<span class="esg-t">Esgotada nessas datas</span>':lv<=2?'<span class="ult-t">'+(lv===1?"Só resta 1 suíte":"Últimas 2 suítes")+'</span>':"";
         h+='<div class="op'+(n?" sel":"")+(lv===0?" esg":"")+'">'+ph(fotosCat(c)[0],"")+'<div><h4>'+esc(c.nome)+'</h4>'+tag+'<div class="meta">Até '+c.capacidade+' pessoas. '+esc(c.resumo||"")+'</div><div class="lin"><span class="pr">'+(p2?brl(p2)+(pm!==p2?' <small>a '+brl(pm)+'</small>':"")+' <small>por '+noites()+(noites()>1?" noites":" noite")+'</small>':'<small>valor sob consulta</small>')+'</span>'+(lv>0?stp("c"+c.id,n,0,lv):"")+'</div></div></div>'});
+      if(!simples)h+='<p class="mix-l"><button type="button" class="link" id="mix-x">Voltar para a escolha simples</button></p>';
       b.innerHTML=h;distribui();
+      Array.prototype.forEach.call(b.querySelectorAll("[data-esc]"),function(el){el.onclick=function(){var c=cat(el.dataset.esc),o=opc(c);if(!o)return;R.sel={};R.sel[c.id]=o.q;R.dist=[];desenha()}});
+      if($("#mix"))$("#mix").onclick=function(){R.mix=true;desenha()};
+      if($("#mix-x"))$("#mix-x").onclick=function(){R.mix=false;R.sel={};R.dist=[];desenha()};
       if($("#aj-min"))$("#aj-min").onclick=function(){R.checkout=add(R.checkin,d.min_noites);desenha()};
-      if($("#out-d"))$("#out-d").onclick=function(){R.sel={};R.dist=[];passo=2;desenha()};
+      if($("#out-d"))$("#out-d").onclick=function(){R.sel={};R.dist=[];passo=1;desenha()};
       var sel=qsel().length,falta=R.adultos+R.criancas-cap();
-      if(sel&&falta>0)b.insertAdjacentHTML("beforeend",'<div class="aviso">Essas suítes acomodam '+cap()+' pessoas e vocês são '+(R.adultos+R.criancas)+'. Escolha mais uma.</div>');
-      if(sel&&falta<=0)b.insertAdjacentHTML("beforeend",'<h4 class="serif" style="font-size:22px;margin:26px 0 4px">Quem fica em cada suíte</h4>'+R.dist.map(function(x,i){var c=cat(x.cid);return'<div class="quem"><h5><span>'+esc(c.nome)+'</span><span>'+brl(precoQ(x.cid,x.a+x.c))+'</span></h5><div class="lin"><div>Adultos '+stp("a"+i,x.a,0,c.capacidade-x.c)+'</div><div>Crianças '+stp("k"+i,x.c,0,c.capacidade-x.a)+'</div></div></div>'}).join(""));
+      if(sel&&falta>0&&!simples)b.insertAdjacentHTML("beforeend",'<div class="aviso">Essas suítes acomodam '+cap()+' pessoas e vocês são '+(R.adultos+R.criancas)+'. Escolha mais uma.</div>');
+      if(sel&&falta<=0&&!simples)b.insertAdjacentHTML("beforeend",'<h4 class="serif" style="font-size:22px;margin:26px 0 4px">Quem fica em cada suíte</h4>'+R.dist.map(function(x,i){var c=cat(x.cid);return'<div class="quem"><h5><span>'+esc(c.nome)+'</span><span>'+brl(precoQ(x.cid,x.a+x.c))+'</span></h5><div class="lin"><div>Adultos '+stp("a"+i,x.a,0,c.capacidade-x.c)+'</div><div>Crianças '+stp("k"+i,x.c,0,c.capacidade-x.a)+'</div></div></div>'}).join(""));
       b.onclick=function(e){var x=e.target.closest("[data-m],[data-p]");if(!x)return;var k=x.dataset.m||x.dataset.p,mais=!!x.dataset.p;
         if(k[0]==="c"){var cid=k.slice(1);R.sel[cid]=(R.sel[cid]||0)+(mais?1:-1);if(R.sel[cid]<=0)delete R.sel[cid];desenha();return}
         var i=+k.slice(1),campo=k[0]==="a"?"a":"c",dl=mais?1:-1,alvo=campo==="a"?R.adultos:R.criancas;R.dist[i][campo]+=dl;
@@ -1121,32 +1150,31 @@ function desenha(){
         var tot=R.dist.reduce(function(s,y){return s+y[campo]},0);if(tot!==alvo){if(campo==="a")R.adultos=tot;else R.criancas=tot}desenha()};
       var ok=sel>0&&falta<=0&&R.dist.every(function(x){return x.a>=1});
       if(sel&&falta<=0&&!ok)b.insertAdjacentHTML("beforeend",'<div class="aviso">Cada suíte precisa de pelo menos um adulto.</div>');
-      guarda();pe("Revisar o pedido",ok);
-    }).catch(function(){b.innerHTML='<div class="calmo">Não foi possível calcular os valores agora. Continue e a recepção passa tudo pelo WhatsApp.</div>';R.sel={};R.dist=[];pe("Revisar o pedido",true)});return}
-  if(passo===1){
-    b.innerHTML='<label class="campo"><span>Nome completo</span><input id="f-n" autocomplete="name" maxlength="80" value="'+esc(R.nome||"")+'"></label><label class="campo"><span>WhatsApp</span><input id="f-t" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" value="'+esc(R.tel||"")+'" placeholder="(31) 99999-9999"></label><label class="campo"><span>Cidade</span><input id="f-c" autocomplete="address-level2" maxlength="60" value="'+esc(R.cidade||"")+'"></label><label class="campo"><span>Algum pedido especial?</span><textarea id="f-o" rows="2" maxlength="400" placeholder="Aniversário, chegada depois das 19h, berço, acessibilidade">'+esc(R.obs||"")+'</textarea></label><p style="font-size:13.5px;color:var(--muted)">Usamos estes dados só para responder sobre esta reserva. O que você preencher fica salvo para a recepção poder te ajudar, mesmo que você não envie. <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a></p>';
-    var ok=function(){return(R.nome||"").length>=2&&String(R.tel||"").replace(/\D/g,"").length>=10};
-    var chk=function(){R.nome=$("#f-n").value.trim();R.tel=$("#f-t").value.trim();R.cidade=$("#f-c").value.trim();R.obs=$("#f-o").value.trim();$("#r-n").disabled=!ok();sync(3)};
+      guarda();sync(2);pe("Continuar",ok);
+    }).catch(function(){b.innerHTML='<div class="calmo">Não foi possível calcular os valores agora. Continue e a recepção passa tudo pelo WhatsApp.</div>';R.sel={};R.dist=[];pe("Continuar",true)});return}
+  if(passo===3){
+    var t=total(),pct=+cfg("sinal_pct",50)||50;
+    var h='<div class="res-c"><div><b>'+fd(R.checkin,{weekday:"short",day:"numeric",month:"short"})+' → '+fd(R.checkout,{weekday:"short",day:"numeric",month:"short"})+'</b><small>'+noites()+(noites()>1?" noites":" noite")+' · '+R.adultos+(R.adultos>1?" adultos":" adulto")+(R.criancas?" e "+R.criancas+(R.criancas>1?" crianças":" criança"):"")+(R.pet?", com pet":"")+'</small></div>'+
+      '<div><b>'+itensLead().map(function(x){return(x.quartos>1?x.quartos+"× ":"")+esc(x.categoria)}).join(" + ")+'</b>'+(t?'<small>Total '+brl(t)+' · sinal de '+pct+'% ('+brl(Math.round(t*pct/100))+') para confirmar</small>':'<small>valor sob consulta</small>')+'</div><button type="button" class="link" id="r-alt">Alterar</button></div>';
+    h+='<label class="campo"><span>Nome completo</span><input id="f-n" autocomplete="name" maxlength="80" value="'+esc(R.nome||"")+'"></label><label class="campo"><span>WhatsApp</span><input id="f-t" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" value="'+esc(R.tel||"")+'" placeholder="(31) 99999-9999"></label>'+
+      '<details class="mais-d"'+(R.cidade||R.obs?" open":"")+'><summary>Cidade e pedidos especiais (opcional)</summary><label class="campo"><span>Cidade</span><input id="f-c" autocomplete="address-level2" maxlength="60" value="'+esc(R.cidade||"")+'"></label><label class="campo"><span>Algum pedido especial?</span><textarea id="f-o" rows="2" maxlength="400" placeholder="Aniversário, chegada depois das 19h, berço, acessibilidade">'+esc(R.obs||"")+'</textarea></label></details>';
+    var cd=cfg("condicoes","");h+='<details class="cond-r"><summary><b>Condições da reserva</b></summary><span>'+esc(cd||"Pedimos um sinal para garantir a reserva; o saldo é pago no check-in. Consulte a política de cancelamento com a recepção.")+'</span> <span>Check-in a partir das '+esc(cfg("checkin_hora","14h"))+' e check-out até as '+esc(cfg("checkout_hora","12h"))+'.</span>'+(R.criancas?'<span class="eca-n">Menores de 18 anos que não estiverem com pai, mãe ou responsável legal precisam de autorização escrita deles, com firma reconhecida em cartório (ECA, art. 82). Traga o original no check-in.</span>':'')+'</details>';
+    h+='<label class="aceite-r"><input type="checkbox" id="r-ac"'+(R.aceite?" checked":"")+'><span>Li e concordo com as condições da reserva e com a <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a>.</span></label>';
+    b.innerHTML=h;
+    $("#r-pe").innerHTML='<button class="link" id="r-v">Voltar</button><div class="tot"></div><button class="act" id="r-env" style="background:#1FAF5C">Enviar pelo WhatsApp</button>';
+    var okD=function(){return(R.nome||"").length>=2&&String(R.tel||"").replace(/\D/g,"").length>=10};
+    var dica=function(){var x=$("#r-pe .tot");$("#r-env").disabled=!(okD()&&R.aceite);if(x)x.innerHTML=!okD()?'<small class="ac-dica">Preencha nome e WhatsApp</small>':R.aceite?"":'<small class="ac-dica">Marque “Li e concordo” para enviar</small>'};
+    var chk=function(){R.nome=$("#f-n").value.trim();R.tel=$("#f-t").value.trim();R.cidade=$("#f-c").value.trim();R.obs=$("#f-o").value.trim();dica();sync(3)};
     $("#f-t").addEventListener("input",function(){var d=this.value.replace(/\D/g,"").slice(0,11);this.value=d.length>6?"("+d.slice(0,2)+") "+d.slice(2,d.length-4)+"-"+d.slice(-4):d.length>2?"("+d.slice(0,2)+") "+d.slice(2):d});
     ["#f-n","#f-t","#f-c","#f-o"].forEach(function(s){$(s).addEventListener("input",chk)});
-    pe("Escolher as datas",ok());setTimeout(function(){if(!R.nome)$("#f-n").focus()},500);return}
-  if(passo===4){
-    var t=total(),pct=+cfg("sinal_pct",50)||50,li=function(a,v){return'<div class="lin-res"><span>'+a+'</span><b style="font-weight:500;text-align:right">'+v+'</b></div>'};
-    var h=li("Nome",esc(R.nome))+li("WhatsApp",esc(R.tel))+li("Chegada",fd(R.checkin,{weekday:"long",day:"numeric",month:"long"}))+li("Saída",fd(R.checkout,{weekday:"long",day:"numeric",month:"long"}))+li("Hóspedes",R.adultos+(R.adultos>1?" adultos":" adulto")+(R.criancas?" e "+R.criancas+(R.criancas>1?" crianças":" criança"):"")+(R.pet?", com pet":""))+
-      (R.dist||[]).map(function(x){return li(esc(cat(x.cid).nome)+", "+(x.a+x.c)+(x.a+x.c>1?" pessoas":" pessoa"),brl(precoQ(x.cid,x.a+x.c)))}).join("")+(t?'<div class="lin-res t"><span>Total, '+noites()+' noites</span><span>'+brl(t)+'</span></div>':"");
-    if(t)h+='<div class="calmo">Para confirmar, a recepção pede um sinal de '+pct+'% ('+brl(Math.round(t*pct/100))+') e envia os dados para pagamento pelo WhatsApp.</div>';
-    var cd=cfg("condicoes","");h+='<div class="cond-r"><b>Condições da reserva</b><span>'+esc(cd||"Pedimos um sinal para garantir a reserva; o saldo é pago no check-in. Consulte a política de cancelamento com a recepção.")+'</span> <span>Check-in a partir das '+esc(cfg("checkin_hora","14h"))+' e check-out até as '+esc(cfg("checkout_hora","12h"))+'.</span></div>';
-    h+='<div class="eca-n">Menores de 18 anos que não estiverem com pai, mãe ou responsável legal precisam de autorização escrita deles, com firma reconhecida em cartório (ECA, art. 82). Traga o original no check-in.</div>';
-    h+='<label class="aceite-r"><input type="checkbox" id="r-ac"'+(R.aceite?" checked":"")+'><span>Li e concordo com as condições da reserva e com a <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a>.</span></label>';
-    b.innerHTML=h;sync(4);
-    $("#r-pe").innerHTML='<button class="link" id="r-v">Voltar</button><div class="tot"></div><button class="act" id="r-env" style="background:#1FAF5C"'+(R.aceite?"":" disabled")+'>Enviar pelo WhatsApp</button>';
-    var dica=function(){var t=$("#r-pe .tot");if(t)t.innerHTML=R.aceite?"":'<small class="ac-dica">Marque “Li e concordo” para enviar</small>'};dica();
-    $("#r-ac").onchange=function(){R.aceite=this.checked?new Date().toISOString():"";guarda();$("#r-env").disabled=!this.checked;dica()};
-    $("#r-v").onclick=function(){passo=3;desenha()};
+    $("#r-alt").onclick=function(){passo=2;desenha()};
+    $("#r-ac").onchange=function(){R.aceite=this.checked?new Date().toISOString():"";guarda();dica()};dica();
+    if(!R.nome)setTimeout(function(){$("#f-n").focus({preventScroll:true})},450);
+    $("#r-v").onclick=function(){passo=2;desenha()};
     $("#r-env").onclick=function(){
       var msg="Olá, Pousada Maré! Quero fazer uma pré-reserva:\n\n"+R.nome+(R.cidade?" ("+R.cidade+")":"")+"\nChegada: "+fd(R.checkin,{weekday:"short",day:"2-digit",month:"2-digit"})+"\nSaída: "+fd(R.checkout,{weekday:"short",day:"2-digit",month:"2-digit"})+" ("+noites()+" noites)\nHóspedes: "+R.adultos+" adulto(s)"+(R.criancas?" e "+R.criancas+" criança(s)":"")+(R.pet?"\nVou levar pet":"")+"\n"+(R.dist||[]).map(function(x){return"• "+cat(x.cid).nome+": "+x.a+" ad"+(x.c?" + "+x.c+" cr":"")}).join("\n")+(t?"\nValor no site: "+brl(t):"")+(R.obs?"\nObs.: "+R.obs:"")+"\n\nLi e concordo com as condições da reserva e a Política de Privacidade.\nPedido "+R.id.slice(-6).toUpperCase()+". Aguardo a confirmação e os dados para pagamento.";
-      if(!R.aceite)return;sync(4,true);R.enviado=true;guarda();window.open(zap(cfg("whatsapp","5573998456129"),msg),"_blank","noopener");passo=5;desenha()};return}
-  if(passo===5){
+      if(!R.aceite||!okD())return;sync(4,true);R.enviado=true;guarda();window.open(zap(cfg("whatsapp","5573998456129"),msg),"_blank","noopener");passo=4;desenha()};return}
+  if(passo===4){
     b.innerHTML='<div class="pronto"><svg width="120" height="40" viewBox="0 0 120 40" fill="none" stroke="#0A97B4" stroke-width="1.5" stroke-linecap="round"><path d="M2 20 Q17 6 32 20 T62 20 T92 20 T118 20"/></svg><h4>Até breve.</h4><p style="color:var(--muted);max-width:38ch;margin:0 auto">Seu pedido foi para o WhatsApp da recepção, que confirma a disponibilidade e envia os dados para pagamento. Se o WhatsApp não abriu, <a href="'+zap(cfg("whatsapp","5573998456129"),"Olá! Fiz uma pré-reserva pelo site (pedido "+R.id.slice(-6).toUpperCase()+").")+'" target="_blank" rel="noopener">toque aqui</a>.</p></div>';
     $("#r-pe").innerHTML='<div class="tot"></div><button class="act escuro" id="r-fim">Fechar</button>';
     $("#r-fim").onclick=function(){R={id:novoId(),adultos:2,criancas:0,sel:{},dist:[]};guarda();passo=1;fechaReserva()}}
