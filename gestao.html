@@ -640,6 +640,8 @@ body.demo-x-on .demo-bar{display:none!important}
   .drawer .card{padding:14px}
 }
 .map{overflow-x:clip}
+.pv-ct{width:100%;border:0;background:none;font:inherit;text-align:left;cursor:pointer;color:inherit}.pv-ct:hover{background:rgba(10,151,180,.06)}.pv-ab{color:var(--agua);display:grid;place-items:center}
+.pv-sum{margin-top:12px}
 </style>
 </head>
 <body>
@@ -1148,18 +1150,15 @@ function converteLead(l){
 /* =================== BAR, RESTAURANTE E CONSUMO =================== */
 VIEWS.consumo=function(){
   var tipos=[["bar","Bar"],["restaurante","Restaurante"],["produto","Produtos"],["servico","Serviços"]];S._pt=S._pt||"bar";S.cart=S.cart||[];S.posH=S.posH||"";S._pvAb=false;
-  V.innerHTML=topo("Bar & consumo",P()==="dono"?'<button class="btn sec" id="ed-prod">Editar cardápio</button>':"")+
+  V.innerHTML=topo("Bar & consumo",(podeDR()?'<button class="btn agua" id="pv-contas">'+ic("reservas",16)+'Contas e pagamentos</button>':"")+(P()==="dono"?'<button class="btn sec" id="ed-prod">Editar cardápio</button>':""))+
   '<section class="pv-p"><h4><span>1</span>Para quem é o pedido?</h4><div class="pv-q" id="pos-h"><div class="empty">Carregando quartos…</div></div><div id="pv-quem"></div><div id="pv-conta"></div></section>'+
   '<section class="pv-p"><h4><span>2</span>Toque no que foi pedido</h4><div class="pv-bar"><div class="seg" id="pos-t">'+tipos.map(function(t){return'<button data-t="'+t[0]+'">'+t[1]+'</button>'}).join("")+'</div><input id="pos-q" type="search" placeholder="Buscar item"></div><div class="prods" id="pos-p"></div><button class="btn ghost sm" id="pos-av" style="margin-top:10px">+ Item fora do cardápio</button></section>'+
   '<div class="pv-res" id="pv-res"><div class="pv-l" id="pos-c"></div><div class="pv-f"><button type="button" class="pv-i" id="pv-ver"><b id="pv-n">Nenhum item</b><span id="pv-t">Escolha o quarto e os itens</span></button><button class="btn sec" id="pos-x">Limpar</button><button class="btn agua" id="pos-ok">Lançar</button></div></div>'+
   (podeDR()?'<details class="card pv-hj"><summary>Lançamentos do dia</summary><div style="margin:12px 0"><input type="date" id="cs-d" value="'+hojeStr()+'" style="max-width:190px"></div><div id="cs-l"></div></details>':"");
   var prods=S.boot.produtos.filter(function(p){return p.ativo}),hosp=[];
   var nomeH=function(){var h=hosp.filter(function(x){return x.k===S.posH})[0];return h?h.q:""};
-  var dct=function(){var c=$("#pv-conta");if(!c)return;c.innerHTML=S.posH&&podeDR()&&S.posH.split(":")[0]?'<button type="button" class="btn sec pv-vc" id="pv-vc">'+ic("reservas",16)+'Ver consumo da conta de '+esc(nomeH())+'</button>':"";if($("#pv-vc"))$("#pv-vc").onclick=verConta};
-  var verConta=function(){var id=+S.posH.split(":")[0],nm=nomeH();modal('<h3>Consumo · '+esc(nm)+'</h3><div class="empty">Carregando…</div>');
-    G("reserva_get",{id:id}).then(function(d){var ls=d.lancamentos||[],t=0;ls.forEach(function(l){if(!l.cancelado)t+=+l.total});
-      $("#modal").innerHTML='<h3>Consumo · '+esc(nm)+'</h3><p>'+esc((d.reserva&&d.reserva.hospede&&d.reserva.hospede.nome)||"")+'</p><div class="pv-cl">'+(ls.length?ls.map(function(l){return'<div class="pv-lc'+(l.cancelado?" cx":"")+'"><span class="tiny muted">'+fdt(l.criado_em)+'</span><div class="m"><b>'+(+l.qtd)+'× '+esc(l.descricao)+'</b><small>'+esc([l.quarto,l.pessoa?"pedido por "+l.pessoa:""].filter(Boolean).join(" · "))+'</small></div><b>'+brl(l.total)+'</b></div>'}).join("")+'<div class="pv-lc tot"><span></span><div class="m"><b>Total do consumo</b></div><b>'+brl(t)+'</b></div>':'<div class="empty">Nada lançado nesta conta ainda.</div>')+'</div><div class="acts"><button class="btn sec" id="m-n">Fechar</button><button class="btn sec" id="pv-abr">Abrir reserva</button></div>';
-      $("#m-n").onclick=fechaModal;$("#pv-abr").onclick=function(){fechaModal();abreReserva(id)}}).catch(function(e){$("#modal").innerHTML='<h3>Consumo</h3><p>'+esc(e.message)+'</p><div class="acts"><button class="btn sec" id="m-n">Fechar</button></div>';$("#m-n").onclick=fechaModal})};
+  var dct=function(){var c=$("#pv-conta");if(!c)return;c.innerHTML=S.posH&&podeDR()&&S.posH.split(":")[0]?'<button type="button" class="btn sec pv-vc" id="pv-vc">'+ic("reservas",16)+'Ver consumo e pagar · '+esc(nomeH())+'</button>':"";if($("#pv-vc"))$("#pv-vc").onclick=verConta};
+  var verConta=function(){contaHospede(+S.posH.split(":")[0],nomeH())};
   var dq=function(){var c=$("#pv-quem");if(!c)return;var h=hosp.filter(function(x){return x.k===S.posH})[0];if(!h||!h.n){c.innerHTML="";return}var ns=[h.n].concat(h.a.filter(function(x){return x!==h.n}));if(S.posP&&ns.indexOf(S.posP)<0)S.posP="";
     c.innerHTML='<div class="pv-qm"><b>Quem pediu?</b>'+ns.map(function(n){return'<button type="button" class="pv-pp'+(S.posP===n?" on":"")+'" data-pp="'+esc(n)+'">'+esc(n.split(" ")[0])+'</button>'}).join("")+'<span class="tiny muted">opcional</span></div>';
     c.onclick=function(e){var b=e.target.closest("[data-pp]");if(!b)return;S.posP=S.posP===b.dataset.pp?"":b.dataset.pp;dq();dc()}};
@@ -1193,8 +1192,37 @@ VIEWS.consumo=function(){
     $$("[data-lc]",$("#cs-l")).forEach(function(b){b.onclick=function(){confirma("Cancelar este item?","Ele sai da conta do hóspede.","Cancelar item","danger").then(function(s){if(s)tenta(G("lancamento_cancelar",{id:+b.dataset.lc}),"Item cancelado").then(carregaCs).catch(function(){})})}})})};
   if(podeDR()){$("#cs-d").onchange=carregaCs;carregaCs()}
   if($("#ed-prod"))$("#ed-prod").onclick=editaProdutos;
+  if($("#pv-contas"))$("#pv-contas").onclick=function(){listaContas(hosp)};
   dh();dc();
 };
+function listaContas(hosp){
+  var rs={};hosp.forEach(function(h){var id=h.k.split(":")[0];if(!id)return;(rs[id]=rs[id]||{id:+id,q:[],n:h.n}).q.push(h.q)});
+  var l=Object.keys(rs).map(function(k){return rs[k]});
+  modal('<h3>Contas dos hóspedes</h3><p class="muted tiny" style="margin:0 0 10px">Toque para ver o consumo e registrar um pagamento.</p><div class="pv-cl">'+(l.length?l.map(function(r){return'<button type="button" class="pv-lc pv-ct" data-ct="'+r.id+'"><span></span><div class="m"><b>'+esc(r.q.join(", "))+'</b><small>'+esc(r.n)+'</small></div><span class="pv-ab">'+ic("r",16)+'</span></button>'}).join(""):'<div class="empty">Nenhum hóspede na casa agora.</div>')+'</div><div class="acts"><button class="btn sec" id="m-n">Fechar</button></div>');
+  $("#m-n").onclick=fechaModal;$$("[data-ct]",$("#modal")).forEach(function(b){b.onclick=function(){var r=rs[b.dataset.ct];contaHospede(r.id,r.q.join(", "))}});
+}
+function contaHospede(id,nm){
+  modal('<h3>Conta · '+esc(nm)+'</h3><div class="empty">Carregando…</div>');
+  G("reserva_get",{id:id}).then(function(d){
+    var r=d.reserva,ls=d.lancamentos||[],cons=0;ls.forEach(function(l){if(!l.cancelado)cons+=+l.total});
+    var tot=r.total_hospedagem+r.consumo,saldo=Math.round((tot-r.pago)*100)/100;
+    var pgs=(d.pagamentos||[]).filter(function(p){return p.tipo==="extra"});
+    $("#modal").innerHTML='<h3>Conta · '+esc(nm)+'</h3><p class="muted" style="margin:0 0 10px">'+esc((r.hospede&&r.hospede.nome)||"")+' · #'+esc(r.codigo)+'</p>'+
+      '<div class="pv-cl">'+(ls.length?ls.map(function(l){return'<div class="pv-lc'+(l.cancelado?" cx":"")+'"><span class="tiny muted">'+fdt(l.criado_em)+'</span><div class="m"><b>'+(+l.qtd)+'× '+esc(l.descricao)+'</b><small>'+esc([l.quarto,l.pessoa?"pedido por "+l.pessoa:""].filter(Boolean).join(" · "))+'</small></div><b>'+brl(l.total)+'</b></div>'}).join(""):'<div class="empty">Nada lançado nesta conta ainda.</div>')+'</div>'+
+      '<div class="sum pv-sum"><span>Consumo</span><span>'+brl(cons)+'</span><span>Hospedagem</span><span>'+brl(r.total_hospedagem)+'</span><span>Já pago</span><span style="color:var(--ok);font-weight:700">'+brl(r.pago)+'</span><span class="t">'+(saldo<-0.009?"A devolver":"Falta pagar")+'</span><span class="t" style="color:'+(saldo>0.009?"var(--err)":"var(--ok)")+'">'+brl(Math.abs(saldo))+'</span></div>'+
+      (pgs.length?'<p class="tiny muted" style="margin:8px 0 0">Pagamentos de consumo: '+pgs.map(function(p){return fd(p.data)+' '+brl(p.valor)+' ('+esc(p.forma)+')'}).join(" · ")+'</p>':'')+
+      '<div class="acts"><button class="btn sec" id="m-n">Fechar</button><button class="btn sec" id="pv-abr">Abrir reserva</button>'+(saldo>0.009?'<button class="btn agua" id="pv-pg">Registrar pagamento</button>':'')+'</div>';
+    $("#m-n").onclick=fechaModal;$("#pv-abr").onclick=function(){fechaModal();abreReserva(id)};
+    if($("#pv-pg"))$("#pv-pg").onclick=function(){
+      var sug=Math.min(saldo,Math.round(cons*100)/100)||saldo;
+      modal('<h3>Registrar pagamento · '+esc(nm)+'</h3><p class="muted tiny" style="margin:0 0 10px">Consumo '+brl(cons)+' · falta pagar '+brl(saldo)+' no total da conta.</p><form id="pg-f" class="grid" style="gap:10px"><div class="seg" id="pg-o"><button type="button" class="on" data-v="'+sug+'">Só o consumo</button><button type="button" data-v="'+saldo+'">Conta toda</button></div><div class="row"><label class="f">Valor (R$)<input name="valor" type="number" step="0.01" min="0.01" required value="'+sug+'"></label><label class="f">Forma<select name="forma"><option value="pix">PIX</option><option value="cartao">Cartão</option><option value="dinheiro">Dinheiro</option><option value="transferencia">Transferência</option><option value="outro">Outro</option></select></label></div><label class="f">Observação<input name="obs" maxlength="300" placeholder="opcional"></label><div class="acts"><button type="button" class="btn sec" id="pg-x">Voltar</button><button class="btn agua">Registrar</button></div></form>');
+      $$("#pg-o button").forEach(function(b){b.onclick=function(){$$("#pg-o button").forEach(function(x){x.classList.toggle("on",x===b)});$("#pg-f").valor.value=b.dataset.v}});
+      $("#pg-x").onclick=function(){contaHospede(id,nm)};
+      $("#pg-f").onsubmit=function(e){e.preventDefault();var f=this,v=+f.valor.value;if(!(v>0))return;var tipo=v>=saldo-0.009?"saldo":"extra";
+        tenta(G("pagamento_add",{reserva_id:id,tipo:tipo,valor:v,forma:f.forma.value,data:hojeStr(),obs:f.obs.value||"Pagamento no bar"}),"Pagamento registrado ✓").then(function(){contaHospede(id,nm)}).catch(function(){})};
+    };
+  }).catch(function(e){$("#modal").innerHTML='<h3>Conta</h3><p>'+esc(e.message)+'</p><div class="acts"><button class="btn sec" id="m-n">Fechar</button></div>';$("#m-n").onclick=fechaModal});
+}
 function editaProdutos(){
   var ps=S.boot.produtos.slice();var tipos={bar:"Bar",restaurante:"Restaurante",produto:"Produto",servico:"Serviço"};
   var linhas=function(){return'<p class="muted tiny" style="margin:0">Itens marcados com “No cardápio do site” aparecem no cardápio digital (bar e restaurante).</p>'+ps.map(function(p,i){return'<div class="card" style="padding:12px" data-pi="'+i+'"><div class="row"><label class="f" style="flex:2 1 180px">Nome<input data-k="nome" value="'+esc(p.nome)+'"></label><label class="f">Preço R$<input type="number" step="0.01" min="0" data-k="preco" value="'+p.preco+'"></label></div><div class="row" style="margin-top:8px"><label class="f">Tipo<select data-k="tipo">'+Object.keys(tipos).map(function(t){return'<option value="'+t+'" '+(p.tipo===t?"selected":"")+'>'+tipos[t]+'</option>'}).join("")+'</select></label><label class="f">Seção do cardápio<input data-k="grupo" value="'+esc(p.grupo||"")+'"></label></div><label class="f" style="margin-top:8px">Descrição<input data-k="descricao" value="'+esc(p.descricao||"")+'"></label><div style="display:flex;gap:16px;margin-top:8px;align-items:center"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-k="no_cardapio" '+(p.no_cardapio?"checked":"")+'>No cardápio do site</label><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-k="ativo" '+(p.ativo!==false?"checked":"")+'>Ativo</label><span style="flex:1"></span><button class="btn sm" data-sv="'+i+'">Salvar</button></div></div>'}).join("")};
