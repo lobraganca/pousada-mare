@@ -624,6 +624,55 @@ body.demo-x-on .demo-bar{display:none!important}
 .rb-qk .dt{width:10px;height:10px;border-radius:50%;background:var(--txt3)}
 .rb-qk .dt.h{background:#0B3B45;box-shadow:0 0 0 2px #fff}.rb-qk .dt.p{background:#E3A33B}.rb-qk .dt.c{background:#0A97B4}.rb-qk .dt.x{background:#D9534A}
 @media (max-width:900px){.rb-qk{display:grid;grid-template-columns:1fr 1fr;gap:6px}.rb-qk button{justify-content:center;padding:10px 8px;font-size:13px}.rb-qk button:first-child{grid-column:1/-1}}
+
+/* ---- mapa: modo "Por dia" ---- */
+.md-tg{display:inline-flex}.md-tg button{display:inline-flex;align-items:center;gap:6px}
+.md-top{display:flex;align-items:stretch;gap:8px;margin:0 0 10px}
+.md-a{flex:0 0 52px;border:1px solid var(--linha,#d9e3e3);background:rgba(255,255,255,.75);border-radius:16px;display:grid;place-items:center;color:var(--mar);cursor:pointer}
+.md-a:active{transform:scale(.96)}
+.md-dt{flex:1;position:relative;border:1px solid var(--linha,#d9e3e3);background:rgba(255,255,255,.75);border-radius:16px;padding:10px 12px;text-align:center;cursor:pointer;color:var(--mar);font:inherit;min-width:0}
+.md-dt b{display:block;font-family:Fraunces,serif;font-size:19px;font-weight:600;line-height:1.2}
+.md-dt small{display:block;font-size:12.5px;opacity:.7;margin-top:2px}
+.md-dt.hj small{color:var(--agua);opacity:1;font-weight:700}
+.md-dt input{position:absolute;inset:0;opacity:0;pointer-events:none;width:100%}
+.md-strip{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 8px;margin:0 0 6px;scroll-snap-type:x proximity}
+.md-strip::-webkit-scrollbar{display:none}
+.md-c{flex:0 0 50px;scroll-snap-align:center;border:1px solid var(--linha,#d9e3e3);background:rgba(255,255,255,.6);border-radius:14px;padding:7px 0 8px;display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--mar);cursor:pointer;font:inherit}
+.md-c small{font-size:11px;text-transform:capitalize;opacity:.7}.md-c b{font-size:17px}
+.md-c i{display:block;width:30px;height:4px;border-radius:9px;background:rgba(11,59,69,.12);margin-top:4px;overflow:hidden}.md-c i u{display:block;height:100%;background:var(--agua)}
+.md-c.we small{color:#B5762A;opacity:1}
+.md-c.hj{border-color:var(--agua)}
+.md-c.on{background:var(--mar);color:#fff;border-color:var(--mar)}.md-c.on small{color:#fff;opacity:.8}.md-c.on i{background:rgba(255,255,255,.25)}.md-c.on i u{background:#7FD8E8}
+.md-f{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+.md-f button{border:1px solid var(--linha,#d9e3e3);background:rgba(255,255,255,.6);border-radius:999px;padding:7px 12px;font:inherit;font-size:13.5px;color:var(--mar);cursor:pointer}
+.md-f button b{font-weight:700;margin-left:2px}
+.md-f button.on{background:var(--agua);border-color:var(--agua);color:#fff}
+.md-list{display:grid;gap:8px}
+@media (min-width:901px){.md-list{grid-template-columns:repeat(auto-fill,minmax(380px,1fr))}.md-cat{grid-column:1/-1}}
+.md-cat{font-family:Fraunces,serif;font-size:14px;color:var(--mar);opacity:.75;margin:8px 2px 0}
+.md-q{position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:4px 12px;text-align:left;width:100%;border:1px solid var(--linha,#d9e3e3);background:rgba(255,255,255,.82);border-radius:18px;padding:12px 14px 12px 18px;font:inherit;color:var(--tinta,#1d3438);cursor:pointer;overflow:hidden;min-height:68px}
+.md-q:before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--k,#cfd8d8)}
+.md-q:active{transform:scale(.99)}
+.md-n{display:flex;flex-direction:column;width:76px}.md-n b{font-size:15px;color:var(--mar)}.md-n small{font-size:11.5px;opacity:.6}
+.md-i{display:flex;flex-direction:column;min-width:0}
+.md-l1{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.md-l2{font-size:12.5px;opacity:.75;line-height:1.35}
+.md-sd{color:#B5762A;opacity:1}
+.md-st{font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;background:var(--kb,#eef2f2);color:var(--kt,#4b6266);white-space:nowrap}
+.md-sai{grid-column:1/-1;font-size:12px;color:#8a5a1c;background:#FBF1E1;border-radius:10px;padding:4px 8px;margin-top:4px}
+.md-q.k-livre{--k:#cfe3df;--kb:#E7F4F0;--kt:#2F7A62;background:rgba(255,255,255,.55)}
+.md-q.k-livre .md-l1{color:#2F7A62}
+.md-q.k-sai{--k:#E3B779;--kb:#FBF1E1;--kt:#8a5a1c;background:rgba(255,255,255,.55)}
+.md-q.k-hosp{--k:#0E3941;--kb:#0E3941;--kt:#fff}
+.md-q.k-conf{--k:#12586A;--kb:#DCEFF3;--kt:#12586A}
+.md-q.k-chega{--k:var(--agua);--kb:var(--agua);--kt:#fff}
+.md-q.k-pre{--k:#C68A2E;--kb:#FBF1E1;--kt:#8a5a1c}
+.md-q.k-bloq{--k:#8E9A9D;--kb:#E9EDEE;--kt:#56656a;background:rgba(240,243,243,.8)}
+.md-dica{margin:14px 2px 0;text-align:center}
+@media (max-width:900px){main .md-tg{font-size:13px}}
+@media (max-width:420px){.md-q{grid-template-columns:auto 1fr;}.md-st{grid-column:2;justify-self:start;margin-top:2px}.md-n{grid-row:span 2;align-self:start}}
+@media (pointer:coarse){.bar{touch-action:pan-x pan-y}.cells{touch-action:pan-x pan-y}}
+@media (max-width:900px){main:has(#md){padding-top:10px}main:has(#md) .top,main:has(#mw) .top{margin-bottom:10px;flex-wrap:nowrap;align-items:center}main:has(#md) .top h2,main:has(#mw) .top h2{font-size:20px;width:auto;flex:1 1 0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}main:has(#md) .top,main:has(#mw) .top{gap:8px}main:has(#md) .top h2::after,main:has(#mw) .top h2::after{display:none}main:has(#md) .top [data-nova],main:has(#mw) .top [data-nova]{flex:0 0 40px;width:40px;height:40px;padding:0;font-size:0;gap:0;border-radius:50%}main:has(#md) .top [data-nova] svg,main:has(#mw) .top [data-nova] svg{width:20px;height:20px}main:has(#mw) #bt-bloq{display:none}.top .md-tg{flex:0 0 auto}.top .md-tg button{padding:7px 11px}}
 </style>
 </head>
 <body>
@@ -841,8 +890,84 @@ function chartBarras(dados,altura,opts){
 document.addEventListener("mousemove",function(e){var t=e.target.closest&&e.target.closest("[data-tip]"),tip=$("#tip");if(!t){tip.style.opacity=0;return}tip.textContent=t.dataset.tip;tip.style.opacity=1;tip.style.left=Math.min(e.clientX+14,innerWidth-tip.offsetWidth-8)+"px";tip.style.top=(e.clientY-38)+"px"});
 
 /* =================== MAPA DE QUARTOS =================== */
+window.__mareLand=function(d){if(S.tab!=="mapa")return false;if(d&&S.mapModo==="dia"){S.mapModo="grade";S._mmAuto=true;VIEWS.mapa();return true}if(!d&&S._mmAuto){S.mapModo="dia";S._mmAuto=false;VIEWS.mapa();return true}return false};
+function mapaToggle(){return '<div class="seg md-tg" role="tablist" aria-label="Como ver o mapa"><button data-mm="dia" class="'+(S.mapModo==="dia"?"on":"")+'">'+ic("hoje",15)+'Por dia</button><button data-mm="grade" class="'+(S.mapModo==="grade"?"on":"")+'">'+ic("mapa",15)+'Quadro</button></div>'}
+function ligaToggle(){$$("[data-mm]").forEach(function(b){b.onclick=function(){if(S.mapModo===b.dataset.mm)return;S.mapModo=b.dataset.mm;S._mmAuto=false;try{localStorage.mareMapModo=S.mapModo}catch(e){}VIEWS.mapa()}})}
+VIEWS.mapaDia=function(){
+  if(!S.mapDia)S.mapDia=hojeStr();
+  V.innerHTML=topo(innerWidth<600?"Mapa":"Mapa de quartos",mapaToggle()+'<button class="btn agua md-nv" data-nova="1">'+ic("plus",16)+'Nova reserva</button>')+
+  '<div class="md-top"><button class="md-a" id="md-p" aria-label="Dia anterior">'+ic("l",22)+'</button><button class="md-dt" id="md-dt" type="button"><b id="md-t1"></b><small id="md-t2"></small><input type="date" id="md-d" aria-label="Escolher data"></button><button class="md-a" id="md-n" aria-label="Próximo dia">'+ic("r",22)+'</button></div>'+
+  '<div class="md-strip" id="md-strip"></div>'+
+  '<div class="md-f" id="md-f"></div>'+
+  '<div class="md-list" id="md"><div class="empty">Carregando…</div></div>'+
+  '<p class="muted tiny md-dica">Toque num quarto para ver a reserva. Toque num quarto livre para reservar ou bloquear. Arraste para o lado para mudar o dia.</p>';
+  ligaToggle();
+  $("#md-p").onclick=function(){vaiDia(add(S.mapDia,-1))};
+  $("#md-n").onclick=function(){vaiDia(add(S.mapDia,1))};
+  $("#md-d").onchange=function(){if(this.value)vaiDia(this.value)};
+  $("#md-dt").onclick=function(e){var i=$("#md-d");if(e.target===i)return;try{i.showPicker()}catch(x){i.focus();i.click()}};
+  var md=$("#md"),x0=0,y0=0;
+  md.addEventListener("touchstart",function(e){var t=e.touches[0];x0=t.clientX;y0=t.clientY},{passive:true});
+  md.addEventListener("touchend",function(e){var t=e.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;if(Math.abs(dx)>70&&Math.abs(dy)<45){S._swipe=Date.now();vaiDia(add(S.mapDia,dx<0?1:-1))}},{passive:true});
+  carregaDia(true);
+};
+function vaiDia(d){S.mapDia=d;if(S.mdIni&&d>=add(S.mdIni,1)&&d<=add(S.mdFim,-1))desenhaDia();else carregaDia(true)}
+function carregaDia(forca){
+  var d=S.mapDia,ini=add(d,-4),fim=add(d,12);
+  if(!forca&&S.mdItens){desenhaDia();return}
+  G("mapa",{ini:ini,fim:fim}).then(function(r){S.mdItens=r.itens;S.mdIni=ini;S.mdFim=fim;desenhaDia()}).catch(function(e){var m=$("#md");if(m)m.innerHTML='<div class="empty">'+esc(e.message)+'</div>'});
+}
+function estadoQuarto(q,d){
+  var its=S.mdItens.filter(function(o){return o.quarto_id===q.id&&o.status!=="cancelada"&&o.status!=="no_show"});
+  var occ=its.filter(function(o){return o.checkin<=d&&o.checkout>d})[0]||null;
+  var sai=its.filter(function(o){return o.tipo==="reserva"&&o.checkout===d})[0]||null;
+  var k;
+  if(!occ)k=sai?"sai":"livre";
+  else if(occ.tipo==="bloqueio")k="bloq";
+  else if(occ.status==="pre")k="pre";
+  else if(occ.checkin===d)k="chega";
+  else k=occ.status==="hospedada"?"hosp":"conf";
+  return {k:k,o:occ,sai:sai};
+}
+var MDK={livre:"Livre",sai:"Sai hoje",bloq:"Bloqueado",pre:"Pré-reserva",chega:"Chega hoje",hosp:"Hospedado",conf:"Confirmada"};
+function desenhaDia(){
+  var md=$("#md");if(!md)return;
+  var d=S.mapDia,td=hojeStr(),qs=S.boot.quartos.filter(function(q){return q.ativo});
+  var t1=fd(d,{weekday:"long",day:"numeric",month:"long"});$("#md-t1").textContent=t1.charAt(0).toUpperCase()+t1.slice(1);
+  var df=dias(td,d);$("#md-t2").textContent=df===0?"Hoje":df===1?"Amanhã":df===-1?"Ontem":df>0?"daqui a "+df+" dias":"há "+(-df)+" dias";
+  $("#md-dt").classList.toggle("hj",df===0);$("#md-d").value=d;
+  // faixa de dias
+  var st='';for(var i=-3;i<=9;i++){var x=add(d,i);if(x<add(S.mdIni,1)||x>add(S.mdFim,-1))continue;
+    var oc=qs.filter(function(q){var e=estadoQuarto(q,x).k;return e!=="livre"&&e!=="sai"&&e!=="bloq"}).length,dw=new Date(x+"T12:00:00Z").getUTCDay();
+    st+='<button class="md-c'+(x===d?" on":"")+(x===td?" hj":"")+(dw===0||dw===6?" we":"")+'" data-dd="'+x+'"><small>'+fdw(x).replace(".","").slice(0,3)+'</small><b>'+x.slice(8)+'</b><i title="'+oc+' de '+qs.length+' ocupados"><u style="width:'+Math.round(oc/qs.length*100)+'%"></u></i></button>'}
+  $("#md-strip").innerHTML=st;$$("#md-strip [data-dd]").forEach(function(b){b.onclick=function(){vaiDia(b.dataset.dd)}});
+  var on=$("#md-strip .on");if(on)on.scrollIntoView({inline:"center",block:"nearest",behavior:"instant"in document.documentElement?"instant":"auto"});
+  // contagem + filtro
+  var est=qs.map(function(q){return{q:q,e:estadoQuarto(q,d)}});
+  var cnt=function(f){return est.filter(function(x){return f(x.e)}).length};
+  var F=[["todos","Todos",qs.length],["ocup","Ocupados",cnt(function(e){return["hosp","conf","chega","pre"].indexOf(e.k)>=0})],["livre","Livres",cnt(function(e){return e.k==="livre"||e.k==="sai"})],["chega","Chegam",cnt(function(e){return e.o&&e.o.tipo==="reserva"&&e.o.checkin===d})],["sai","Saem",cnt(function(e){return !!e.sai})]];
+  var fl=S.mdFiltro||"todos";
+  $("#md-f").innerHTML=F.map(function(f){return'<button class="'+(f[0]===fl?"on":"")+'" data-mf="'+f[0]+'">'+f[1]+' <b>'+f[2]+'</b></button>'}).join("");
+  $$("#md-f [data-mf]").forEach(function(b){b.onclick=function(){S.mdFiltro=b.dataset.mf;desenhaDia()}});
+  var passa=function(e){if(fl==="todos")return true;if(fl==="ocup")return["hosp","conf","chega","pre"].indexOf(e.k)>=0;if(fl==="livre")return e.k==="livre"||e.k==="sai";if(fl==="chega")return e.o&&e.o.tipo==="reserva"&&e.o.checkin===d;if(fl==="sai")return!!e.sai};
+  var h='',catAnt=null,n=0;
+  est.forEach(function(x){var q=x.q,e=x.e,o=e.o;if(!passa(e))return;n++;
+    if(q.categoria_id!==catAnt){catAnt=q.categoria_id;h+='<div class="md-cat">'+esc(catDe(q.categoria_id).nome||"")+'</div>'}
+    var l1,l2='',saldo=o&&o.tipo==="reserva"?o.total_hospedagem+o.consumo-o.pago:0;
+    if(!o){l1=e.sai?'Livre a partir de hoje':'Livre';l2=e.sai?'Sai hoje: '+esc(e.sai.hospede)+' (check-out)':'Toque para reservar ou bloquear'}
+    else if(o.tipo==="bloqueio"){l1=esc(o.motivo||"Manutenção");l2='até '+fd(o.checkout)}
+    else{l1=(o.grupo_nome?esc(o.grupo_nome)+' · ':'')+esc(o.hospede);
+      l2=(o.adultos+o.criancas)+(o.adultos+o.criancas>1?' pessoas':' pessoa')+' · '+(o.checkin===d?'chega hoje':'desde '+fd(o.checkin))+' · sai '+fd(o.checkout,{weekday:"short",day:"2-digit",month:"2-digit"})+(saldo>0.009&&o.status!=="pre"?' · <b class="md-sd">falta '+brl(saldo)+'</b>':'')}
+    h+='<button type="button" class="md-q k-'+e.k+'" data-mq="'+q.id+'"><span class="md-n"><b>'+esc(q.nome)+'</b><small>até '+q.capacidade+'</small></span><span class="md-i"><span class="md-l1">'+l1+'</span><span class="md-l2">'+l2+'</span></span><span class="md-st">'+MDK[e.k]+'</span>'+
+      (e.sai&&o?'<span class="md-sai">Sai hoje: '+esc(e.sai.hospede)+'</span>':'')+'</button>'});
+  md.innerHTML=h||'<div class="empty">Nenhum quarto neste filtro.</div>';
+  $$("#md [data-mq]").forEach(function(b){b.onclick=function(){if(S._swipe&&Date.now()-S._swipe<400)return;var q=qs.filter(function(x){return x.id===+b.dataset.mq})[0],e=estadoQuarto(q,d);
+    if(e.o&&e.o.tipo==="reserva")abreReserva(e.o.reserva_id);else if(e.o)opcoesBloqueio(e.o);else escolhaCelula(q.id,d,add(d,1),e.sai)}});
+}
 VIEWS.mapa=function(){
-  V.innerHTML=topo("Mapa de quartos",'<button class="btn sec" id="bt-bloq">'+ic("lock",16)+'Bloquear quarto</button><button class="btn agua" data-nova="1">'+ic("plus",16)+'Nova reserva</button>')+
+  if(!S.mapModo){var lm;try{lm=localStorage.mareMapModo}catch(e){}S.mapModo=lm||(innerWidth<900&&!matchMedia("(orientation:landscape) and (max-height:520px)").matches?"dia":"grade")}
+  if(S.mapModo==="dia")return VIEWS.mapaDia();
+  V.innerHTML=topo(innerWidth<600?"Mapa":"Mapa de quartos",mapaToggle()+'<button class="btn sec" id="bt-bloq">'+ic("lock",16)+'Bloquear quarto</button><button class="btn agua" data-nova="1">'+ic("plus",16)+'Nova reserva</button>')+
   '<div class="map-ctrl"><button class="btn sec sm" id="mp-p" aria-label="Anterior">'+ic("l",16)+'</button><button class="btn sec sm" id="mp-h">Hoje</button><button class="btn sec sm" id="mp-n" aria-label="Próximo">'+ic("r",16)+'</button><input type="date" id="mp-d" value="'+S.mapIni+'" style="max-width:160px"><div class="seg" id="mp-s"><button data-d="7">1 sem</button><button data-d="14">2 sem</button><button data-d="21">3 sem</button><button data-d="31">1 mês</button><button data-d="62">2 meses</button></div><span class="muted tiny mp-dica" style="flex:1;min-width:200px">Arraste uma reserva para trocar de quarto ou de data · puxe a ponta direita para mudar a saída · toque e arraste em dias vazios para criar.</span></div>'+
   '<div class="map-wrap" id="mw"><div class="empty">Carregando mapa…</div></div>'+
   '<div class="legend"><span><i style="background:repeating-linear-gradient(135deg,#C68A2E 0 4px,#D19A42 4px 8px)"></i>Pré-reserva (aguarda pagamento)</span><span><i style="background:#12586A"></i>Confirmada</span><span><i style="background:#0E3941"></i>Hospedada</span><span><i style="background:#D8CDB8"></i>Finalizada</span><span><i style="background:repeating-linear-gradient(135deg,#8E9A9D 0 4px,#A7B2B4 4px 8px)"></i>Bloqueado</span><span style="margin-left:8px">Origem (ponto colorido):</span>'+Object.keys(ORIG).map(function(o){return'<span><i style="background:var(--o-'+o+');width:8px;height:8px;border-radius:50%"></i>'+ORIG[o]+'</span>'}).join("")+'</div>';
@@ -851,10 +976,11 @@ VIEWS.mapa=function(){
   $("#mp-n").onclick=function(){S.mapIni=add(S.mapIni,Math.max(7,Math.floor(S.mapDias/2)));VIEWS.mapa()};
   $("#mp-h").onclick=function(){S.mapIni=add(hojeStr(),-2);VIEWS.mapa()};
   $("#mp-d").onchange=function(){if(this.value){S.mapIni=this.value;VIEWS.mapa()}};
-  $("#bt-bloq").onclick=function(){formBloqueio({})};
+  $("#bt-bloq").onclick=function(){formBloqueio({})};ligaToggle();
   carregaMapa();
 };
 function carregaMapa(){
+  if($("#md")){carregaDia(true);return}
   var ini=S.mapIni,n=S.mapDias,fim=add(ini,n-1);
   G("mapa",{ini:ini,fim:fim}).then(function(r){S.mapItens=r.itens;desenhaMapa(ini,n)}).catch(function(e){$("#mw").innerHTML='<div class="empty">'+esc(e.message)+'</div>'});
 }
@@ -892,6 +1018,7 @@ function ligaMapa(ini,n,cw){
   $$(".bar",map).forEach(function(bar){
     bar.addEventListener("pointerdown",function(e){
       if(e.button!==0)return;var o=S.mapItens.filter(function(x){return x.id===+bar.dataset.o})[0];if(!o)return;
+      if(e.pointerType==="touch"){var tx=e.clientX,ty=e.clientY,fim=function(ev){bar.removeEventListener("pointerup",fim);bar.removeEventListener("pointercancel",fim);if(ev.type==="pointerup"&&Math.abs(ev.clientX-tx)<10&&Math.abs(ev.clientY-ty)<10){if(o.tipo==="reserva")abreReserva(o.reserva_id);else opcoesBloqueio(o)}};bar.addEventListener("pointerup",fim);bar.addEventListener("pointercancel",fim);return}
       var resize=e.target.classList.contains("rs"),x0=e.clientX,y0=e.clientY,moved=false,left0=parseFloat(bar.style.left),w0=parseFloat(bar.style.width),row0=bar.closest(".mrow"),alvo=row0,dd=0,dn=0;
       bar.setPointerCapture(e.pointerId);
       var mv=function(ev){var dx=ev.clientX-x0,dy=ev.clientY-y0;if(!moved&&Math.abs(dx)<6&&Math.abs(dy)<6)return;moved=true;bar.classList.add("drag");$("#tip").style.opacity=0;
@@ -919,7 +1046,7 @@ function ligaMapa(ini,n,cw){
   $$(".mrow[data-q] .cells",map).forEach(function(cells){
     cells.addEventListener("pointerdown",function(e){
       var c=e.target.closest(".cell");if(!c||e.button!==0)return;
-      if(e.pointerType==="touch"){/* no celular: toque simples cria reserva de 1 noite */c.dataset.touch=1}
+      if(e.pointerType==="touch"){var tx=e.clientX,ty=e.clientY,qq=+cells.parentNode.dataset.q,fim=function(ev){cells.removeEventListener("pointerup",fim);cells.removeEventListener("pointercancel",fim);if(ev.type==="pointerup"&&Math.abs(ev.clientX-tx)<10&&Math.abs(ev.clientY-ty)<10)escolhaCelula(qq,c.dataset.d,add(c.dataset.d,1))};cells.addEventListener("pointerup",fim);cells.addEventListener("pointercancel",fim);return}
       var qid=+cells.parentNode.dataset.q,d0=c.dataset.d,d1=d0,lista=$$(".cell",cells);
       var pinta=function(){var a=d0<d1?d0:d1,z=d0<d1?d1:d0;lista.forEach(function(x){x.classList.toggle("sel",x.dataset.d>=a&&x.dataset.d<=z)})};pinta();
       if(e.pointerType!=="touch")cells.setPointerCapture(e.pointerId);
@@ -931,8 +1058,8 @@ function ligaMapa(ini,n,cw){
     });
   });
 }
-function escolhaCelula(qid,ci,co){
-  modal('<h3>'+esc(nomeQuarto(qid))+'</h3><p>'+fd(ci,{weekday:"short",day:"2-digit",month:"2-digit"})+' → '+fd(co,{weekday:"short",day:"2-digit",month:"2-digit"})+' · '+dias(ci,co)+' noite(s)</p><div class="grid" style="gap:8px"><button class="btn agua" id="c-r">'+ic("plus",16)+'Criar reserva aqui</button><button class="btn sec" id="c-b">'+ic("lock",16)+'Bloquear (manutenção)</button><button class="btn ghost" id="c-x">Cancelar</button></div>');
+function escolhaCelula(qid,ci,co,sai){
+  modal('<h3>'+esc(nomeQuarto(qid))+'</h3><p>'+fd(ci,{weekday:"short",day:"2-digit",month:"2-digit"})+' → '+fd(co,{weekday:"short",day:"2-digit",month:"2-digit"})+' · '+dias(ci,co)+' noite(s)</p><div class="grid" style="gap:8px"><button class="btn agua" id="c-r">'+ic("plus",16)+'Criar reserva aqui</button><button class="btn sec" id="c-b">'+ic("lock",16)+'Bloquear (manutenção)</button><button class="btn ghost" id="c-x">Cancelar</button></div>');if(sai)$("#c-x").insertAdjacentHTML("beforebegin",'<button class="btn sec" id="c-v">Ver reserva de quem sai ('+esc(sai.hospede)+')</button>');if(sai)$("#c-v").onclick=function(){fechaModal();abreReserva(sai.reserva_id)};
   $("#c-r").onclick=function(){fechaModal();formReserva({quartos:[{quarto_id:qid,checkin:ci,checkout:co,adultos:Math.min(2,(S.boot.quartos.filter(function(q){return q.id===qid})[0]||{}).capacidade||2),criancas:0}]})};
   $("#c-b").onclick=function(){fechaModal();formBloqueio({quarto_id:qid,checkin:ci,checkout:co})};
   $("#c-x").onclick=fechaModal;
@@ -1355,7 +1482,7 @@ new MutationObserver(liga).observe(document.body,{childList:true,subtree:true});
 </script>
 <script>
 (function(){var deitado=function(){return matchMedia("(orientation:landscape) and (max-height:520px)").matches},ult=deitado(),t;
-addEventListener("resize",function(){clearTimeout(t);t=setTimeout(function(){var d=deitado();if(d===ult)return;ult=d;var b=document.querySelector('#mp-s button[data-d="'+(d?14:7)+'"]');if(b&&document.getElementById("mw"))b.click()},250)})})();
+addEventListener("resize",function(){clearTimeout(t);t=setTimeout(function(){var d=deitado();if(d===ult)return;ult=d;if(window.__mareLand&&window.__mareLand(d))return;var b=document.querySelector('#mp-s button[data-d="'+(d?14:7)+'"]');if(b&&document.getElementById("mw"))b.click()},250)})})();
 </script>
 </body>
 </html>
