@@ -506,7 +506,7 @@ body.demo-x-on .demo-bar{display:none!important}
 .mw-s svg{width:20px;height:20px}.mw-s.d svg{transform:scaleX(-1)}
 .mw-s.e{left:calc(var(--side) - 20px)}.mw-s.d{right:-6px}
 .mw-s:hover{background:var(--agua);color:#fff;transform:scale(1.06)}
-@media (max-width:900px){.mw-s{width:42px;height:42px;margin-top:-21px;top:150px}.mw-s.d{right:-4px}}
+@media (max-width:900px){.mw-s{width:46px;height:46px;margin-top:-23px;top:50%}.mw-s.d{right:-4px}}
 #bt-busca{display:none!important}
 
 /* Bar simples */
@@ -584,7 +584,7 @@ body.demo-x-on .demo-bar{display:none!important}
 .mw-nav .btn svg{width:18px;height:18px}
 .mw-nav .btn:last-child svg{transform:scaleX(-1)}
 @media (min-width:901px){.mw-nav{justify-content:flex-end}.mw-nav .btn{flex:0 0 auto}}
-@media (max-width:900px){#mp-p,#mp-n{display:none}.mw-s{display:none}}
+@media (max-width:900px){#mp-p,#mp-n{display:none}}.mw-nav{display:none!important}.mw-s{display:grid!important}
 @media (orientation:landscape) and (max-height:520px){.mw-nav{display:none}.mw-s{display:grid}}
 
 .pv-qm{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;padding:10px 12px;border-radius:16px;background:rgba(226,243,244,.6)}
@@ -639,6 +639,7 @@ body.demo-x-on .demo-bar{display:none!important}
   .drawer .df{padding:10px 12px 12px}
   .drawer .card{padding:14px}
 }
+.map{overflow-x:clip}
 </style>
 </head>
 <body>
@@ -743,7 +744,7 @@ var G=function(a,b){var c=CONF[a];if(!c||Date.now()-(S._confOk||0)<2500){S._conf
 function tenta(p,okMsg){return p.then(function(r){if(okMsg)toast(okMsg);return r}).catch(function(e){if(!e||!e.cancelado)toast(e&&e.message||"Erro",true);throw e})}
 
 /* =================== Estado =================== */
-var S={u:null,boot:null,tab:"hoje",mapIni:add(hojeStr(),innerWidth<900?-1:-2),mapDias:innerWidth<900?7:21};
+var S={u:null,boot:null,tab:"hoje",mapIni:hojeStr().slice(0,8)+"01",mapDias:31};
 var P=function(){return S.u?S.u.papel:""};
 var podeDR=function(){return P()==="dono"||P()==="recepcao"};
 var TABS=[["hoje","Hoje","T"],["mapa","Mapa","DR"],["reservas","Reservas","DR"],["leads","Pré-reservas","DR"],["consumo","Bar & consumo","T"],["tarefas","Tarefas","T"],["relatorios","Relatórios","D"],["ajustes","Ajustes","D"]];
@@ -861,19 +862,20 @@ VIEWS.mapa=function(){
   '<div class="map-ctrl"><button class="btn sec sm" id="mp-p" aria-label="Anterior">'+ic("l",16)+'</button><button class="btn sec sm" id="mp-h">Hoje</button><button class="btn sec sm" id="mp-n" aria-label="Próximo">'+ic("r",16)+'</button><input type="date" id="mp-d" value="'+S.mapIni+'" style="max-width:160px"><div class="seg" id="mp-s"><button data-d="7">1 sem</button><button data-d="14">2 sem</button><button data-d="21">3 sem</button><button data-d="31">1 mês</button><button data-d="62">2 meses</button></div><span class="muted tiny mp-dica" style="flex:1;min-width:200px">Arraste uma reserva para trocar de quarto ou de data · puxe a ponta direita para mudar a saída · toque e arraste em dias vazios para criar.</span></div>'+
   '<div class="map-wrap" id="mw"><div class="empty">Carregando mapa…</div></div>'+
   '<div class="legend"><span><i style="background:repeating-linear-gradient(135deg,#C68A2E 0 4px,#D19A42 4px 8px)"></i>Pré-reserva (aguarda pagamento)</span><span><i style="background:#12586A"></i>Confirmada</span><span><i style="background:#0E3941"></i>Hospedada</span><span><i style="background:#D8CDB8"></i>Finalizada</span><span><i style="background:repeating-linear-gradient(135deg,#8E9A9D 0 4px,#A7B2B4 4px 8px)"></i>Bloqueado</span><span style="margin-left:8px">Origem (ponto colorido):</span>'+Object.keys(ORIG).map(function(o){return'<span><i style="background:var(--o-'+o+');width:8px;height:8px;border-radius:50%"></i>'+ORIG[o]+'</span>'}).join("")+'</div>';
-  $$("#mp-s button").forEach(function(b){b.classList.toggle("on",+b.dataset.d===S.mapDias);b.onclick=function(){S.mapDias=+b.dataset.d;VIEWS.mapa()}});
-  $("#mp-p").onclick=function(){S.mapIni=add(S.mapIni,-Math.max(7,Math.floor(S.mapDias/2)));VIEWS.mapa()};
-  $("#mp-n").onclick=function(){S.mapIni=add(S.mapIni,Math.max(7,Math.floor(S.mapDias/2)));VIEWS.mapa()};
-  $("#mp-h").onclick=function(){S.mapIni=add(hojeStr(),-2);VIEWS.mapa()};
+  $$("#mp-s button").forEach(function(b){b.classList.toggle("on",+b.dataset.d===S.mapDias);b.onclick=function(){S.mapDias=+b.dataset.d;if(S.mapDias===31){S.mapIni=(S.mapIni<=hojeStr()&&add(S.mapIni,40)>hojeStr()?hojeStr():S.mapIni).slice(0,8)+"01";desenhaMapa._scrolled=false}VIEWS.mapa()}});
+  $("#mp-p").onclick=function(){if(S.mapDias===31){S.mapIni=add(S.mapIni.slice(0,8)+"01",-1).slice(0,8)+"01";desenhaMapa._scrolled=true;S._mapIrFim=1;VIEWS.mapa();return}S.mapIni=add(S.mapIni,-Math.max(7,Math.floor(S.mapDias/2)));VIEWS.mapa()};
+  $("#mp-n").onclick=function(){if(S.mapDias===31){S.mapIni=add(S.mapIni.slice(0,8)+"01",32).slice(0,8)+"01";desenhaMapa._scrolled=true;S._mapIr0=1;VIEWS.mapa();return}S.mapIni=add(S.mapIni,Math.max(7,Math.floor(S.mapDias/2)));VIEWS.mapa()};
+  $("#mp-h").onclick=function(){if(S.mapDias===31){S.mapIni=hojeStr().slice(0,8)+"01";desenhaMapa._scrolled=false}else S.mapIni=add(hojeStr(),-2);VIEWS.mapa()};
   $("#mp-d").onchange=function(){if(this.value){S.mapIni=this.value;VIEWS.mapa()}};
   carregaMapa();
 };
 function carregaMapa(){
-  var ini=S.mapIni,n=S.mapDias,fim=add(ini,n-1);
+  if(S.mapDias===31)S.mapIni=S.mapIni.slice(0,8)+"01";
+  var ini=S.mapIni,n=S.mapDias===31?dias(ini,add(ini,32).slice(0,8)+"01"):S.mapDias,fim=add(ini,n-1);
   G("mapa",{ini:ini,fim:fim}).then(function(r){S.mapItens=r.itens;desenhaMapa(ini,n)}).catch(function(e){$("#mw").innerHTML='<div class="empty">'+esc(e.message)+'</div>'});
 }
 function desenhaMapa(ini,n){
-  if(innerWidth<900){var sd=innerWidth<400?88:104;document.documentElement.style.setProperty("--side",sd+"px");document.documentElement.style.setProperty("--cell",Math.max(30,Math.floor((Math.min(innerWidth,900)-30-sd)/Math.min(n,innerWidth<600?7:14)))+"px")}else{document.documentElement.style.removeProperty("--side");document.documentElement.style.removeProperty("--cell")}
+  if(innerWidth<900){var sd=innerWidth<400?88:104;document.documentElement.style.setProperty("--side",sd+"px");document.documentElement.style.setProperty("--cell",Math.max(30,Math.floor((Math.min(innerWidth,900)-30-sd)/Math.min(n,innerWidth<600?7:14)))+"px")}else{var de=document.documentElement;de.style.removeProperty("--side");de.style.removeProperty("--cell");var mwx=$("#mw");if(mwx&&n>14){var sd2=parseFloat(getComputedStyle(de).getPropertyValue("--side"))||160,cw0=parseFloat(getComputedStyle(de).getPropertyValue("--cell"))||44,cf=Math.floor((mwx.clientWidth-sd2-2)/n);de.style.setProperty("--cell",Math.max(30,Math.min(cw0,cf))+"px")}}
   var cw=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--cell"))||44,td=hojeStr();
   var qs=S.boot.quartos.filter(function(q){return q.ativo}),itens=S.mapItens;
   var porDia=[];for(var i=0;i<n;i++){var d=add(ini,i),c={};itens.forEach(function(o){if(o.tipo==="reserva"&&o.checkin<=d&&o.checkout>d)c[o.quarto_id]=1});porDia.push(Object.keys(c).length)}
@@ -895,7 +897,7 @@ function desenhaMapa(ini,n){
     h+='</div></div>';
   });
   h+='</div>';$("#mw").innerHTML=h;
-  var mw=$("#mw");if(!desenhaMapa._scrolled){var offs=dias(ini,td);if(offs>3)mw.scrollLeft=(offs-2)*cw;desenhaMapa._scrolled=true}
+  var mw=$("#mw");if(S._mapIr0){S._mapIr0=0;mw.scrollLeft=0}if(S._mapIrFim){S._mapIrFim=0;mw.scrollLeft=mw.scrollWidth}if(!desenhaMapa._scrolled){var offs=mw.scrollWidth-mw.clientWidth<cw*2?0:dias(ini,td);if(offs>3)mw.scrollLeft=(offs-2)*cw;desenhaMapa._scrolled=true}
   ligaMapa(ini,n,cw);
 }
 function ligaMapa(ini,n,cw){
@@ -1383,8 +1385,7 @@ var nv=cx.previousElementSibling;nv.querySelectorAll("[data-mwn]").forEach(funct
 new MutationObserver(liga).observe(document.body,{childList:true,subtree:true});liga()})();
 </script>
 <script>
-(function(){var deitado=function(){return matchMedia("(orientation:landscape) and (max-height:520px)").matches},ult=deitado(),t;
-addEventListener("resize",function(){clearTimeout(t);t=setTimeout(function(){var d=deitado();if(d===ult)return;ult=d;var b=document.querySelector('#mp-s button[data-d="'+(d?14:7)+'"]');if(b&&document.getElementById("mw"))b.click()},250)})})();
+/* (troca automática de dias ao girar o celular removida: o mapa mostra o mês todo) */
 </script>
 </body>
 </html>
