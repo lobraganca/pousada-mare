@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pousada Maré · Cumuruxatiba, Bahia</title>
+<script src="/i18n.js"></script>
 <meta name="description" content="Pousada pé na areia na praia do Rio do Peixe Grande, em Cumuruxatiba, Bahia. Suítes com vista para o mar, piscina ampla com sauna, bar na praia, restaurante e café da manhã à beira-mar.">
 <meta name="theme-color" content="#0A97B4">
 <link rel="canonical" href="https://pousadamarecumuru.com.br/">
@@ -913,7 +914,7 @@ function carregaSite(){return fetch("/api/public?a=site").then(function(r){if(!r
 function disp(i,o){if(MODO==="demo")return Promise.resolve(MareDemo.disp(i,o));if(MODO==="offline")return Promise.reject(0);return fetch("/api/public?a=disp&in="+i+"&out="+o).then(function(r){return r.json().then(function(j){if(!r.ok)throw 0;return j})})}
 function salvaLead(b){if(MODO==="demo"){try{MareDemo.lead(b)}catch(e){}return}if(MODO==="offline")return;var body=JSON.stringify(b);if(b.enviado&&navigator.sendBeacon){try{if(navigator.sendBeacon("/api/public?a=lead",new Blob([body],{type:"application/json"})))return}catch(e){}}fetch("/api/public?a=lead",{method:"POST",headers:{"Content-Type":"application/json"},body:body,keepalive:true}).catch(function(){})}
 var cfg=function(k,d){var v=SITE.config?SITE.config[k]:undefined;if(Array.isArray(v))v=v[0];return v==null||v===""?d:v};
-var zap=function(n,m){return"https://wa.me/"+String(n).replace(/\D/g,"")+(m?"?text="+encodeURIComponent(m):"")};
+var zap=function(n,m){if(window.mareZap)m=window.mareZap(m);return"https://wa.me/"+String(n).replace(/\D/g,"")+(m?"?text="+encodeURIComponent(m):"")};
 $("#ano").textContent=new Date().getFullYear();
 var LINHO="#FAF8F3",BRANCO="#FFFFFF",AREIA="#F1EADD",TURQ="#0A97B4",OCEANO="#0B3B45",AGUA="#E2F3F4";
 
@@ -1044,7 +1045,7 @@ var total=function(){return(R.dist||[]).reduce(function(s,x){return s+precoQ(x.c
 var cap=function(){return qsel().reduce(function(s,c){return s+cat(c).capacidade},0)};
 var noites=function(){return R.checkin&&R.checkout?dias(R.checkin,R.checkout):0};
 function itensLead(){var o={};(R.dist||[]).forEach(function(x){var n=cat(x.cid).nome;o[n]=o[n]||{categoria:n,quartos:0,adultos:0,criancas:0};o[n].quartos++;o[n].adultos+=x.a;o[n].criancas+=x.c});return Object.keys(o).map(function(k){return o[k]})}
-var lt;function sync(et,env){guarda();clearTimeout(lt);var go=function(){salvaLead({id:R.id,nome:R.nome||"",telefone:R.tel||"",cidade:R.cidade||"",checkin:R.checkin,checkout:R.checkout,adultos:R.adultos,criancas:R.criancas,itens:itensLead(),valor:total(),obs:(R.pet?"Vai levar pet. ":"")+(R.obs||""),etapa:et||passo,enviado:!!env})};if(env)return go();lt=setTimeout(go,1200)}
+var lt;function sync(et,env){guarda();clearTimeout(lt);var go=function(){salvaLead({id:R.id,nome:R.nome||"",telefone:R.tel||"",cidade:R.cidade||"",checkin:R.checkin,checkout:R.checkout,adultos:R.adultos,criancas:R.criancas,itens:itensLead(),valor:total(),obs:({es:"[Hóspede fala espanhol] ",en:"[Hóspede fala inglês] "}[window.mareLang]||"")+(R.pet?"Vai levar pet. ":"")+(R.obs||""),etapa:et||passo,enviado:!!env})};if(env)return go();lt=setTimeout(go,1200)}
 function resumoTopo(){}
 function temDados(){return(R.nome||"").length>=2&&String(R.tel||"").replace(/\D/g,"").length>=10}
 function abreReserva(p){passo=p||1;$("#veu").classList.add("on");$("#reserva").classList.add("on");document.body.style.overflow="hidden";desenha()}
@@ -1159,7 +1160,7 @@ if(!document.querySelector(".regua")){document.body.insertAdjacentHTML("beforeen
 (function(){
 var velha=document.querySelector(".faixa");if(!velha||document.querySelector(".faixa-onda"))return;
 var itens=["Pé na areia","Piscina com sauna","Bar na praia","Beach tennis","Café à beira-mar","Chá da tarde","Restaurante Maré","Copa baby","Suítes com vista para o mar"];
-var txt=itens.join("   〰   ")+"   〰   ";
+if(window.mareT)itens=itens.map(window.mareT);var txt=itens.join("   〰   ")+"   〰   ";
 var NS="http://www.w3.org/2000/svg";
 var box=document.createElement("div");box.className="faixa-onda";box.setAttribute("aria-hidden","true");
 box.innerHTML='<svg viewBox="0 0 1440 140" preserveAspectRatio="xMidYMid slice"><path class="tl2" id="fo-b"/><path class="tl" id="fo-a"/><path id="fo-p" fill="none"/><text><textPath href="#fo-p" id="fo-t"></textPath></text></svg>';
