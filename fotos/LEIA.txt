@@ -1,0 +1,2 @@
+Fotos próprias do site podem ficar nesta pasta (ex.: fotos/hero-1.jpg).
+Hoje o site usa as fotos que já estão no CDN do site antigo (checkinweb). Baixe-as para cá antes de desligar o site antigo e troque os links em index.html e em Gestão › Ajustes › Quartos e suítes.

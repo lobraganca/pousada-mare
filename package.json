@@ -1,0 +1,10 @@
+{
+  "name": "pousada-mare",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.0",
+    "@vercel/blob": "^2.9.0"
+  }
+}

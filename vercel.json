@@ -1,0 +1,41 @@
+{
+  "cleanUrls": true,
+  "crons": [{ "path": "/api/cron", "schedule": "0 10 * * *" }],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), payment=()" },
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
+      ]
+    },
+    {
+      "source": "/",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, must-revalidate" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' https://*.public.blob.vercel-storage.com; connect-src 'self'; frame-src https://www.google.com https://www.instagram.com https://www.youtube.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'self'" }
+      ]
+    },
+    {
+      "source": "/gestao",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, must-revalidate" },
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self' https://vercel.com https://*.vercel-storage.com; manifest-src 'self'; worker-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'" }
+      ]
+    },
+    { "source": "/api/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }, { "key": "Cache-Control", "value": "no-store" }] },
+    { "source": "/demo.js", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] }
+  ],
+  "redirects": [
+    { "source": "/gestão", "destination": "/gestao", "permanent": false },
+    { "source": "/gest%C3%A3o", "destination": "/gestao", "permanent": false },
+    { "source": "/admin", "destination": "/gestao", "permanent": false },
+    { "source": "/painel", "destination": "/gestao", "permanent": false },
+    { "source": "/app", "destination": "/gestao", "permanent": false }
+  ]
+}
