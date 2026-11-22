@@ -655,6 +655,47 @@ body.demo-x-on .demo-bar{display:none!important}
 .tk-av ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}.tk-av li{background:rgba(10,151,180,.08);border-radius:12px;padding:8px 10px}.tk-av li b{display:block;font-size:14.5px}.tk-av li small{font-size:12px;opacity:.75}
 .tk-alta{color:var(--err);font-weight:700}
 .tk-a{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}
+
+/* ---- Reservas em cards ---- */
+.rv-top{display:flex;gap:8px;margin-bottom:12px}
+.rv-q{flex:1;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.9);border:1.5px solid rgba(11,59,69,.12);border-radius:18px;padding:0 14px;color:var(--txt3)}
+.rv-q:focus-within{border-color:var(--agua);box-shadow:0 0 0 4px rgba(10,151,180,.12)}
+.rv-q input{border:0!important;background:none!important;box-shadow:none!important;padding:13px 0!important;flex:1;min-width:0;font-size:16px;color:var(--txt)}
+.rv-ft{display:inline-flex;align-items:center;gap:6px;border-radius:18px}.rv-ft.on{background:var(--mar);color:#fff}
+.rv-qk .dt.f{background:#7d8f93}
+.rv-fl{margin-bottom:12px}
+.rv-sum{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13.5px;color:var(--txt2);margin:4px 2px 6px}.rv-sum b{color:var(--mar)}.rv-sum b.neg{color:var(--err)}
+.rv-sec{margin-top:14px}
+.rv-h{font-family:var(--serif);font-size:19px;color:var(--mar);margin:0 2px 8px;display:flex;align-items:center;gap:8px}
+.rv-h span{font-family:inherit;font-size:12px;font-weight:700;background:rgba(10,151,180,.12);color:var(--agua);border-radius:999px;padding:2px 9px}
+.rv-grid{display:grid;gap:10px}
+@media (min-width:1100px){.rv-grid{grid-template-columns:1fr 1fr}}
+.rv-c{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;background:rgba(255,255,255,.92);border:1px solid rgba(11,59,69,.08);border-radius:20px;padding:14px 16px;box-shadow:0 10px 30px -22px rgba(11,59,69,.5);position:relative;overflow:hidden;transition:transform .15s,box-shadow .2s}
+.rv-c:hover{box-shadow:0 16px 36px -20px rgba(11,59,69,.55)}.rv-c:active{transform:scale(.99)}
+.rv-c:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--rvk,#cfd8d8)}
+.rv-c.st-hospedada{--rvk:#0B3B45}.rv-c.st-confirmada{--rvk:#0A97B4}.rv-c.st-pre{--rvk:#E3A33B}.rv-c.st-finalizada{--rvk:#9aa9ac}.rv-c.cx{--rvk:#D9534A;opacity:.72}
+.rv-d{width:52px;border-radius:14px;background:rgba(10,151,180,.09);display:flex;flex-direction:column;align-items:center;padding:7px 0 6px;color:var(--mar)}
+.rv-d b{font-family:var(--serif);font-size:23px;line-height:1}.rv-d small{font-size:12px;text-transform:uppercase;letter-spacing:.04em;opacity:.75;margin-top:2px}
+.rv-c.st-hospedada .rv-d{background:var(--mar);color:#fff}
+.rv-m{display:flex;flex-direction:column;gap:3px;min-width:0}
+.rv-l1{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rv-n{font-size:16.5px;color:var(--mar)}
+.rv-fl1{font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 9px}.rv-fl1.in{background:var(--agua);color:#fff}.rv-fl1.out{background:#FBF1E1;color:#8a5a1c}
+.rv-g{font-size:12.5px;color:var(--txt2)}
+.rv-l2{font-size:13px;color:var(--txt2)}
+.rv-qs{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}.rv-qs i{font-style:normal;font-size:12px;font-weight:600;background:#EEF4F5;color:var(--mar);border-radius:8px;padding:3px 8px}
+.rv-r{display:flex;flex-direction:column;align-items:flex-end;gap:5px;text-align:right}
+.rv-t{font-size:15.5px;color:var(--mar)}
+.rv-pg{font-size:12px;font-weight:700;border-radius:999px;padding:3px 9px}.rv-pg.ok{background:#E3F4EC;color:#2F7A62}.rv-pg.falta{background:#FDECEA;color:#B3362D}.rv-pg.cx{background:#f3f3f3;color:#888}
+.rv-o{font-size:11.5px;color:var(--txt3)}
+@media (max-width:640px){
+  .rv-ft span{display:none}.rv-ft{padding:0 14px}
+  .rv-c{grid-template-columns:auto 1fr;gap:10px 12px;padding:12px 14px}
+  .rv-r{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:6px 8px;border-top:1px solid rgba(11,59,69,.07);padding-top:9px;text-align:left}
+  .rv-t{margin-left:auto;order:3}.rv-o{order:4;width:100%}
+  .rv-qk{grid-template-columns:1fr 1fr 1fr!important}.rv-qk button:first-child{grid-column:auto!important}.rv-qk button{font-size:12.5px!important;padding:9px 4px!important;gap:5px!important}
+}
+.rv-qk.off button{opacity:.45}.rv-qk.off button.on{background:rgba(255,255,255,.85);color:var(--mar);border-color:rgba(11,59,69,.12);box-shadow:none}
 </style>
 </head>
 <body>
@@ -727,7 +768,7 @@ var ICON={
   tarefas:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="m8 12 2.5 2.5L16 9"/>',
   relatorios:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
   ajustes:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z"/>',
-  plus:'<path d="M12 5v14M5 12h14"/>', wa:'<path d="M21 12a8 8 0 0 1-11.8 7L4 20l1.1-4.6A8 8 0 1 1 21 12Z"/>', lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  busca:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',filtro:'<path d="M4 6h16M7 12h10M10 18h4"/>',plus:'<path d="M12 5v14M5 12h14"/>', wa:'<path d="M21 12a8 8 0 0 1-11.8 7L4 20l1.1-4.6A8 8 0 1 1 21 12Z"/>', lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
   l:'<path d="m15 18-6-6 6-6"/>', r:'<path d="m9 18 6-6-6-6"/>', check:'<path d="m5 12 5 5L20 7"/>'
 };
 var ic=function(n,s){return'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" width="'+(s||18)+'" height="'+(s||18)+'" aria-hidden="true">'+ICON[n]+'</svg>'};
@@ -1137,20 +1178,44 @@ function formReserva(p){
 /* =================== RESERVAS (lista e histórico) =================== */
 VIEWS.reservas=function(){
   V.innerHTML=topo("Reservas",'<button class="btn agua" data-nova="1">'+ic("plus",16)+'Nova reserva</button>')+
-  '<div class="rb-qk" id="rb-qk"><button data-qk="todas"><i class="dt"></i>Próximas</button><button data-qk="hosp"><i class="dt h"></i>Hospedados agora</button><button data-qk="pre"><i class="dt p"></i>Pré-reservas</button><button data-qk="conf"><i class="dt c"></i>Confirmadas</button><button data-qk="canc"><i class="dt x"></i>Canceladas</button></div>'+
-  '<div class="card rb-card fl-off" style="margin-bottom:14px"><div class="row"><label class="f" style="flex:2 1 220px">Buscar<input id="rb-q" type="search" placeholder="Nome, telefone, código ou grupo"></label><button type="button" class="btn sec rb-tg" data-rbtg="1">Filtros</button><label class="f">Situação<select id="rb-s"><option value="">Todas</option>'+Object.keys(STAT).map(function(s){return'<option value="'+s+'">'+STAT[s]+'</option>'}).join("")+'</select></label><label class="f">Origem<select id="rb-o"><option value="">Todas</option>'+Object.keys(ORIG).map(function(s){return'<option value="'+s+'">'+ORIG[s]+'</option>'}).join("")+'</select></label><label class="f">De<input type="date" id="rb-i"></label><label class="f">Até<input type="date" id="rb-f"></label></div><div class="chips" style="margin-top:10px"><button class="btn sm sec" data-pr="prox">Próximas</button><button class="btn sm sec" data-pr="ant">Anteriores (histórico)</button><button class="btn sm sec" data-pr="pre">Aguardando pagamento</button><button class="btn sm sec" data-pr="canc">Canceladas / no-show</button><button class="btn sm ghost" data-pr="limpa">Limpar</button></div></div><div class="card scroll-x" id="rb-l"><div class="empty">Carregando…</div></div>';
-  var nrm=function(x){return String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()};
-  var bus=function(){var q=$("#rb-q").value.trim();G("reservas_busca",{q:q,status:$("#rb-s").value,origem:$("#rb-o").value,ini:q?"":$("#rb-i").value,fim:q?"":$("#rb-f").value}).then(function(r){
-    var it=r.itens;if(q){var nq=nrm(q),dq=q.replace(/\D/g,"");it=it.filter(function(x){return (" "+nrm(x.nome)+" "+nrm(x.grupo_nome)).indexOf(" "+nq)>=0||nrm(x.codigo).indexOf(nq)===0||dq.length>=3});var vis={};it=it.filter(function(x){if(vis[x.id])return false;vis[x.id]=1;return true})}if(S._rbFiltro==="canc")it=it.filter(function(x){return x.status==="cancelada"||x.status==="no_show"});
-    var tot=it.reduce(function(s,x){return s+(["cancelada","no_show"].indexOf(x.status)<0?x.total_hospedagem:0)},0);
-    $("#rb-l").innerHTML=it.length?'<div class="muted tiny" style="margin-bottom:8px">'+it.length+' reserva(s) · hospedagem '+brl(tot)+'</div><table class="t"><thead><tr><th>Hóspede</th><th>Datas</th><th>Quartos</th><th>Situação</th><th>Origem</th><th class="num">Total</th><th class="num">Saldo</th></tr></thead><tbody>'+it.map(function(x){var s=x.total_hospedagem+x.consumo-x.pago;return'<tr class="click" data-res="'+x.id+'"><td><b>'+esc(x.nome)+'</b>'+(x.grupo_nome?' <span class="tag">👥 '+esc(x.grupo_nome)+'</span>':"")+'<br><span class="muted tiny">#'+esc(x.codigo)+'</span></td><td>'+fd(x.checkin)+' → '+fd(x.checkout,{day:"2-digit",month:"2-digit",year:"2-digit"})+'</td><td class="tiny">'+esc(x.quartos||"—")+'</td><td>'+stTag(x.status)+'</td><td>'+orTag(x.origem)+'</td><td class="num">'+brl(x.total_hospedagem+x.consumo)+'</td><td class="num" style="color:'+(s>0.009&&["cancelada","no_show"].indexOf(x.status)<0?"var(--err)":"var(--txt3)")+'">'+brl(s)+'</td></tr>'}).join("")+'</tbody></table>':'<div class="empty">Nenhuma reserva encontrada.</div>'})};
-  var t;["#rb-q"].forEach(function(s){$(s).oninput=function(){clearTimeout(t);t=setTimeout(bus,300)}});["#rb-s","#rb-o","#rb-i","#rb-f"].forEach(function(s){$(s).onchange=function(){S._rbFiltro="";bus()}});
-  $$("[data-pr]").forEach(function(b){b.onclick=function(){var k=b.dataset.pr,H=hojeStr();S._rbFiltro=k;$("#rb-s").value="";$("#rb-i").value="";$("#rb-f").value="";
-    if(k==="prox"){$("#rb-i").value=H}if(k==="ant"){$("#rb-f").value=add(H,-1);$("#rb-s").value="finalizada"}if(k==="pre")$("#rb-s").value="pre";if(k==="limpa")$("#rb-q").value="";bus()}});
+  '<div class="rv-top"><label class="rv-q">'+ic("busca",18)+'<input id="rb-q" type="search" placeholder="Buscar por nome, telefone, código ou grupo" autocomplete="off"></label><button type="button" class="btn sec rv-ft" id="rv-ft">'+ic("filtro",16)+'<span>Filtros</span></button></div>'+
+  '<div class="rb-qk rv-qk" id="rb-qk"><button data-qk="todas"><i class="dt"></i>Próximas</button><button data-qk="hosp"><i class="dt h"></i>Hospedados</button><button data-qk="pre"><i class="dt p"></i>Pré-reservas</button><button data-qk="conf"><i class="dt c"></i>Confirmadas</button><button data-qk="hist"><i class="dt f"></i>Histórico</button><button data-qk="canc"><i class="dt x"></i>Canceladas</button></div>'+
+  '<div class="card rv-fl" id="rv-fl" hidden><div class="row"><label class="f">Situação<select id="rb-s"><option value="">Todas</option>'+Object.keys(STAT).map(function(s){return'<option value="'+s+'">'+STAT[s]+'</option>'}).join("")+'</select></label><label class="f">Origem<select id="rb-o"><option value="">Todas</option>'+Object.keys(ORIG).map(function(s){return'<option value="'+s+'">'+ORIG[s]+'</option>'}).join("")+'</select></label><label class="f">De<input type="date" id="rb-i"></label><label class="f">Até<input type="date" id="rb-f"></label></div><div class="acts" style="margin-top:10px"><button class="btn sm ghost" id="rv-lp">Limpar filtros</button></div></div>'+
+  '<div id="rv-res"></div><div id="rb-l"><div class="empty">Carregando…</div></div>';
+  var nrm=function(x){return String(x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase()};
+  var MES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+  var card=function(x,H){
+    var cx=["cancelada","no_show"].indexOf(x.status)>=0,tot=x.total_hospedagem+x.consumo,sd=Math.round((tot-x.pago)*100)/100,n=dias(x.checkin,x.checkout),pes=(x.adultos||0)+(x.criancas||0);
+    var tag=x.checkin===H&&!cx&&x.status!=="hospedada"?'<span class="rv-fl1 in">Chega hoje</span>':x.checkout===H&&x.status==="hospedada"?'<span class="rv-fl1 out">Sai hoje</span>':"";
+    var pg=cx?'<span class="rv-pg cx">'+STAT[x.status]+'</span>':sd>0.009?'<span class="rv-pg falta">Falta '+brl(sd)+'</span>':tot>0?'<span class="rv-pg ok">Pago</span>':"";
+    var qs=String(x.quartos||"").split(", ").filter(Boolean);
+    return'<button type="button" class="rv-c st-'+x.status+(cx?" cx":"")+'" data-res="'+x.id+'"><span class="rv-d"><b>'+x.checkin.slice(8)+'</b><small>'+MES[+x.checkin.slice(5,7)-1].slice(0,3)+'</small></span><span class="rv-m"><span class="rv-l1"><b class="rv-n">'+esc(x.nome)+'</b>'+tag+'</span>'+(x.grupo_nome?'<span class="rv-g">👥 '+esc(x.grupo_nome)+'</span>':"")+'<span class="rv-l2">'+fd(x.checkin,{weekday:"short",day:"2-digit",month:"2-digit"})+' → '+fd(x.checkout,{weekday:"short",day:"2-digit",month:"2-digit"})+' · '+n+(n===1?" noite":" noites")+' · '+pes+(pes===1?" pessoa":" pessoas")+'</span><span class="rv-qs">'+qs.map(function(q){return'<i>'+esc(q)+'</i>'}).join("")+'</span></span><span class="rv-r">'+stTag(x.status)+'<b class="rv-t">'+brl(tot)+'</b>'+pg+'<small class="rv-o">'+esc(ORIG[x.origem]||"")+' · #'+esc(x.codigo)+'</small></span></button>'};
+  var grupoDe=function(x,H,hist){
+    if(hist)return"3"+x.checkin.slice(0,7);
+    if(x.status==="hospedada")return"0agora";
+    if(x.checkin<H&&x.checkout>H&&["cancelada","no_show","finalizada"].indexOf(x.status)<0)return"0bpend";
+    if(x.checkin===H)return"1hoje";if(x.checkin<=add(H,7))return"2semana";return"3"+x.checkin.slice(0,7)};
+  var nomeG=function(g){if(g==="0agora")return["Hospedados agora",""];if(g==="0bpend")return["Check-in pendente",""];if(g==="1hoje")return["Chegam hoje",""];if(g==="2semana")return["Próximos 7 dias",""];g=g.slice(1);var m=MES[+g.slice(5,7)-1];return[m.charAt(0).toUpperCase()+m.slice(1)+" "+g.slice(0,4),""]};
+  var bus=function(){var q=$("#rb-q").value.trim(),H=hojeStr();G("reservas_busca",{q:q,status:q?"":$("#rb-s").value,origem:q?"":$("#rb-o").value,ini:q?"":$("#rb-i").value,fim:q?"":$("#rb-f").value}).then(function(r){
+    var it=r.itens;if(q){var nq=nrm(q),dq=q.replace(/\D/g,"");it=it.filter(function(x){return (" "+nrm(x.nome)+" "+nrm(x.grupo_nome)).indexOf(" "+nq)>=0||nrm(x.codigo).indexOf(nq)===0||dq.length>=3});var vis={};it=it.filter(function(x){if(vis[x.id])return false;vis[x.id]=1;return true})}
+    if(S._rbFiltro==="canc"&&!q)it=it.filter(function(x){return x.status==="cancelada"||x.status==="no_show"});
+    var hist=S._rbQ==="hist"||S._rbQ==="canc"||!!q;
+    it=it.slice().sort(function(a,b){return hist?(a.checkin<b.checkin?1:-1):(a.checkin<b.checkin?-1:a.checkin>b.checkin?1:0)});
+    var vivas=it.filter(function(x){return["cancelada","no_show"].indexOf(x.status)<0});
+    var tot=vivas.reduce(function(s,x){return s+x.total_hospedagem+x.consumo},0),fal=vivas.reduce(function(s,x){var d=x.total_hospedagem+x.consumo-x.pago;return s+(d>0?d:0)},0);
+    $("#rv-res").innerHTML=it.length?'<div class="rv-sum"><span><b>'+it.length+'</b> '+(it.length===1?"reserva":"reservas")+'</span><span>Total <b>'+brl(tot)+'</b></span><span>A receber <b class="'+(fal>0.009?"neg":"")+'">'+brl(fal)+'</b></span></div>':"";
+    if(!it.length){$("#rb-l").innerHTML='<div class="empty">'+(q?"Nenhuma reserva com “"+esc(q)+"”.":"Nenhuma reserva aqui.")+'</div>';return}
+    var gs=[],ix={};it.forEach(function(x){var g=grupoDe(x,H,hist);if(!ix[g]){ix[g]={g:g,l:[]};gs.push(ix[g])}ix[g].l.push(x)});
+    if(!hist)gs.sort(function(a,b){return a.g<b.g?-1:1});
+    $("#rb-l").innerHTML=gs.map(function(g){var t=nomeG(g.g);return'<section class="rv-sec"><h3 class="rv-h">'+t[0]+' <span>'+g.l.length+'</span></h3><div class="rv-grid">'+g.l.map(function(x){return card(x,H)}).join("")+'</div></section>'}).join("")})};
+  var t;$("#rb-q").oninput=function(){var v=this.value.trim();$("#rb-qk").classList.toggle("off",!!v);clearTimeout(t);t=setTimeout(bus,300)};
+  ["#rb-s","#rb-o","#rb-i","#rb-f"].forEach(function(s){$(s).onchange=function(){S._rbFiltro="";S._rbQ="";$$("#rb-qk button").forEach(function(b){b.classList.remove("on")});bus()}});
+  $("#rv-ft").onclick=function(){var f=$("#rv-fl");f.hidden=!f.hidden;this.classList.toggle("on",!f.hidden)};
+  $("#rv-lp").onclick=function(){$("#rb-q").value="";qk("todas")};
   var qk=function(k){S._rbQ=k;$$("#rb-qk button").forEach(function(b){b.classList.toggle("on",b.dataset.qk===k)});var H=hojeStr();S._rbFiltro="";$("#rb-i").value="";$("#rb-f").value="";$("#rb-o").value="";
-    $("#rb-s").value={hosp:"hospedada",pre:"pre",conf:"confirmada"}[k]||"";if(k==="todas"||k==="conf")$("#rb-i").value=H;if(k==="canc")S._rbFiltro="canc";bus()};
+    $("#rb-s").value={hosp:"hospedada",pre:"pre",conf:"confirmada",hist:"finalizada"}[k]||"";if(k==="todas"||k==="conf")$("#rb-i").value=H;if(k==="hist")$("#rb-f").value=H;if(k==="canc")S._rbFiltro="canc";bus()};
   $("#rb-qk").onclick=function(e){var b=e.target.closest("[data-qk]");if(b)qk(b.dataset.qk)};
-  $("#rb-i").value=hojeStr();qk(S._rbQ||"todas");
+  qk(S._rbQ||"todas");
   if(S._busca){S._busca=0;setTimeout(function(){$("#rb-q").focus()},60)}
 };
 
