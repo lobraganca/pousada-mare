@@ -1,12 +1,13 @@
 import { q, q1, corpo, responde, falha, txt, num, int, data, umDe, hoje, isData } from "./_db.js";
 import { usuarioDe, origemOk, hashSenha, senhaForte } from "./_auth.js";
+import { chaveBusca } from "./public.js";
 
 // API da Gestão. Cada ação diz quais papéis podem usá-la:
 //   dono = tudo · recepcao = operação do dia a dia · equipe = tarefas e lançamentos do bar
 const D = ["dono"], DR = ["dono", "recepcao"], T = ["dono", "recepcao", "equipe"];
 // Áreas que o dono libera para cada pessoa (Ajustes › Usuários). Dono vê tudo.
 // Sem áreas marcadas, vale o padrão do papel.
-const AREAS = ["mapa", "reservas", "leads", "consumo", "pagamentos", "tarefas", "tarefas_gerir", "relatorios", "ajustes"];
+const AREAS = ["mapa", "reservas", "leads", "consumo", "pagamentos", "tarefas", "tarefas_gerir", "relatorios", "ajustes", "duvidas"];
 const AREAS_PADRAO = { recepcao: ["mapa", "reservas", "leads", "consumo", "pagamentos", "tarefas", "tarefas_gerir"], equipe: ["consumo", "tarefas"] };
 const so_dono = ["usuario_salvar", "pagamento_del", "lead_del"];
 const AREA_DE = {
@@ -19,6 +20,7 @@ const AREA_DE = {
   relatorios: ["relatorios"], auditoria: ["relatorios"],
   ajustes: ["ajustes"], tarifas_salvar: ["ajustes"], temporada_salvar: ["ajustes"], temporada_del: ["ajustes"], fechamento_salvar: ["ajustes"], fechamento_del: ["ajustes"],
   config_salvar: ["ajustes"], quarto_salvar: ["ajustes"], categoria_salvar: ["ajustes"], video_salvar: ["ajustes"], video_del: ["ajustes"], produto_salvar: ["ajustes"],
+  faq_painel: ["duvidas"], faq_salvar: ["duvidas"], faq_del: ["duvidas"], faq_termo: ["duvidas"],
 };
 export const areasDe = (u) => u.papel === "dono" ? AREAS.slice() : (Array.isArray(u.areas) && u.areas.length ? u.areas.filter((x) => AREAS.includes(x)) : (AREAS_PADRAO[u.papel] || []));
 const podeAcao = (nome, acao, u) => {
@@ -384,6 +386,57 @@ const ACOES = {
     return { ok: true };
   }],
   video_del: [D, async (b, u) => { await q(`delete from videos where id = $1`, [int(b.id, 1)], u.id); return { ok: true }; }],
+  // ---------------- Central de dúvidas do site ----------------
+  faq_painel: [D, async (b) => {
+    const dias = int(b.dias || 30, 1, 365);
+    const [itens, resumo, falta, vistas] = await Promise.all([
+      q(`select id, tema, pergunta, resposta, palavras, traducoes, ordem, ativo, atualizado_em from faq order by ordem, id`),
+      q1(`select count(*)::int buscas, count(*) filter (where achou)::int acharam, count(*) filter (where faq_id is not null)::int abriram,
+                 count(*) filter (where perguntou)::int perguntaram
+            from faq_buscas where atualizado_em > now() - make_interval(days => $1)`, [dias]),
+      // O que procuraram e não acharam (ou acharam, mas ainda foram perguntar no WhatsApp)
+      q(`select x.termo_norm, x.n, x.sem_resposta, x.perguntaram, x.ultima,
+                (select termo from faq_buscas f where f.termo_norm = x.termo_norm order by atualizado_em desc limit 1) termo,
+                (select string_agg(distinct idioma, ',') from faq_buscas f where f.termo_norm = x.termo_norm) idiomas
+           from (select f.termo_norm, count(*)::int n, count(*) filter (where not f.achou)::int sem_resposta,
+                        count(*) filter (where f.perguntou)::int perguntaram, max(f.atualizado_em) ultima
+                   from faq_buscas f left join faq_termos t on t.termo_norm = f.termo_norm
+                  where f.atualizado_em > now() - make_interval(days => $1) and (not f.achou or f.perguntou)
+                    and (t.em is null or f.atualizado_em > t.em)   -- já respondido/ignorado: só conta o que veio depois
+                  group by f.termo_norm) x
+          order by x.n desc, x.ultima desc limit 60`, [dias]),
+      q(`select faq_id, count(*)::int n from faq_buscas where faq_id is not null and atualizado_em > now() - make_interval(days => $1) group by faq_id`, [dias]),
+    ]);
+    return { itens, resumo, falta, vistas: Object.fromEntries(vistas.map((r) => [r.faq_id, r.n])), dias };
+  }],
+  faq_salvar: [D, async (b, u) => {
+    const pergunta = txt(b.pergunta, 200), resposta = String(b.resposta ?? "").replace(/[<>]/g, "").trim().slice(0, 1500);
+    if (pergunta.length < 3) throw Object.assign(new Error("Escreva a pergunta."), { status: 400 });
+    if (resposta.length < 2) throw Object.assign(new Error("Escreva a resposta."), { status: 400 });
+    const tr = {};
+    for (const l of ["es", "en"]) {
+      const x = (b.traducoes && b.traducoes[l]) || {};
+      const y = { t: txt(x.t, 60), p: txt(x.p, 200), r: String(x.r ?? "").replace(/[<>]/g, "").trim().slice(0, 1500) };
+      if (y.p && y.r) tr[l] = y;
+    }
+    const v = [txt(b.tema, 60) || "Geral", pergunta, resposta, txt(b.palavras, 400), JSON.stringify(tr), int(b.ordem || 0, 0, 9999), b.ativo !== false];
+    let id;
+    if (b.id) { id = int(b.id, 1); await q(`update faq set tema=$2, pergunta=$3, resposta=$4, palavras=$5, traducoes=$6::jsonb, ordem=$7, ativo=$8, atualizado_em=now() where id=$1`, [id, ...v], u.id); }
+    else id = (await q1(`insert into faq(tema, pergunta, resposta, palavras, traducoes, ordem, ativo) values ($1,$2,$3,$4,$5::jsonb,$6,$7) returning id`, v, u.id)).id;
+    // Respondendo a uma busca sem resposta: ela sai da lista
+    const termos = (Array.isArray(b.termos) ? b.termos : []).map((x) => chaveBusca(x)).filter((x) => x.length >= 2).slice(0, 20);
+    for (const k of termos) await q(`insert into faq_termos(termo_norm, como, faq_id) values ($1,'respondido',$2) on conflict (termo_norm) do update set como='respondido', faq_id=$2, em=now()`, [k, id]);
+    return { ok: true, id };
+  }],
+  faq_del: [D, async (b, u) => { await q(`delete from faq where id = $1`, [int(b.id, 1)], u.id); return { ok: true }; }],
+  faq_termo: [D, async (b) => {
+    const k = chaveBusca(b.termo);
+    if (k.length < 2) throw Object.assign(new Error("Termo inválido."), { status: 400 });
+    if (b.voltar) await q(`delete from faq_termos where termo_norm = $1`, [k]);
+    else await q(`insert into faq_termos(termo_norm, como) values ($1,'ignorado') on conflict (termo_norm) do update set como='ignorado', em=now()`, [k]);
+    return { ok: true };
+  }],
+
   usuario_salvar: [D, async (b, u) => {
     const login = txt(b.login, 40).toLowerCase(), papel = umDe(b.papel, ["dono", "recepcao", "equipe"]);
     if (!/^[a-z0-9._-]{3,40}$/.test(login)) throw Object.assign(new Error("Login: use 3 a 40 letras minúsculas, números, ponto ou traço."), { status: 400 });

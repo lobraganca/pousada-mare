@@ -768,6 +768,7 @@ var ICON={
   tarefas:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="m8 12 2.5 2.5L16 9"/>',
   relatorios:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
   ajustes:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z"/>',
+  duvidas:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.6 2.6 0 0 1 5 .8c0 1.7-2.5 2.2-2.5 3.6"/><path d="M12 17h.01"/>',
   busca:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',filtro:'<path d="M4 6h16M7 12h10M10 18h4"/>',plus:'<path d="M12 5v14M5 12h14"/>', wa:'<path d="M21 12a8 8 0 0 1-11.8 7L4 20l1.1-4.6A8 8 0 1 1 21 12Z"/>', lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
   l:'<path d="m15 18-6-6 6-6"/>', r:'<path d="m9 18 6-6-6-6"/>', check:'<path d="m5 12 5 5L20 7"/>'
 };
@@ -794,7 +795,7 @@ var CONF={acompanhantes:["Salvar hóspedes?","A lista de hóspedes desta reserva
   config_salvar:["Salvar ajustes do site?","As mudanças aparecem no site.","Salvar"],tarifas_salvar:["Salvar preços?","Os novos valores passam a valer no site e nas reservas.","Salvar"],
   temporada_salvar:["Salvar temporada?","O ajuste de preço passa a valer nessas datas.","Salvar"],temporada_del:["Apagar temporada?","O ajuste de preço deixa de valer.","Apagar","danger"],
   fechamento_salvar:["Fechar datas no site?","O site deixa de aceitar pré-reservas nessas datas.","Fechar datas"],fechamento_del:["Reabrir datas?","O site volta a aceitar pré-reservas nessas datas.","Reabrir"],
-  usuario_salvar:["Salvar usuário?","O acesso da pessoa será atualizado.","Salvar"],video_salvar:["Salvar vídeo?","O vídeo aparece no site.","Salvar"],video_del:["Apagar vídeo?","Ele sai do site.","Apagar","danger"]};
+  usuario_salvar:["Salvar usuário?","O acesso da pessoa será atualizado.","Salvar"],video_salvar:["Salvar vídeo?","O vídeo aparece no site.","Salvar"],video_del:["Apagar vídeo?","Ele sai do site.","Apagar","danger"],faq_salvar:["Publicar resposta?","A pergunta e a resposta aparecem na Central de dúvidas do site.","Publicar"],faq_termo:["Ignorar esta busca?","Ela sai da lista. Se voltarem a procurar, aparece de novo.","Ignorar"]};
 var G=function(a,b){var c=CONF[a];if(!c||Date.now()-(S._confOk||0)<2500){S._confOk=0;return G0(a,b)}
   return confirma(c[0],c[1],c[2],c[3]).then(function(ok){if(!ok){var e=new Error("Ação cancelada");e.cancelado=true;throw e}S._confOk=0;return G0(a,b)})};
 function tenta(p,okMsg){return p.then(function(r){if(okMsg)toast(okMsg);return r}).catch(function(e){if(!e||!e.cancelado)toast(e&&e.message||"Erro",true);throw e})}
@@ -803,8 +804,8 @@ function tenta(p,okMsg){return p.then(function(r){if(okMsg)toast(okMsg);return r
 var S={u:null,boot:null,tab:"hoje",mapIni:hojeStr().slice(0,8)+"01",mapDias:31};
 var P=function(){return S.u?S.u.papel:""};
 var podeDR=function(){return P()==="dono"||P()==="recepcao"};
-var TABS=[["hoje","Hoje","*"],["mapa","Mapa","mapa"],["reservas","Reservas","reservas"],["leads","Pré-reservas","leads"],["consumo","Bar & consumo","consumo"],["tarefas","Tarefas","tarefas"],["relatorios","Relatórios","relatorios"],["ajustes","Ajustes","ajustes"]];
-var AREAS=[["mapa","Mapa de quartos","ver o mapa, mover reservas e bloquear quartos"],["reservas","Reservas","criar, editar, check-in e check-out"],["leads","Pré-reservas do site","pedidos que chegam pelo site"],["consumo","Bar: lançar pedidos","lançar o que o hóspede pediu"],["pagamentos","Valores e pagamentos","ver contas, receber pagamentos, cancelar lançamentos"],["tarefas","Tarefas","ver e concluir as próprias tarefas"],["tarefas_gerir","Distribuir tarefas","criar tarefas para a equipe e ver as de todos"],["relatorios","Relatórios","faturamento e ocupação"],["ajustes","Ajustes","preços, temporadas, site, quartos e cardápio"]];
+var TABS=[["hoje","Hoje","*"],["mapa","Mapa","mapa"],["reservas","Reservas","reservas"],["leads","Pré-reservas","leads"],["consumo","Bar & consumo","consumo"],["tarefas","Tarefas","tarefas"],["relatorios","Relatórios","relatorios"],["duvidas","Dúvidas do site","duvidas"],["ajustes","Ajustes","ajustes"]];
+var AREAS=[["mapa","Mapa de quartos","ver o mapa, mover reservas e bloquear quartos"],["reservas","Reservas","criar, editar, check-in e check-out"],["leads","Pré-reservas do site","pedidos que chegam pelo site"],["consumo","Bar: lançar pedidos","lançar o que o hóspede pediu"],["pagamentos","Valores e pagamentos","ver contas, receber pagamentos, cancelar lançamentos"],["tarefas","Tarefas","ver e concluir as próprias tarefas"],["tarefas_gerir","Distribuir tarefas","criar tarefas para a equipe e ver as de todos"],["relatorios","Relatórios","faturamento e ocupação"],["ajustes","Ajustes","preços, temporadas, site, quartos e cardápio"],["duvidas","Dúvidas do site","ver o que procuram no site e cadastrar respostas"]];
 var AREAS_PADRAO={recepcao:["mapa","reservas","leads","consumo","pagamentos","tarefas","tarefas_gerir"],equipe:["consumo","tarefas"]};
 function minhasAreas(){var u=(S.boot&&S.boot.usuario)||S.u||{};if(u.papel==="dono")return AREAS.map(function(a){return a[0]});return u.areas&&u.areas.length?u.areas:(AREAS_PADRAO[u.papel]||[])}
 function pode(a){return P()==="dono"||minhasAreas().indexOf(a)>=0}
@@ -1250,6 +1251,63 @@ function converteLead(l){
     if(!qs.length)qs.push({quarto_id:"",checkin:ci,checkout:co,adultos:l.adultos||2,criancas:l.criancas||0});
     formReserva({lead_id:l.id,origem:"site",status:"pre",hospede:{nome:l.nome,telefone:l.telefone,cidade:l.cidade},obs:l.obs?"Pedido do site: "+l.obs:"",quartos:qs});
     if(qs.some(function(q){return!q.quarto_id}))toast("Não achei quarto livre da categoria pedida para alguma linha — escolha manualmente.",true);
+  });
+}
+
+/* =================== DÚVIDAS DO SITE (Central de dúvidas) =================== */
+var TEMA_PADRAO=["Reserva e pagamento","Chegada e horários","Suítes","Família e pets","Estrutura","Restaurante"];
+function faqPreenche(s){var c=(S.boot&&S.boot.config)||{},v=function(k,d){var x=c[k];if(Array.isArray(x))x=x[0];return x==null||x===""?d:String(x)};
+  return String(s||"").replace(/\{(condicoes|pets|checkin|checkout)\}/g,function(_,k){return k==="condicoes"?v("condicoes","(condições em Ajustes)"):k==="pets"?v("politica_pets","(regra de pets em Ajustes)"):k==="checkin"?v("checkin_hora","14h"):v("checkout_hora","12h")})}
+function carregaBuscaSite(){return new Promise(function(ok){if(window.MareDuvidas)return ok();var s=document.createElement("script");s.src="duvidas.js";s.onload=ok;s.onerror=ok;document.head.appendChild(s)})}
+VIEWS.duvidas=function(){
+  S._fd=S._fd||30;
+  V.innerHTML=topo("Dúvidas do site",'<div class="seg" id="fdp">'+[[7,"7 dias"],[30,"30 dias"],[90,"90 dias"]].map(function(x){return'<button data-d="'+x[0]+'" class="'+(S._fd===x[0]?"on":"")+'">'+x[1]+'</button>'}).join("")+'</div><button class="btn agua" id="fq-n">'+ic("plus",16)+'Nova pergunta</button>')+
+    '<p class="muted" style="margin:-8px 0 14px">O que as pessoas procuraram na <b>Central de dúvidas</b> do site. Responda o que ficou sem resposta e a próxima pessoa já encontra sozinha, sem precisar chamar no WhatsApp.</p><div id="fq"><div class="empty">Carregando…</div></div>';
+  $$("#fdp button").forEach(function(b){b.onclick=function(){S._fd=+b.dataset.d;VIEWS.duvidas()}});
+  $("#fq-n").onclick=function(){formFaq({},null)};
+  G("faq_painel",{dias:S._fd}).then(function(d){
+    S._faq=d;var r=d.resumo||{},pc=function(a){return r.buscas?Math.round(a/r.buscas*100)+"%":"–"};
+    var sem=(r.buscas||0)-(r.acharam||0);
+    var h='<div class="grid g4" style="margin-bottom:16px">'+
+      '<div class="card kpi"><small>Buscas no site</small><b>'+(r.buscas||0)+'</b><span>nos últimos '+d.dias+' dias</span></div>'+
+      '<div class="card kpi"><small>Acharam resposta</small><b>'+pc(r.acharam||0)+'</b><span>'+(r.acharam||0)+' buscas · '+(r.abriram||0)+' abriram a resposta</span></div>'+
+      '<div class="card kpi"><small>Sem resposta</small><b style="color:'+(sem?"var(--err)":"var(--mar)")+'">'+sem+'</b><span>buscas que não acharam nada</span></div>'+
+      '<div class="card kpi"><small>Foram ao WhatsApp</small><b>'+(r.perguntaram||0)+'</b><span>tocaram em “Perguntar no WhatsApp”</span></div></div>';
+    h+='<div class="card" style="margin-bottom:16px"><h3>Procuraram e não acharam'+(d.falta.length?' <span class="tag" style="background:#FDECEA;color:var(--err)">'+d.falta.length+'</span>':"")+'</h3><p class="muted tiny" style="margin:-4px 0 10px">Do mais procurado para o menos. Toque em <b>Responder</b> para criar a resposta: o que a pessoa digitou já entra como palavra de busca.</p>'+
+      (d.falta.length?d.falta.map(function(x,i){return'<div class="li"><div class="m"><b>“'+esc(x.termo)+'”</b><small>'+x.n+(x.n>1?" buscas":" busca")+(x.sem_resposta?' · <span style="color:var(--err)">'+x.sem_resposta+' sem resposta</span>':"")+(x.perguntaram?' · '+x.perguntaram+' '+(x.sem_resposta<x.n?(x.perguntaram>1?"viram a resposta e ainda perguntaram":"viu a resposta e ainda perguntou"):(x.perguntaram>1?"perguntaram":"perguntou"))+' no WhatsApp':"")+(x.idiomas&&x.idiomas!=="pt"?' · '+esc(x.idiomas.toUpperCase().replace(/,/g,"/")):"")+' · última '+fdt(x.ultima)+'</small></div><button class="btn sm agua" data-fr="'+i+'">Responder</button><button class="btn sm ghost" data-fi="'+i+'">Ignorar</button></div>'}).join(""):'<div class="empty" style="padding:14px 4px">Nada pendente. Tudo o que procuraram teve resposta.</div>')+'</div>';
+    var temas=[];d.itens.forEach(function(f){if(temas.indexOf(f.tema)<0)temas.push(f.tema)});
+    h+='<div class="card" style="margin-bottom:16px"><h3>Perguntas e respostas no site <span class="tag">'+d.itens.filter(function(f){return f.ativo}).length+'</span></h3>'+
+      '<div style="display:flex;gap:8px;align-items:center;margin:0 0 12px"><input id="fq-t" type="search" placeholder="Teste como o site responde: digite uma dúvida" style="flex:1"></div><div id="fq-tr" class="tiny" style="margin:-4px 0 10px"></div>'+
+      (d.itens.length?temas.map(function(t){return'<div class="tiny muted" style="font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin:14px 0 2px">'+esc(t)+'</div>'+d.itens.filter(function(f){return f.tema===t}).map(function(f){var v=d.vistas[f.id]||0,tr=Object.keys(f.traducoes||{});return'<div class="li"><div class="m"><b>'+esc(f.pergunta)+(f.ativo?"":' <span class="tag" style="background:#F1F4F4;color:var(--txt3)">oculta</span>')+'</b><small>'+esc((function(r){return r.length>140?r.slice(0,140)+"…":r})(faqPreenche(f.resposta)))+'</small><div class="tiny muted" style="margin-top:3px">'+(v?'aberta '+v+(v>1?" vezes":" vez"):"ainda não aberta")+(tr.length?' · tradução '+tr.map(function(x){return x.toUpperCase()}).join(" e "):' · <span style="color:var(--txt3)">sem tradução</span>')+'</div></div><button class="btn sm sec" data-fe="'+f.id+'">Editar</button></div>'}).join("")}).join(""):'<div class="empty">Nenhuma pergunta cadastrada ainda.</div>')+'</div>';
+    h+='<p class="tiny muted">Nas respostas, <b>{condicoes}</b>, <b>{pets}</b>, <b>{checkin}</b> e <b>{checkout}</b> viram o texto que está em Ajustes › Site. Assim, mudando lá, a resposta muda junto.</p>';
+    $("#fq").innerHTML=h;
+    $$("[data-fr]").forEach(function(b){b.onclick=function(){var x=d.falta[+b.dataset.fr],p=x.termo.trim();p=p.charAt(0).toUpperCase()+p.slice(1);if(!/[?？]$/.test(p))p+="?";formFaq({pergunta:p,palavras:x.termo_norm,tema:""},x)}});
+    $$("[data-fi]").forEach(function(b){b.onclick=function(){var x=d.falta[+b.dataset.fi];tenta(G("faq_termo",{termo:x.termo}),"Ignorado. Se voltarem a procurar, aparece de novo.").then(VIEWS.duvidas).catch(function(){})}});
+    $$("[data-fe]").forEach(function(b){b.onclick=function(){formFaq(d.itens.filter(function(f){return f.id===+b.dataset.fe})[0],null)}});
+    var ti=$("#fq-t");ti.oninput=function(){var v=ti.value.trim();if(!v){$("#fq-tr").innerHTML="";return}
+      carregaBuscaSite().then(function(){if(!window.MareDuvidas){$("#fq-tr").textContent="";return}var r=MareDuvidas.busca(v,d.itens.filter(function(f){return f.ativo}).map(function(f){return Object.assign({},f)}));
+        $("#fq-tr").innerHTML=r.length?'O site mostraria: '+r.map(function(f,i){return'<b>'+(i+1)+'.</b> '+esc(f.pergunta)}).join(" &nbsp; "):'<span style="color:var(--err)">O site não acharia resposta</span> e mostraria o botão do WhatsApp.'})};
+  }).catch(function(e){$("#fq").innerHTML='<div class="empty">'+esc(e.message||"Não foi possível carregar.")+'</div>'});
+};
+function formFaq(f,falta){
+  var tr=f.traducoes||{},es=tr.es||{},en=tr.en||{},temas=TEMA_PADRAO.slice();((S._faq&&S._faq.itens)||[]).forEach(function(x){if(temas.indexOf(x.tema)<0)temas.push(x.tema)});
+  var maxOrd=((S._faq&&S._faq.itens)||[]).reduce(function(m,x){return Math.max(m,x.ordem||0)},0);
+  var campos=(falta?'<div class="tiny" style="background:var(--espuma);border-radius:10px;padding:10px 12px">Procuraram <b>“'+esc(falta.termo)+'”</b> '+falta.n+(falta.n>1?" vezes":" vez")+'. Escreva a pergunta do jeito que um hóspede faria e a resposta da pousada.</div>':"")+
+    '<label class="f">Tema<input name="tema" list="fq-temas" required maxlength="60" value="'+esc(f.tema||"")+'" placeholder="Ex.: Chegada e horários"><datalist id="fq-temas">'+temas.map(function(t){return'<option value="'+esc(t)+'">'}).join("")+'</datalist></label>'+
+    '<label class="f">Pergunta<input name="pergunta" required maxlength="200" value="'+esc(f.pergunta||"")+'"></label>'+
+    '<label class="f">Resposta<textarea name="resposta" required maxlength="1500" rows="5">'+esc(f.resposta||"")+'</textarea></label>'+
+    '<label class="f">Outras palavras que as pessoas usam<input name="palavras" maxlength="400" value="'+esc(f.palavras||"")+'" placeholder="Ex.: garagem, vaga, carro"><small class="muted" style="font-weight:400">Ajuda a busca a achar esta resposta. Não precisa de acento nem vírgula.</small></label>'+
+    '<details style="border:1px solid var(--linha);border-radius:12px;padding:10px 12px"><summary style="font-size:15px">Tradução para espanhol e inglês (opcional)</summary><div class="grid" style="gap:10px;margin-top:10px">'+
+      '<label class="f">Pergunta em espanhol<input name="es_p" maxlength="200" value="'+esc(es.p||"")+'"></label><label class="f">Resposta em espanhol<textarea name="es_r" maxlength="1500" rows="3">'+esc(es.r||"")+'</textarea></label>'+
+      '<label class="f">Pergunta em inglês<input name="en_p" maxlength="200" value="'+esc(en.p||"")+'"></label><label class="f">Resposta em inglês<textarea name="en_r" maxlength="1500" rows="3">'+esc(en.r||"")+'</textarea></label>'+
+      '<p class="tiny muted" style="margin:0">Sem tradução, quem está com o site em outro idioma vê a resposta em português.</p></div></details>'+
+    '<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><label class="f" style="flex:0 0 110px">Ordem<input name="ordem" type="number" min="0" max="9999" value="'+(f.id?f.ordem||0:maxOrd+10)+'"></label><label style="display:flex;gap:8px;align-items:center;margin-top:16px"><input type="checkbox" name="ativo" '+(f.ativo!==false?"checked":"")+'>Mostrar no site</label></div>'+
+    (f.id?'<button type="button" class="btn sm ghost" id="fq-del" style="color:var(--err);justify-self:start">Apagar esta pergunta</button>':"");
+  var p=pergunta(f.id?"Editar pergunta":"Nova pergunta",null,campos,f.id?"Salvar":"Publicar no site");
+  var del=$("#fq-del");if(del)del.onclick=function(){fechaModal();confirma("Apagar pergunta?","Ela sai da Central de dúvidas do site.","Apagar","danger").then(function(ok){if(ok)tenta(G0("faq_del",{id:f.id}),"Pergunta apagada").then(VIEWS.duvidas)})};
+  p.then(function(o){if(!o)return;
+    var trd={es:{t:es.t||"",p:o.es_p,r:o.es_r},en:{t:en.t||"",p:o.en_p,r:o.en_r}};
+    tenta(G("faq_salvar",{id:f.id||null,tema:o.tema,pergunta:o.pergunta,resposta:o.resposta,palavras:o.palavras,ordem:+o.ordem||0,ativo:o.ativo,traducoes:trd,termos:falta?[falta.termo]:[]}),f.id?"Pergunta salva ✓":"Publicada no site ✓").then(VIEWS.duvidas).catch(function(){});
   });
 }
 

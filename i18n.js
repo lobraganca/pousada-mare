@@ -26,7 +26,7 @@
   var D = {
     /* menu e cabeçalho */
     "Suítes": ["Suites", "Suites"], "Restaurante": ["Restaurante", "Restaurant"], "A pousada": ["La posada", "The inn"],
-    "Como chegar": ["Cómo llegar", "Getting here"], "Cardápio": ["Menú", "Menu"], "Montar reserva": ["Reservar", "Book your stay"],
+    "Como chegar": ["Cómo llegar", "Getting here"], "Dúvidas": ["Preguntas", "FAQ"], "Cardápio": ["Menú", "Menu"], "Montar reserva": ["Reservar", "Book your stay"],
     "Principal": ["Principal", "Main"], "Menu": ["Menú", "Menu"], "Abrir menu": ["Abrir menú", "Open menu"], "Fechar menu": ["Cerrar menú", "Close menu"],
     "Pousada Maré, início": ["Pousada Maré, inicio", "Pousada Maré, home"],
     /* abertura */

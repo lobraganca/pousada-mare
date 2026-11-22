@@ -2,6 +2,11 @@ import { q, q1, corpo, responde, falha, ipDe, limite, txt, isData, hoje } from "
 
 // API pública do site. Só expõe: suítes, preços, nº de quartos livres, cardápio e vídeos.
 // NUNCA devolve nomes, telefones ou reservas de hóspedes.
+// Palavras que não ajudam a agrupar buscas ("tem estacionamento?" = "estacionamento")
+const VAZIAS = new Set("a o os as um uma uns umas de da do das dos e em no na nos nas para pra pro por com sem que se tem ter tenho voces voce vcs vc eu meu minha qual quais como onde quando posso pode podem ha ao aos la el los las es un una y con hay puedo the an is are do does can i you to of in for it there".split(" "));
+export const normaliza = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+export const chaveBusca = (s) => { const n = normaliza(s); const k = n.split(" ").filter((w) => w && !VAZIAS.has(w)).join(" "); return (k || n).slice(0, 120); };
+
 const CFG_PUBLICA = ["whatsapp", "whatsapp_restaurante", "vendas_ate", "site_pausado", "sinal_pct", "condicoes", "checkin_hora", "checkout_hora", "politica_pets"];
 
 export default async function handler(req, res) {
@@ -63,6 +68,42 @@ export default async function handler(req, res) {
          where leads.status in ('novo','contatado')`,
         [id, nome, tel, txt(b.cidade, 60), ci, co, Math.min(60, parseInt(b.adultos) || 0), Math.min(60, parseInt(b.criancas) || 0),
          JSON.stringify(itens), Math.max(0, Math.min(1e6, Number(b.valor) || 0)), txt(b.obs, 400), Math.min(4, parseInt(b.etapa) || 1), !!b.enviado, cidade]);
+      return responde(res, 204, {});
+    }
+
+    // Central de dúvidas: perguntas e respostas publicadas (com o texto de Ajustes que algumas usam)
+    if (req.method === "GET" && a === "faq") {
+      const [itens, cfg] = await Promise.all([
+        q(`select id, tema, pergunta, resposta, palavras, traducoes from faq where ativo order by ordem, id`),
+        q(`select chave, valor from config where chave = any($1)`, [["whatsapp", "condicoes", "politica_pets", "checkin_hora", "checkout_hora"]]),
+      ]);
+      res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      return res.end(JSON.stringify({ itens, config: Object.fromEntries(cfg.map((r) => [r.chave, r.valor])) }));
+    }
+
+    // Registra o que a pessoa procurou (só o texto da busca; nada que identifique quem foi).
+    // Cada busca tem um id criado no navegador: enquanto a pessoa digita, a mesma linha é atualizada.
+    if (req.method === "POST" && a === "busca") {
+      const b = corpo(req);
+      const id = String(b.id || "");
+      const termo = txt(b.termo, 120);
+      if (!/^[A-Za-z0-9_-]{8,40}$/.test(id) || termo.length < 2) return responde(res, 204, {});
+      const chave = chaveBusca(termo);
+      if (chave.length < 2) return responde(res, 204, {});
+      const existe = await q1(`select 1 from faq_buscas where id = $1`, [id]);
+      if (!existe && !(await limite(`busca:${ipDe(req)}`, 60, 3600))) return responde(res, 204, {});
+      const faqId = Number.isInteger(b.faq_id) && b.faq_id > 0 ? b.faq_id : null;
+      const idioma = ["pt", "es", "en"].includes(b.idioma) ? b.idioma : "pt";
+      await q(
+        `insert into faq_buscas(id, termo, termo_norm, idioma, achou, faq_id, perguntou)
+         values ($1, $2, $3, $4, $5, (select id from faq where id = $6), $7)
+         on conflict (id) do update set
+           termo = excluded.termo, termo_norm = excluded.termo_norm, achou = excluded.achou,
+           faq_id = coalesce(excluded.faq_id, faq_buscas.faq_id),
+           perguntou = faq_buscas.perguntou or excluded.perguntou, atualizado_em = now()
+         where faq_buscas.criado_em > now() - interval '1 day'`,
+        [id, termo, chave, idioma, !!b.achou, faqId, !!b.perguntou]);
       return responde(res, 204, {});
     }
 

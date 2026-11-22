@@ -14,6 +14,8 @@ api/video.js        upload de vídeos (Vercel Blob)
 api/cron.js         todo dia 7h: tarefas de chegada, aviso de no-show, limpeza LGPD
 db/schema.sql       tabelas, regras e funções (rodar 1x)
 db/dados-iniciais.sql  suítes, preços, 13 quartos, cardápio de exemplo
+db/central-duvidas.sql  Central de dúvidas (rodar 1x se o banco já existia antes dela)
+duvidas.js          Central de dúvidas do site (busca, respostas, WhatsApp com a pergunta pronta)
 ```
 
 ## Colocar no ar (≈15 min)
@@ -51,3 +53,12 @@ db/dados-iniciais.sql  suítes, preços, 13 quartos, cardápio de exemplo
 ## Booking e Channex
 O dono contou que usa Channex (link da bio) e Booking. Um próximo passo é sincronizar a disponibilidade com o Channex para o Booking não vender um quarto já ocupado aqui.
 Reservas do Booking entram manualmente com origem **Booking** (o sistema bloqueia se o quarto já estiver ocupado). Integração automática por iCal pode ser um próximo passo.
+
+## Central de dúvidas
+- No site, a seção **Dúvidas** tem uma busca: a pessoa digita e a resposta aparece na hora (aceita erro de digitação, sem acento, sinônimos como "cachorro" → pet, e os 3 idiomas).
+- Não achou? O botão **Perguntar no WhatsApp** abre a conversa com a pergunta já escrita.
+- Na gestão, **Dúvidas do site** mostra o que procuraram e não acharam (do mais procurado para o menos). **Responder** cria a resposta já com o termo como palavra de busca; **Ignorar** tira da lista.
+- Só o texto da busca é guardado (nada de nome, telefone ou IP), e é apagado depois de 1 ano.
+- Acesso: o dono vê sempre; para a recepção, marque **Dúvidas do site** em Ajustes › Usuários.
+- Banco que já existia: rode `db/central-duvidas.sql` uma vez no Neon. Ele já cadastra 13 perguntas iniciais (com espanhol e inglês), escritas só com informações que estão no site. Peça ao dono para revisar e completar (ex.: estacionamento, cartão, transfer).
+

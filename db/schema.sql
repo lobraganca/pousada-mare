@@ -255,6 +255,40 @@ create table if not exists videos (
   ativo boolean not null default true
 );
 
+-- ---------- Central de dúvidas do site ----------
+create table if not exists faq (
+  id serial primary key,
+  tema text not null default 'Geral',
+  pergunta text not null check (length(pergunta) between 3 and 200),
+  resposta text not null check (length(resposta) between 2 and 1500),
+  palavras text not null default '',          -- outras palavras que as pessoas usam (ex.: cachorro, gato)
+  traducoes jsonb not null default '{}',      -- {"es":{"t":tema,"p":pergunta,"r":resposta},"en":{…}}
+  ordem int not null default 0,
+  ativo boolean not null default true,
+  atualizado_em timestamptz not null default now()
+);
+-- O que as pessoas digitaram na busca (uma linha por busca; sem nome nem telefone)
+create table if not exists faq_buscas (
+  id text primary key check (id ~ '^[A-Za-z0-9_-]{8,40}$'),
+  termo text not null,
+  termo_norm text not null,
+  idioma text not null default 'pt',
+  achou boolean not null default false,      -- a busca trouxe alguma resposta
+  faq_id int references faq(id) on delete set null,  -- resposta que a pessoa abriu
+  perguntou boolean not null default false,  -- tocou em "Perguntar no WhatsApp"
+  criado_em timestamptz not null default now(),
+  atualizado_em timestamptz not null default now()
+);
+create index if not exists faq_buscas_em on faq_buscas(atualizado_em desc);
+create index if not exists faq_buscas_termo on faq_buscas(termo_norm);
+-- Termos que o dono já respondeu ou decidiu ignorar (somem da lista "não acharam")
+create table if not exists faq_termos (
+  termo_norm text primary key,
+  como text not null check (como in ('respondido','ignorado')),
+  faq_id int references faq(id) on delete set null,
+  em timestamptz not null default now()
+);
+
 -- ---------- Auditoria ----------
 create table if not exists auditoria (
   id bigserial primary key,
@@ -281,7 +315,7 @@ end $$;
 
 do $$ declare t text; begin
   foreach t in array array['reservas','ocupacoes','pagamentos','lancamentos','tarifas','temporadas',
-                           'quartos','usuarios','produtos','hospedes','fechamentos_site','categorias','config'] loop
+                           'quartos','usuarios','produtos','hospedes','fechamentos_site','categorias','config','faq'] loop
     execute format('drop trigger if exists tg_audit on %I', t);
     execute format('create trigger tg_audit after insert or update or delete on %I for each row execute function fn_auditoria()', t);
   end loop;
