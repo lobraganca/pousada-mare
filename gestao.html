@@ -744,7 +744,7 @@ function inicia(u){S.u=u;G("boot").then(function(b){S.boot=b;$("#login").classLi
 function contaLeads(){if(!podeDR())return;G("leads",{filtro:"abertos"}).then(function(r){S.nLeads=r.itens.filter(function(l){return l.status==="novo"}).length;renderNav()}).catch(function(){})}
 function boot(){
   var prod=/pousadamarecumuru\.com\.br$/.test(location.hostname);
-  fetch("/api/auth",{credentials:"same-origin"}).then(function(r){var ct=r.headers.get("content-type")||"";if(ct.indexOf("json")<0)throw new Error("sem api");return r.json().then(function(j){if(r.ok)inicia(j.usuario);else mostraLogin()})})
+  fetch("/api/auth",{credentials:"same-origin"}).then(function(r){var ct=r.headers.get("content-type")||"";if(ct.indexOf("json")<0)throw new Error("sem api");return r.json().then(function(j){if(r.ok)inicia(j.usuario);else if(r.status===503&&!prod)throw new Error("sem banco");else mostraLogin()})})
   .catch(function(){if(prod){document.body.innerHTML='<p style="padding:40px;font-family:sans-serif">Não foi possível falar com o servidor. Verifique a internet e recarregue a página.</p>';return}
     var s=document.createElement("script");s.src="demo.js";s.onload=function(){DEMO=true;try{inicia(MareDemo.auth().usuario)}catch(e){mostraLogin();$("#lg-msg").innerHTML="Demonstração: entre com <b>dono</b>, <b>brenda</b> ou <b>jaci</b> e qualquer senha."}};document.head.appendChild(s)});
 }
