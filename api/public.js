@@ -1,4 +1,5 @@
 import { q, q1, corpo, responde, falha, ipDe, limite, txt, isData, hoje } from "./_db.js";
+import { validaFicha } from "./_ficha.js";
 
 // API pública do site. Só expõe: suítes, preços, nº de quartos livres, cardápio e vídeos.
 // NUNCA devolve nomes, telefones ou reservas de hóspedes.
@@ -72,6 +73,38 @@ export default async function handler(req, res) {
     }
 
     // Central de dúvidas: perguntas e respostas publicadas (com o texto de Ajustes que algumas usam)
+    // Check-in online: o hóspede abre o link secreto da reserva e preenche a ficha.
+    // O link só funciona até o dia da saída e não mostra valores nem dados de outras reservas.
+    if (a === "ficha") {
+      const b = req.method === "POST" ? corpo(req) : {};
+      const tk = String(req.method === "POST" ? b.t : req.query.t || "");
+      if (!/^[A-Za-z0-9_-]{20,60}$/.test(tk)) return responde(res, 404, { erro: "link" });
+      if (!(await limite(`ficha:${ipDe(req)}`, 40, 3600))) return responde(res, 429, { erro: "Muitas tentativas. Aguarde alguns minutos." });
+      const r = await q1(`select r.id, r.codigo, r.status, r.checkin, r.checkout, r.adultos, r.criancas, r.ficha, r.ficha_em, h.nome
+                            from reservas r join hospedes h on h.id = r.hospede_id
+                           where r.checkin_token = $1 and r.status in ('pre','confirmada','hospedada') and r.checkout >= $2::date`, [tk, hoje()]);
+      if (!r) return responde(res, 404, { erro: "link" });
+      const fechada = r.status === "hospedada";
+      if (req.method === "GET") {
+        const [quartos, cfg] = await Promise.all([
+          q(`select distinct c.nome from ocupacoes o join quartos qt on qt.id = o.quarto_id join categorias c on c.id = qt.categoria_id where o.reserva_id = $1 and o.ativo`, [r.id]),
+          q(`select chave, valor from config where chave = any($1)`, [["whatsapp", "checkin_hora", "checkout_hora"]]),
+        ]);
+        return responde(res, 200, { nome: r.nome, codigo: r.codigo, checkin: r.checkin, checkout: r.checkout, adultos: r.adultos, criancas: r.criancas,
+          suites: quartos.map((x) => x.nome), ficha: r.ficha, ficha_em: r.ficha_em, fechada, config: Object.fromEntries(cfg.map((x) => [x.chave, x.valor])) });
+      }
+      if (req.method !== "POST") return responde(res, 405, { erro: "método" });
+      if (fechada) return responde(res, 409, { erro: "O check-in desta reserva já foi feito na recepção." });
+      const f = validaFicha(b.ficha, r);
+      const nomes = f.acompanhantes.map((p) => p.nome).join("\n");
+      await q(`update reservas set ficha = $2::jsonb, ficha_em = now(), ficha_conferida_em = null,
+                      acompanhantes = case when $3 <> '' then $3 else acompanhantes end where id = $1`, [r.id, JSON.stringify(f), nomes]);
+      await q(`update hospedes set documento = $2, email = case when $3 <> '' then $3 else email end, cidade = case when $4 <> '' then $4 else cidade end
+                where id = (select hospede_id from reservas where id = $1)`,
+        [r.id, (f.titular.doc_tipo === "cpf" ? "CPF " : f.titular.doc_tipo.toUpperCase() + " ") + f.titular.doc, f.titular.email, [f.titular.cidade, f.titular.uf].filter(Boolean).join(" / ").slice(0, 60)]);
+      return responde(res, 200, { ok: true });
+    }
+
     if (req.method === "GET" && a === "faq") {
       const [itens, cfg] = await Promise.all([
         q(`select id, tema, pergunta, resposta, palavras, traducoes from faq where ativo order by ordem, id`),

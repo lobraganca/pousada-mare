@@ -1,6 +1,7 @@
 import { q, q1, corpo, responde, falha, txt, num, int, data, umDe, hoje, isData } from "./_db.js";
 import { usuarioDe, origemOk, hashSenha, senhaForte } from "./_auth.js";
 import { chaveBusca } from "./public.js";
+import crypto from "node:crypto";
 
 // API da Gestão. Cada ação diz quais papéis podem usá-la:
 //   dono = tudo · recepcao = operação do dia a dia · equipe = tarefas e lançamentos do bar
@@ -12,7 +13,7 @@ const AREAS_PADRAO = { recepcao: ["mapa", "reservas", "leads", "consumo", "pagam
 const so_dono = ["usuario_salvar", "pagamento_del", "lead_del"];
 const AREA_DE = {
   mapa: ["mapa"], mover: ["mapa"], bloqueio_criar: ["mapa"], bloqueio_remover: ["mapa"],
-  reserva_salvar: ["reservas", "mapa"], reserva_status: ["reservas", "mapa"], msg_marcar: ["reservas", "mapa"], reservas_busca: ["reservas"], hospede_busca: ["reservas", "mapa", "leads"],
+  reserva_salvar: ["reservas", "mapa"], reserva_status: ["reservas", "mapa"], msg_marcar: ["reservas", "mapa"], ficha_conferir: ["reservas", "mapa"], reservas_busca: ["reservas"], hospede_busca: ["reservas", "mapa", "leads"],
   acompanhantes: ["reservas", "mapa"], disponiveis: ["reservas", "mapa", "leads"], preco: ["reservas", "mapa", "leads"],
   reserva_get: ["reservas", "mapa", "leads", "pagamentos"], leads: ["leads"], lead_status: ["leads"],
   lancar: ["consumo"], consumo: ["pagamentos"], lancamento_cancelar: ["pagamentos"], pagamento_add: ["pagamentos"],
@@ -29,7 +30,7 @@ const podeAcao = (nome, acao, u) => {
   if (AREA_DE[nome]) { const a = areasDe(u); return AREA_DE[nome].some((x) => a.includes(x)); }
   return acao[0].includes(u.papel);
 };
-const MSG_TIPOS = ["pix", "confirmacao", "chegar", "vespera", "avaliacao"];
+const MSG_TIPOS = ["pix", "confirmacao", "checkin", "chegar", "vespera", "avaliacao"];
 const ORIGENS = ["site", "whatsapp", "booking", "telefone", "balcao", "outro"];
 const STATUS = ["pre", "confirmada", "hospedada", "finalizada", "cancelada", "no_show"];
 const ATIVOS = "('pre','confirmada','hospedada','finalizada')";
@@ -118,6 +119,8 @@ const ACOES = {
   // ---------------- Reservas ----------------
   reserva_get: [DR, async (b) => {
     const id = int(b.id, 1);
+    // Garante o link do check-in online (token aleatório, criado uma vez por reserva)
+    await q(`update reservas set checkin_token = $2 where id = $1 and checkin_token is null`, [id, crypto.randomBytes(18).toString("base64url")]);
     const r = await q1(`select r.*, ${FIN}, row_to_json(h) hospede from reservas r join hospedes h on h.id = r.hospede_id where r.id = $1`, [id]);
     if (!r) throw Object.assign(new Error("Reserva não encontrada."), { status: 404 });
     const [quartos, pagamentos, lancamentos, historico, anteriores] = await Promise.all([
@@ -156,6 +159,10 @@ const ACOES = {
   msg_marcar: [DR, async (b, u) => {
     const tipo = umDe(b.tipo, MSG_TIPOS);
     await q(`update reservas set mensagens = coalesce(mensagens, '{}'::jsonb) || jsonb_build_object($2::text, now()) where id = $1`, [int(b.id, 1), tipo], u.id);
+    return { ok: true };
+  }],
+  ficha_conferir: [DR, async (b, u) => {
+    await q(`update reservas set ficha_conferida_em = case when $2 then now() else null end where id = $1 and ficha is not null`, [int(b.id, 1), b.ok !== false], u.id);
     return { ok: true };
   }],
   reserva_status: [DR, async (b, u) => {

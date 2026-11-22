@@ -16,6 +16,8 @@ db/schema.sql       tabelas, regras e funções (rodar 1x)
 db/dados-iniciais.sql  suítes, preços, 13 quartos, cardápio de exemplo
 db/central-duvidas.sql  Central de dúvidas (rodar 1x se o banco já existia antes dela)
 db/atendimento-automatico.sql  mensagens prontas e check-in online (rodar 1x se o banco já existia)
+checkin.html        check-in online do hóspede (abre pelo link secreto da reserva)
+api/_ficha.js       validação da ficha (CPF, idade, placa…)
 duvidas.js          Central de dúvidas do site (busca, respostas, WhatsApp com a pergunta pronta)
 ```
 
@@ -67,4 +69,10 @@ Reservas do Booking entram manualmente com origem **Booking** (o sistema bloquei
 - Em cada reserva, o cartão **Mensagens prontas** tem 5 botões: Dados do Pix, Reserva confirmada, Como chegar, Lembrete da véspera e Pedir avaliação. O texto sai com nome, datas e valores; dá para ajustar antes de enviar.
 - O botão em destaque é o que faz sentido agora (pré-reserva → Pix; confirmada → confirmação/como chegar; véspera → lembrete; depois da saída → avaliação). Depois de enviada, aparece ✓ com a data.
 - **Ajustes › Mensagens**: chave Pix, nome e banco, link de avaliação do Google e os textos (com botão para voltar ao padrão).
+
+## Check-in online
+- Cada reserva ganha um link secreto (`/checkin?t=…`). Ele vai nas mensagens **Link do check-in online**, **Reserva confirmada** e **Lembrete da véspera**, ou pelo botão **Copiar link** no cartão *Check-in online* da reserva.
+- O hóspede preenche, em português, espanhol ou inglês: titular (nome, documento, nascimento, nacionalidade, e-mail, cidade), acompanhantes (com parentesco para menores de 18), horário de chegada, placa e modelo do carro e pedidos. Ele precisa aceitar a Política de Privacidade.
+- O servidor confere: CPF válido, titular maior de idade, parentesco de menores, placa no formato brasileiro. Os nomes viram a lista de hóspedes da reserva, e o documento, e-mail e cidade vão para o cadastro do hóspede.
+- Na reserva, a recepção vê a ficha e toca em **Marcar como conferido**. O link para de funcionar depois do check-in na recepção ou depois da data de saída.
 

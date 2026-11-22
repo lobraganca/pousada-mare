@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0B3B45">
+<title>Check-in online · Pousada Maré</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Manrope:wght@400;500;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--branco:#fff;--linho:#FAF8F3;--areia:#F1EADD;--turq:#0A97B4;--verde:#16B48A;--oceano:#0B3B45;--agua:#E2F3F4;--tx:#13292E;--tx2:#4D6166;--muted:#6E7F83;--err:#B3261E;
+  --serif:"Fraunces",Georgia,serif;--sans:"Manrope",system-ui,sans-serif}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--linho);color:var(--tx);font:16px/1.55 var(--sans)}
+a{color:var(--turq)}
+.top{background:var(--oceano);color:#fff;padding:22px 20px 70px;position:relative;overflow:hidden}
+.top .in,.main{max-width:720px;margin:0 auto}
+.top svg.logo{width:132px;height:auto;display:block}
+.top svg.logo text{fill:#fff}
+.top .lang{position:absolute;right:16px;top:20px;display:flex;gap:2px;background:rgba(255,255,255,.12);border-radius:999px;padding:3px}
+.top .lang button{border:0;background:none;color:#fff;font:700 12.5px var(--sans);padding:6px 9px;border-radius:999px;cursor:pointer}
+.top .lang button[aria-pressed=true]{background:#fff;color:var(--oceano)}
+.top h1{font:400 clamp(30px,7vw,42px)/1.1 var(--serif);margin:22px 0 6px}
+.top p{margin:0;opacity:.85}
+.onda{position:absolute;left:0;right:0;bottom:-1px;height:46px;width:100%}
+.main{padding:0 16px 60px;margin-top:-40px;position:relative}
+.card{background:var(--branco);border-radius:22px;padding:22px;box-shadow:0 18px 40px -28px rgba(11,59,69,.45),inset 0 0 0 1px rgba(11,59,69,.06);margin-bottom:16px}
+.card h2{font:400 24px/1.2 var(--serif);color:var(--oceano);margin:0 0 4px}
+.card h2 small{display:block;font:700 12px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--turq);margin-bottom:6px}
+.card .sub{color:var(--tx2);margin:0 0 16px;font-size:15px}
+.res{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.res div{background:var(--agua);border-radius:14px;padding:12px 14px}
+.res small{display:block;font-size:12px;color:var(--tx2)}
+.res b{font-weight:700;color:var(--oceano)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.full{grid-column:1/-1}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700;color:var(--tx2)}
+label.f em{font-style:normal;font-weight:500;color:var(--muted)}
+input,select,textarea{font:500 16px var(--sans);color:var(--tx);border:1.5px solid rgba(11,59,69,.16);border-radius:12px;padding:12px 13px;background:#fff;width:100%;min-width:0;-webkit-appearance:none;appearance:none}
+select{background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%230B3B45' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 14px center;padding-right:34px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--turq);box-shadow:0 0 0 3px rgba(10,151,180,.14)}
+.doc{display:grid;grid-template-columns:130px 1fr;gap:8px}
+.pessoa{border-top:1px solid var(--areia);padding-top:16px;margin-top:16px}
+.pessoa h3{font:700 15px var(--sans);color:var(--oceano);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.pessoa h3 button{margin-left:auto;border:0;background:none;color:var(--err);font:600 13px var(--sans);cursor:pointer}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 26px;border-radius:999px;border:0;background:var(--turq);color:#fff;font:700 16px var(--sans);cursor:pointer;text-decoration:none}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn.linha{background:#fff;color:var(--oceano);box-shadow:inset 0 0 0 2px var(--oceano)}
+.btn.zap{background:#1FAF5C}
+.btn.sm{min-height:42px;padding:0 18px;font-size:14px}
+.aceite{display:flex;gap:12px;align-items:flex-start;font-size:15px;color:var(--tx2)}
+.aceite input{width:22px;height:22px;flex:none;margin-top:2px;-webkit-appearance:checkbox;appearance:auto;accent-color:var(--turq)}
+.aviso{border-radius:14px;padding:12px 14px;font-size:15px;margin-bottom:14px}
+.aviso.ok{background:#E3F6EF;color:#0F6B4F}
+.aviso.err{background:#FDECEA;color:var(--err);font-weight:600}
+.aviso.info{background:var(--agua);color:var(--oceano)}
+.priv{font-size:13px;color:var(--muted);margin:10px 0 0}
+.fim{text-align:center;padding:34px 22px}
+.fim .ic{width:64px;height:64px;border-radius:50%;background:#E3F6EF;color:var(--verde);display:grid;place-items:center;margin:0 auto 14px}
+.carregando{text-align:center;color:var(--muted);padding:40px 0}
+footer{text-align:center;font-size:13px;color:var(--muted);padding:0 16px 40px}
+@media (max-width:560px){.grid{grid-template-columns:1fr}.res{grid-template-columns:1fr 1fr}.card{padding:18px;border-radius:18px}.doc{grid-template-columns:116px 1fr}}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <svg class="logo" viewBox="0 0 260 120" aria-label="Pousada Maré" role="img"><path d="M14 34c6-8 14-8 20 0s14 8 20 0 14-8 20 0 14 8 20 0" fill="none" stroke="#16B48A" stroke-width="5" stroke-linecap="round"/><path d="M17 78V56a12 12 0 0 1 24 0v22M41 56a12 12 0 0 1 24 0v22M65 56a12 12 0 0 1 24 0v22" fill="none" stroke="#7FD6E6" stroke-width="8" stroke-linecap="round"/><text x="96" y="78" font-family="Quicksand,Nunito,sans-serif" font-weight="700" font-size="54" letter-spacing="-1">aré</text><path d="M110 82c-2 18 10 30 32 30 24 0 46-14 60-36" fill="none" stroke="#7FD6E6" stroke-width="6" stroke-linecap="round"/><text x="150" y="100" font-family="Quicksand,Nunito,sans-serif" font-weight="600" font-size="15" letter-spacing="1">pousada</text></svg>
+  <div class="lang" role="group" aria-label="Idioma / Language"><button data-l="pt">PT</button><button data-l="es">ES</button><button data-l="en">EN</button></div>
+  <h1 id="h1">Check-in online</h1><p id="hp">Adiante a sua ficha e chegue direto para descansar.</p>
+</div><svg class="onda" viewBox="0 0 1440 46" preserveAspectRatio="none" aria-hidden="true"><path d="M0 22c120-18 240-18 360 0s240 18 360 0 240-18 360 0 240 18 360 0v24H0Z" fill="#FAF8F3"/></svg></header>
+<main class="main" id="app"><div class="card carregando">…</div></main>
+<footer>Pousada Maré · Cumuruxatiba, BA · <a href="/privacidade" id="ft-p">Política de Privacidade</a></footer>
+<script>
+(function(){
+"use strict";
+var LS=["pt","es","en"],L=(function(){try{var q=new URLSearchParams(location.search).get("lang");if(LS.indexOf(q)>=0)return q;var s=localStorage.mareLang;if(LS.indexOf(s)>=0)return s}catch(e){}var n=String(navigator.language||"pt").toLowerCase();return n.indexOf("pt")===0?"pt":n.indexOf("es")===0?"es":"en"})();
+document.documentElement.lang=L==="pt"?"pt-BR":L;
+var T={
+ pt:{h1:"Check-in online",hp:"Adiante a sua ficha e chegue direto para descansar.",ola:"Olá, ",res:"Sua reserva",cheg:"Chegada",said:"Saída",sui:"Suíte",hos:"Hóspedes",ad:["adulto","adultos"],cr:["criança","crianças"],
+  tit:"Titular da reserva",titS:"Precisa ser maior de idade e apresentar este documento na chegada.",nome:"Nome completo",doc:"Documento",num:"Número",nasc:"Data de nascimento",nac:"Nacionalidade",email:"E-mail",opc:"(opcional)",cid:"Cidade",uf:"Estado",pais:"País",
+  aco:"Acompanhantes",acoS:"Quem vem com você. Para menores de 18 anos, informe o parentesco com o titular.",acoN:"Acompanhante ",par:"Parentesco com o titular",parPh:"Ex.: filho(a), neto(a), sobrinho(a)",mais:"+ Incluir acompanhante",tira:"Remover",
+  via:"Chegada",viaS:"Ajuda a recepção a se preparar para receber você.",hora:"Horário previsto de chegada",placa:"Placa do carro",carro:"Modelo e cor",carroPh:"Ex.: Gol prata",obs:"Algum pedido para a chegada?",obsPh:"Ex.: chegaremos com um bebê, precisamos de berço",
+  aceite:"Li e concordo com a <a href=\"/privacidade\" target=\"_blank\" rel=\"noopener\">Política de Privacidade</a>. Meus dados serão usados só para o registro de hospedagem e para esta estadia.",
+  priv:"A ficha é exigida por lei para todo meio de hospedagem (Lei 11.771/2008). Seus dados ficam guardados com segurança e só a equipe da pousada tem acesso.",
+  env:"Enviar ficha",envd:"Enviando…",ja:"Recebemos a sua ficha em {d}. Se precisar corrigir algo, é só alterar e enviar de novo.",ok:"Pronto! Ficha enviada",okS:"Na chegada, é só apresentar o documento do titular na recepção. Boa viagem!",zap:"Falar com a recepção",
+  feito:"O check-in desta reserva já foi feito. Boa estadia!",inv:"Este link não é válido ou a reserva já terminou.",invS:"Fale com a recepção pelo WhatsApp que enviamos um novo link.",erro:"Não foi possível enviar agora. Tente de novo em instantes.",
+  tipos:{cpf:"CPF",rg:"RG",passaporte:"Passaporte",outro:"Outro"},Brasil:"Brasil",Brasileira:"Brasileira",privL:"Política de Privacidade"},
+ es:{h1:"Check-in online",hp:"Completa tu ficha antes y llega directo a descansar.",ola:"¡Hola, ",res:"Tu reserva",cheg:"Llegada",said:"Salida",sui:"Suite",hos:"Huéspedes",ad:["adulto","adultos"],cr:["niño","niños"],
+  tit:"Titular de la reserva",titS:"Debe ser mayor de edad y presentar este documento al llegar.",nome:"Nombre completo",doc:"Documento",num:"Número",nasc:"Fecha de nacimiento",nac:"Nacionalidad",email:"E-mail",opc:"(opcional)",cid:"Ciudad",uf:"Provincia / estado",pais:"País",
+  aco:"Acompañantes",acoS:"Quienes vienen contigo. Para menores de 18 años, indica el parentesco con el titular.",acoN:"Acompañante ",par:"Parentesco con el titular",parPh:"Ej.: hijo(a), nieto(a), sobrino(a)",mais:"+ Agregar acompañante",tira:"Quitar",
+  via:"Llegada",viaS:"Ayuda a la recepción a prepararse para recibirte.",hora:"Hora prevista de llegada",placa:"Patente del auto",carro:"Modelo y color",carroPh:"Ej.: Gol gris",obs:"¿Algún pedido para la llegada?",obsPh:"Ej.: llegaremos con un bebé, necesitamos cuna",
+  aceite:"Leí y acepto la <a href=\"/privacidade\" target=\"_blank\" rel=\"noopener\">Política de Privacidad</a>. Mis datos se usarán solo para el registro de hospedaje y para esta estadía.",
+  priv:"La ley brasileña exige esta ficha a todo alojamiento (Ley 11.771/2008). Tus datos se guardan de forma segura y solo el equipo de la posada tiene acceso.",
+  env:"Enviar ficha",envd:"Enviando…",ja:"Recibimos tu ficha el {d}. Si necesitas corregir algo, cámbialo y envíala de nuevo.",ok:"¡Listo! Ficha enviada",okS:"Al llegar, solo presenta el documento del titular en la recepción. ¡Buen viaje!",zap:"Hablar con la recepción",
+  feito:"El check-in de esta reserva ya fue hecho. ¡Buena estadía!",inv:"Este enlace no es válido o la reserva ya terminó.",invS:"Escríbele a la recepción por WhatsApp y te enviamos un enlace nuevo.",erro:"No fue posible enviar ahora. Intenta de nuevo en un momento.",
+  tipos:{cpf:"CPF (Brasil)",rg:"DNI / cédula",passaporte:"Pasaporte",outro:"Otro"},Brasil:"",Brasileira:"",privL:"Política de Privacidad"},
+ en:{h1:"Online check-in",hp:"Fill in your registration ahead and arrive ready to relax.",ola:"Hi, ",res:"Your booking",cheg:"Arrival",said:"Departure",sui:"Suite",hos:"Guests",ad:["adult","adults"],cr:["child","children"],
+  tit:"Main guest",titS:"Must be an adult and show this document on arrival.",nome:"Full name",doc:"Document",num:"Number",nasc:"Date of birth",nac:"Nationality",email:"E-mail",opc:"(optional)",cid:"City",uf:"State / region",pais:"Country",
+  aco:"Companions",acoS:"Who is coming with you. For anyone under 18, tell us their relationship to the main guest.",acoN:"Companion ",par:"Relationship to the main guest",parPh:"E.g. son, daughter, grandchild",mais:"+ Add companion",tira:"Remove",
+  via:"Arrival",viaS:"Helps the front desk get ready to welcome you.",hora:"Expected arrival time",placa:"Car plate",carro:"Make and colour",carroPh:"E.g. silver Gol",obs:"Any request for your arrival?",obsPh:"E.g. we're bringing a baby and need a cot",
+  aceite:"I have read and agree to the <a href=\"/privacidade\" target=\"_blank\" rel=\"noopener\">Privacy Policy</a>. My data will only be used for the guest register and this stay.",
+  priv:"Brazilian law requires this registration at every lodging (Law 11.771/2008). Your data is stored securely and only the inn's staff can see it.",
+  env:"Send registration",envd:"Sending…",ja:"We received your registration on {d}. If anything needs fixing, just change it and send again.",ok:"Done! Registration sent",okS:"On arrival, just show the main guest's document at the front desk. Have a good trip!",zap:"Talk to the front desk",
+  feito:"Check-in for this booking has already been done. Enjoy your stay!",inv:"This link isn't valid or the booking has ended.",invS:"Message the front desk on WhatsApp and we'll send you a new link.",erro:"We couldn't send it right now. Please try again in a moment.",
+  tipos:{cpf:"CPF (Brazil)",rg:"ID card",passaporte:"Passport",outro:"Other"},Brasil:"",Brasileira:"",privL:"Privacy Policy"}
+}[L];
+var $=function(s,e){return(e||document).querySelector(s)},$$=function(s,e){return Array.prototype.slice.call((e||document).querySelectorAll(s))};
+var esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
+var dia=function(s){s=String(s||"").slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return"";return new Date(s+"T12:00:00Z").toLocaleDateString(L==="pt"?"pt-BR":L==="es"?"es-ES":"en-GB",{weekday:"short",day:"numeric",month:"short",timeZone:"UTC"})};
+$("#h1").textContent=T.h1;$("#hp").textContent=T.hp;$("#ft-p").textContent=T.privL;document.title=T.h1+" · Pousada Maré";
+$$(".lang button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.l===L);b.onclick=function(){try{localStorage.mareLang=b.dataset.l}catch(e){}var u=new URL(location.href);u.searchParams.set("lang",b.dataset.l);location.replace(u.toString())}});
+
+var TK=new URLSearchParams(location.search).get("t")||"",MODO="api",D=null;
+function demo(){return new Promise(function(ok){if(window.MareDemo)return ok();var s=document.createElement("script");s.src="demo.js";s.onload=ok;s.onerror=ok;document.head.appendChild(s)})}
+function busca(){return fetch("/api/public?a=ficha&t="+encodeURIComponent(TK)).then(function(r){if((r.headers.get("content-type")||"").indexOf("json")<0)throw{demo:1};return r.json().then(function(j){if(!r.ok)throw{status:r.status,j:j};return j})})
+  .catch(function(e){if(e&&e.status)throw e;return demo().then(function(){if(window.MareDemo&&MareDemo.ficha){MODO="demo";return MareDemo.ficha(TK)}throw{status:404}})})}
+function envia(f){if(MODO==="demo")return new Promise(function(ok,no){try{ok(MareDemo.fichaSalvar(TK,f))}catch(e){no({j:{erro:e.message}})}});
+  return fetch("/api/public?a=ficha",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({t:TK,ficha:f})}).then(function(r){return r.json().catch(function(){return{}}).then(function(j){if(!r.ok)throw{status:r.status,j:j};return j})})}
+var cfg=function(k,d){var v=D&&D.config&&D.config[k];if(Array.isArray(v))v=v[0];return v==null||v===""?d:v};
+var zap=function(m){return"https://wa.me/"+String(cfg("whatsapp","5573998456129")).replace(/\D/g,"")+"?text="+encodeURIComponent(m)};
+
+function docSel(p,i){return'<div class="doc"><select data-k="doc_tipo" aria-label="'+esc(T.doc)+'">'+["cpf","rg","passaporte","outro"].map(function(t){return'<option value="'+t+'"'+((p.doc_tipo||(L==="pt"?"cpf":"passaporte"))===t?" selected":"")+'>'+esc(T.tipos[t])+'</option>'}).join("")+'</select><input data-k="doc" required maxlength="30" autocomplete="off" value="'+esc(p.doc||"")+'" aria-label="'+esc(T.num)+'" placeholder="'+esc(T.num)+'"></div>'}
+function pessoaHtml(p,i){p=p||{};return'<div class="pessoa" data-p="'+i+'"><h3>'+esc(T.acoN+(i+1))+'<button type="button" data-tira>'+esc(T.tira)+'</button></h3><div class="grid">'+
+  '<label class="f full">'+esc(T.nome)+'<input data-k="nome" maxlength="120" autocomplete="off" value="'+esc(p.nome||"")+'"></label>'+
+  '<label class="f">'+esc(T.doc)+docSel(p,i)+'</label><label class="f">'+esc(T.nasc)+'<input data-k="nascimento" type="date" max="'+new Date().toISOString().slice(0,10)+'" value="'+esc(p.nascimento||"")+'"></label>'+
+  '<label class="f full">'+esc(T.par)+' <em>'+esc(T.opc)+'</em><input data-k="parentesco" maxlength="40" value="'+esc(p.parentesco||"")+'" placeholder="'+esc(T.parPh)+'"></label></div></div>'}
+function desenha(){
+  var f=D.ficha||{},t=f.titular||{},n=D.adultos+D.criancas,ac=(f.acompanhantes&&f.acompanhantes.length?f.acompanhantes:[]).slice();
+  while(ac.length<Math.max(0,n-1))ac.push({});
+  var pl=function(x,a){return x+" "+(x===1?a[0]:a[1])};
+  var h='<div class="card"><h2><small>'+esc(T.res)+' #'+esc(D.codigo)+'</small>'+esc(T.ola)+esc(String(D.nome||"").split(" ")[0])+(L==="es"?"!":"!")+'</h2><div class="res" style="margin-top:14px"><div><small>'+esc(T.cheg)+'</small><b>'+esc(dia(D.checkin))+'</b></div><div><small>'+esc(T.said)+'</small><b>'+esc(dia(D.checkout))+'</b></div><div><small>'+esc(T.sui)+'</small><b>'+esc((D.suites||[]).join(", ")||"–")+'</b></div><div><small>'+esc(T.hos)+'</small><b>'+esc(pl(D.adultos,T.ad)+(D.criancas?" + "+pl(D.criancas,T.cr):""))+'</b></div></div></div>';
+  if(D.fechada){$("#app").innerHTML=h+'<div class="card"><div class="aviso ok" style="margin:0">'+esc(T.feito)+'</div></div>';return}
+  h+='<form id="fm" novalidate><div id="msg"></div>'+(D.ficha_em?'<div class="aviso info">'+esc(T.ja.replace("{d}",new Date(D.ficha_em).toLocaleString(L==="pt"?"pt-BR":L,{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})))+'</div>':"")+
+   '<div class="card" id="tit"><h2>'+esc(T.tit)+'</h2><p class="sub">'+esc(T.titS)+'</p><div class="grid">'+
+   '<label class="f full">'+esc(T.nome)+'<input data-k="nome" required maxlength="120" autocomplete="name" value="'+esc(t.nome||D.nome||"")+'"></label>'+
+   '<label class="f">'+esc(T.doc)+docSel(t,-1)+'</label><label class="f">'+esc(T.nasc)+'<input data-k="nascimento" type="date" required max="'+new Date().toISOString().slice(0,10)+'" autocomplete="bday" value="'+esc(t.nascimento||"")+'"></label>'+
+   '<label class="f">'+esc(T.nac)+'<input data-k="nacionalidade" maxlength="40" value="'+esc(t.nacionalidade||T.Brasileira)+'"></label><label class="f">'+esc(T.email)+' <em>'+esc(T.opc)+'</em><input data-k="email" type="email" maxlength="120" autocomplete="email" value="'+esc(t.email||"")+'"></label>'+
+   '<label class="f">'+esc(T.cid)+'<input data-k="cidade" maxlength="60" autocomplete="address-level2" value="'+esc(t.cidade||"")+'"></label><label class="f">'+esc(T.uf)+'<input data-k="uf" maxlength="30" autocomplete="address-level1" value="'+esc(t.uf||"")+'"></label>'+
+   '<label class="f full">'+esc(T.pais)+'<input data-k="pais" maxlength="40" autocomplete="country-name" value="'+esc(t.pais||T.Brasil)+'"></label></div></div>'+
+   '<div class="card" id="acs"'+(n<2&&!ac.length?' hidden':"")+'><h2>'+esc(T.aco)+'</h2><p class="sub" style="margin:0">'+esc(T.acoS)+'</p><div id="acl">'+ac.map(pessoaHtml).join("")+'</div><button type="button" class="btn linha sm" id="mais" style="margin-top:16px">'+esc(T.mais)+'</button></div>'+
+   '<div class="card"><h2>'+esc(T.via)+'</h2><p class="sub">'+esc(T.viaS)+'</p><div class="grid">'+
+   '<label class="f">'+esc(T.hora)+'<input id="f-h" type="time" value="'+esc(f.chegada_hora||"")+'"></label><label class="f">'+esc(T.placa)+' <em>'+esc(T.opc)+'</em><input id="f-pl" maxlength="8" autocapitalize="characters" placeholder="ABC1D23" value="'+esc(f.placa||"")+'"></label>'+
+   '<label class="f full">'+esc(T.carro)+' <em>'+esc(T.opc)+'</em><input id="f-c" maxlength="40" placeholder="'+esc(T.carroPh)+'" value="'+esc(f.carro||"")+'"></label>'+
+   '<label class="f full">'+esc(T.obs)+' <em>'+esc(T.opc)+'</em><textarea id="f-o" rows="2" maxlength="400" placeholder="'+esc(T.obsPh)+'">'+esc(f.obs||"")+'</textarea></label></div></div>'+
+   '<div class="card"><label class="aceite"><input type="checkbox" id="f-a"><span>'+T.aceite+'</span></label><p class="priv">'+esc(T.priv)+'</p><button class="btn" id="env" style="width:100%;margin-top:16px">'+esc(T.env)+'</button></div></form>';
+  $("#app").innerHTML=h;
+  var renum=function(){$$("#acl .pessoa").forEach(function(p,i){p.dataset.p=i;$("h3",p).firstChild.nodeValue=T.acoN+(i+1)})};
+  $("#mais").onclick=function(){if($$("#acl .pessoa").length>=12)return;$("#acl").insertAdjacentHTML("beforeend",pessoaHtml({},$$("#acl .pessoa").length));renum()};
+  $("#acl").onclick=function(e){var b=e.target.closest("[data-tira]");if(b){b.closest(".pessoa").remove();renum()}};
+  $("#fm").onsubmit=function(e){e.preventDefault();
+    var le=function(box){var o={};$$("[data-k]",box).forEach(function(i){o[i.dataset.k]=i.value.trim()});return o};
+    var ficha={titular:le($("#tit")),acompanhantes:$$("#acl .pessoa").map(le).filter(function(p){return p.nome}),chegada_hora:$("#f-h").value,placa:$("#f-pl").value,carro:$("#f-c").value.trim(),obs:$("#f-o").value.trim(),aceite:$("#f-a").checked};
+    var b=$("#env");b.disabled=true;b.textContent=T.envd;
+    envia(ficha).then(function(){
+      $("#app").innerHTML='<div class="card fim"><div class="ic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><h2>'+esc(T.ok)+'</h2><p class="sub">'+esc(T.okS)+'</p><a class="btn zap" target="_blank" rel="noopener" href="'+esc(zap((L==="pt"?"Olá! Acabei de enviar a ficha do check-in online da reserva #":L==="es"?"¡Hola! Acabo de enviar la ficha de check-in online de la reserva #":"Hi! I just sent the online check-in for booking #")+D.codigo+"."))+'">'+esc(T.zap)+'</a></div>';scrollTo(0,0);
+    }).catch(function(x){b.disabled=false;b.textContent=T.env;$("#msg").innerHTML='<div class="aviso err">'+esc((x&&x.j&&x.j.erro)||T.erro)+'</div>';$("#msg").scrollIntoView({behavior:"smooth",block:"center"})});
+  };
+}
+if(!TK){$("#app").innerHTML='<div class="card"><h2>'+esc(T.inv)+'</h2><p class="sub" style="margin:0">'+esc(T.invS)+'</p></div>'}
+else busca().then(function(d){D=d;desenha()}).catch(function(){$("#app").innerHTML='<div class="card"><h2>'+esc(T.inv)+'</h2><p class="sub" style="margin:0 0 16px">'+esc(T.invS)+'</p><a class="btn zap" href="'+esc(zap(L==="pt"?"Olá! O link do check-in online não abriu. Pode me enviar de novo?":"Hi! The online check-in link didn't open. Could you send it again?"))+'" target="_blank" rel="noopener">'+esc(T.zap)+'</a></div>'});
+})();
+</script>
+</body>
+</html>

@@ -170,6 +170,7 @@
     reserva_get: function (b, u, db) {
       var r = byId(db.reservas, b.id); if (!r) erro("Reserva não encontrada.", 404);
       var h = byId(db.hospedes, r.hospede_id);
+      if (!r.checkin_token) { r.checkin_token = "demo" + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2); save(); }
       return { reserva: Object.assign({}, r, fin(db, r), { hospede: h }),
         quartos: db.ocupacoes.filter(function (o) { return o.reserva_id === r.id && o.ativo; }).map(function (o) { return Object.assign({}, o, { quarto: quarto(db, o.quarto_id).nome }); }),
         pagamentos: db.pagamentos.filter(function (p) { return p.reserva_id === r.id; }),
@@ -285,6 +286,7 @@
     temporada_del: function (b, u, db) { db.temporadas = db.temporadas.filter(function (t) { return t.id !== +b.id; }); return { ok: true }; },
     fechamento_salvar: function (b, u, db) { if (b.fim < b.ini) erro("Datas inválidas."); db.fechamentos.push({ id: ++db.seq.fechamentos, ini: b.ini, fim: b.fim, motivo: b.motivo || "" }); return { ok: true }; },
     fechamento_del: function (b, u, db) { db.fechamentos = db.fechamentos.filter(function (t) { return t.id !== +b.id; }); return { ok: true }; },
+    ficha_conferir: function (b, u, db) { var r = byId(db.reservas, b.id); if (r && r.ficha) r.ficha_conferida_em = b.ok === false ? null : new Date().toISOString(); return { ok: true }; },
     msg_marcar: function (b, u, db) { var r = byId(db.reservas, b.id); if (r) { r.mensagens = r.mensagens || {}; r.mensagens[b.tipo] = new Date().toISOString(); } return { ok: true }; },
     config_salvar: function (b, u, db) { if (b.link_avaliacao && !/^https:\/\/\S+$/.test(b.link_avaliacao)) erro("O link de avaliação precisa começar com https://"); ["whatsapp", "whatsapp_restaurante", "condicoes", "checkin_hora", "checkout_hora", "politica_pets", "pix_chave", "pix_nome", "pix_banco", "link_avaliacao", "msg_modelos"].forEach(function (k) { if (b[k] !== undefined) db.config[k] = b[k]; }); ["vendas_ate", "site_pausado", "sinal_pct"].forEach(function (k) { if (b[k] !== undefined) db.config[k] = [b[k]]; }); audit(db, u, "update", "config", "", null); return { ok: true }; },
     quarto_salvar: function (b, u, db) { if (!b.nome || b.nome.length < 2) erro("Dê um nome ao quarto."); if (db.quartos.some(function (q) { return q.nome === b.nome && q.id !== +b.id; })) erro("Já existe um quarto com esse nome."); var q = b.id ? byId(db.quartos, b.id) : null; if (!q) { q = { id: ++db.seq.quartos }; db.quartos.push(q); } Object.assign(q, { nome: b.nome, categoria_id: +b.categoria_id, ordem: +b.ordem || 0, ativo: b.ativo !== false, obs: b.obs || "" }); return { ok: true }; },
@@ -318,7 +320,7 @@
   var AREAS = ["mapa", "reservas", "leads", "consumo", "pagamentos", "tarefas", "tarefas_gerir", "relatorios", "ajustes", "duvidas"];
   var AREAS_PADRAO = { recepcao: ["mapa", "reservas", "leads", "consumo", "pagamentos", "tarefas", "tarefas_gerir"], equipe: ["consumo", "tarefas"] };
   var SO_DONO = ["usuario_salvar", "pagamento_del", "lead_del"];
-  var AREA_DE = { mapa: ["mapa"], mover: ["mapa"], bloqueio_criar: ["mapa"], bloqueio_remover: ["mapa"], reserva_salvar: ["reservas", "mapa"], reserva_status: ["reservas", "mapa"], msg_marcar: ["reservas", "mapa"], reservas_busca: ["reservas"], hospede_busca: ["reservas", "mapa", "leads"], acompanhantes: ["reservas", "mapa"], disponiveis: ["reservas", "mapa", "leads"], preco: ["reservas", "mapa", "leads"], reserva_get: ["reservas", "mapa", "leads", "pagamentos"], leads: ["leads"], lead_status: ["leads"], lancar: ["consumo"], consumo: ["pagamentos"], lancamento_cancelar: ["pagamentos"], pagamento_add: ["pagamentos"], tarefas: ["tarefas", "tarefas_gerir"], tarefa_status: ["tarefas", "tarefas_gerir"], tarefa_salvar: ["tarefas_gerir"], tarefa_del: ["tarefas_gerir"], relatorios: ["relatorios"], auditoria: ["relatorios"], ajustes: ["ajustes"], tarifas_salvar: ["ajustes"], temporada_salvar: ["ajustes"], temporada_del: ["ajustes"], fechamento_salvar: ["ajustes"], fechamento_del: ["ajustes"], config_salvar: ["ajustes"], quarto_salvar: ["ajustes"], categoria_salvar: ["ajustes"], video_salvar: ["ajustes"], video_del: ["ajustes"], produto_salvar: ["ajustes"], faq_painel: ["duvidas"], faq_salvar: ["duvidas"], faq_del: ["duvidas"], faq_termo: ["duvidas"] };
+  var AREA_DE = { mapa: ["mapa"], mover: ["mapa"], bloqueio_criar: ["mapa"], bloqueio_remover: ["mapa"], reserva_salvar: ["reservas", "mapa"], reserva_status: ["reservas", "mapa"], msg_marcar: ["reservas", "mapa"], ficha_conferir: ["reservas", "mapa"], reservas_busca: ["reservas"], hospede_busca: ["reservas", "mapa", "leads"], acompanhantes: ["reservas", "mapa"], disponiveis: ["reservas", "mapa", "leads"], preco: ["reservas", "mapa", "leads"], reserva_get: ["reservas", "mapa", "leads", "pagamentos"], leads: ["leads"], lead_status: ["leads"], lancar: ["consumo"], consumo: ["pagamentos"], lancamento_cancelar: ["pagamentos"], pagamento_add: ["pagamentos"], tarefas: ["tarefas", "tarefas_gerir"], tarefa_status: ["tarefas", "tarefas_gerir"], tarefa_salvar: ["tarefas_gerir"], tarefa_del: ["tarefas_gerir"], relatorios: ["relatorios"], auditoria: ["relatorios"], ajustes: ["ajustes"], tarifas_salvar: ["ajustes"], temporada_salvar: ["ajustes"], temporada_del: ["ajustes"], fechamento_salvar: ["ajustes"], fechamento_del: ["ajustes"], config_salvar: ["ajustes"], quarto_salvar: ["ajustes"], categoria_salvar: ["ajustes"], video_salvar: ["ajustes"], video_del: ["ajustes"], produto_salvar: ["ajustes"], faq_painel: ["duvidas"], faq_salvar: ["duvidas"], faq_del: ["duvidas"], faq_termo: ["duvidas"] };
   function areasDe(u) { if (u.papel === "dono") return AREAS.slice(); var x = (load().usuarios.filter(function (y) { return y.id === u.id; })[0] || u).areas; return x && x.length ? x : (AREAS_PADRAO[u.papel] || []); }
   function podeAcao(n, u) { if (u.papel === "dono") return true; if (SO_DONO.indexOf(n) >= 0) return false; var a = areasDe(u); if (AREA_DE[n]) return AREA_DE[n].some(function (x) { return a.indexOf(x) >= 0; }); return ["boot", "hoje", "hospedados"].indexOf(n) >= 0 || u.papel === "recepcao"; }
   var USER = null;
@@ -356,6 +358,27 @@
         db.tarifas.forEach(function (t) { if (t.categoria_id === c.id) pr[t.pessoas] = precoEstadia(db, c.id, t.pessoas, i, o); });
         return { id: c.id, slug: c.slug, livres: livres, precos: pr };
       }) };
+    },
+    ficha: function (t) {
+      var db = load(), r = db.reservas.filter(function (x) { return x.checkin_token && x.checkin_token === t; })[0];
+      if (!r || ["pre", "confirmada", "hospedada"].indexOf(r.status) < 0 || r.checkout < hoje()) erro("link", 404);
+      var h = byId(db.hospedes, r.hospede_id), cs = [];
+      db.ocupacoes.forEach(function (o) { if (o.reserva_id === r.id && o.ativo) { var c = cat(db, quarto(db, o.quarto_id).categoria_id).nome; if (cs.indexOf(c) < 0) cs.push(c); } });
+      return { nome: h.nome, codigo: r.codigo, checkin: r.checkin, checkout: r.checkout, adultos: r.adultos, criancas: r.criancas, suites: cs, ficha: r.ficha || null, ficha_em: r.ficha_em || null, fechada: r.status === "hospedada", config: db.config };
+    },
+    fichaSalvar: function (t, f) {
+      var db = load(), r = db.reservas.filter(function (x) { return x.checkin_token && x.checkin_token === t; })[0]; if (!r) erro("link", 404);
+      if (r.status === "hospedada") erro("O check-in desta reserva já foi feito na recepção.", 409);
+      var cpf = function (v) { var d = String(v || "").replace(/\D/g, ""); if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false; for (var n = 9; n <= 10; n++) { var s = 0; for (var i = 0; i < n; i++) s += +d[i] * (n + 1 - i); if ((s * 10 % 11) % 10 !== +d[n]) return false; } return true; };
+      var idade = function (n) { return (Date.parse(r.checkin) - Date.parse(n)) / 31557600000; };
+      var p = function (x, q, tit) { if (!x || String(x.nome || "").trim().split(/\s+/).length < 2) erro(q + ": escreva o nome completo."); if (x.doc_tipo === "cpf" && !cpf(x.doc)) erro(q + ": o CPF não confere. Confira os números."); if (!x.doc) erro(q + ": informe o número do documento."); if (!x.nascimento) erro(q + ": informe a data de nascimento."); if (tit && idade(x.nascimento) < 18) erro("O titular da reserva precisa ser maior de idade."); if (!tit && idade(x.nascimento) < 18 && !x.parentesco) erro(q + ": é menor de idade. Informe o parentesco com o titular."); return x; };
+      p(f.titular, "Titular", true); (f.acompanhantes || []).forEach(function (a, i) { p(a, "Acompanhante " + (i + 1), false); });
+      var pl = String(f.placa || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); if (pl && !/^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/.test(pl)) erro("A placa do carro parece errada (ex.: ABC1D23).");
+      if (f.aceite !== true) erro("Para enviar, marque que leu a Política de Privacidade.");
+      f.placa = pl; f.aceite_em = new Date().toISOString(); delete f.aceite;
+      r.ficha = f; r.ficha_em = new Date().toISOString(); r.ficha_conferida_em = null;
+      if ((f.acompanhantes || []).length) r.acompanhantes = f.acompanhantes.map(function (a) { return a.nome; }).join("\n");
+      save(); return { ok: true };
     },
     faq: function () { var db = load(); return { itens: db.faq.filter(function (f) { return f.ativo; }).sort(function (a, b) { return a.ordem - b.ordem || a.id - b.id; }), config: db.config }; },
     busca: function (b) {
