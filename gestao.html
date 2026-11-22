@@ -673,6 +673,22 @@ body.demo-x-on .demo-bar{display:none!important}
 @media (max-width:420px){.md-q{grid-template-columns:auto 1fr;}.md-st{grid-column:2;justify-self:start;margin-top:2px}.md-n{grid-row:span 2;align-self:start}}
 @media (pointer:coarse){.bar{touch-action:pan-x pan-y}.cells{touch-action:pan-x pan-y}}
 @media (max-width:900px){main:has(#md){padding-top:10px}main:has(#md) .top,main:has(#mw) .top{margin-bottom:10px;flex-wrap:nowrap;align-items:center}main:has(#md) .top h2,main:has(#mw) .top h2{font-size:20px;width:auto;flex:1 1 0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}main:has(#md) .top,main:has(#mw) .top{gap:8px}main:has(#md) .top h2::after,main:has(#mw) .top h2::after{display:none}main:has(#md) .top [data-nova],main:has(#mw) .top [data-nova]{flex:0 0 40px;width:40px;height:40px;padding:0;font-size:0;gap:0;border-radius:50%}main:has(#md) .top [data-nova] svg,main:has(#mw) .top [data-nova] svg{width:20px;height:20px}main:has(#mw) #bt-bloq{display:none}.top .md-tg{flex:0 0 auto}.top .md-tg button{padding:7px 11px}}
+
+/* hóspedes na reserva */
+.hp-l{display:flex;flex-wrap:wrap;gap:6px}
+.hp{display:inline-flex;align-items:baseline;gap:6px;padding:7px 12px;border-radius:999px;background:#E6F2F4;color:var(--mar);font-size:14px}
+.hp b{font-weight:600}.hp small{font-size:11px;opacity:.65}
+.hp.t{background:var(--mar);color:#fff}.hp.t small{opacity:.75}
+.hp-in{display:flex;gap:6px;align-items:center}.hp-in input{flex:1}
+/* painel da reserva: sempre no meio da tela */
+@media (max-width:900px){
+  .drawer{top:50%;left:50%;right:auto;bottom:auto;width:calc(100vw - 20px);height:auto;max-height:calc(100dvh - 28px);border-radius:24px;transform:translate(-50%,-46%) scale(.97);opacity:0;pointer-events:none;transition:transform .4s var(--ease),opacity .25s}
+  .drawer.on{transform:translate(-50%,-50%);opacity:1;pointer-events:auto}
+  .drawer .db{flex:1 1 auto;min-height:0;padding:12px 12px 16px;gap:10px}
+  .drawer .dh{padding:12px 14px}.drawer .dh h3{font-size:21px}
+  .drawer .df{padding:10px 12px 12px}
+  .drawer .card{padding:14px}
+}
 </style>
 </head>
 <body>
@@ -761,7 +777,7 @@ function api(path,body){
     .then(function(r){return r.json().catch(function(){return{}}).then(function(j){if(!r.ok){var e=new Error(j.erro||"Erro "+r.status);e.status=r.status;throw e}return j})});
 }
 var G0=function(a,b){return api("/api/g",Object.assign({a:a},b||{})).catch(function(e){if(e.status===401&&e.message==="sessao"){mostraLogin();}throw e})};
-var CONF={reserva_salvar:["Salvar reserva?","Os dados da reserva serão gravados.","Salvar"],reserva_status:["Mudar a situação da reserva?","A reserva passa para a nova situação.","Confirmar"],mover:["Mover reserva?","A reserva muda de quarto ou de datas.","Mover"],
+var CONF={acompanhantes:["Salvar hóspedes?","A lista de hóspedes desta reserva será atualizada.","Salvar"],reserva_salvar:["Salvar reserva?","Os dados da reserva serão gravados.","Salvar"],reserva_status:["Mudar a situação da reserva?","A reserva passa para a nova situação.","Confirmar"],mover:["Mover reserva?","A reserva muda de quarto ou de datas.","Mover"],
   lancar:["Lançar na conta?","Os itens do pedido entram na conta do hóspede.","Lançar"],lancamento_cancelar:["Cancelar este item?","O item sai da conta do hóspede.","Cancelar item","danger"],
   pagamento_add:["Registrar pagamento?","O valor entra no financeiro da reserva.","Registrar"],pagamento_del:["Apagar pagamento?","O valor sai do financeiro da reserva.","Apagar","danger"],
   bloqueio_criar:["Bloquear quarto?","O quarto fica indisponível nessas datas.","Bloquear"],bloqueio_remover:["Liberar quarto?","O bloqueio será removido.","Liberar"],
@@ -1075,6 +1091,18 @@ function formBloqueio(p){
     tenta(G("bloqueio_criar",{quartos:ids,checkin:o.checkin,checkout:o.checkout,motivo:o.motivo}),"Bloqueado ✓").then(function(){if(S.tab==="mapa")carregaMapa()})});
 }
 
+function editaHospedes(id,titular,lista,cap,depois){
+  var linha=function(v){return'<div class="hp-in"><input maxlength="80" placeholder="Nome do hóspede" value="'+esc(v||"")+'" autocomplete="off"><button type="button" class="btn ghost sm" data-hrm aria-label="Remover">×</button></div>'};
+  var ini=lista.slice();if(!ini.length)ini=[""];
+  modal('<h3>Hóspedes da reserva</h3><p class="muted tiny" style="margin:0 0 10px">Titular: <b>'+esc(titular)+'</b>. Coloque os nomes dos demais (até '+Math.max(1,cap-1)+' pela ocupação, máx. 12).</p><form id="hp-f"><div id="hp-l" class="grid" style="gap:8px">'+ini.map(linha).join("")+'</div><button type="button" class="btn sec sm" id="hp-add" style="margin-top:10px">'+ic("plus",14)+'Adicionar outro</button><div class="acts" style="margin-top:14px"><button type="button" class="btn sec" id="hp-x">Voltar</button><button class="btn agua">Salvar hóspedes</button></div></form>');
+  var L=$("#hp-l");
+  var liga=function(){$$("[data-hrm]",L).forEach(function(b){b.onclick=function(){b.parentNode.remove();if(!L.children.length)L.insertAdjacentHTML("beforeend",linha(""))}})};liga();
+  $("#hp-add").onclick=function(){if(L.children.length>=12)return;L.insertAdjacentHTML("beforeend",linha(""));liga();L.lastElementChild.querySelector("input").focus()};
+  L.addEventListener("keydown",function(e){if(e.key==="Enter"&&e.target.tagName==="INPUT"){e.preventDefault();$("#hp-add").click()}});
+  $("#hp-x").onclick=fechaModal;
+  $("#hp-f").onsubmit=function(e){e.preventDefault();var v=$$("input",L).map(function(i){return i.value.trim()}).filter(Boolean).join("\n");fechaModal();tenta(G("acompanhantes",{id:id,acompanhantes:v}),"Hóspedes salvos ✓").then(depois)};
+  setTimeout(function(){var i=$("input",L);if(i&&!i.value)i.focus()},60);
+}
 /* =================== RESERVA: detalhes =================== */
 function abreReserva(id){
   abre("Carregando…",'<div class="empty">…</div>');
@@ -1082,8 +1110,10 @@ function abreReserva(id){
     var r=d.reserva,h=r.hospede,tot=r.total_hospedagem+r.consumo,saldo=tot-r.pago,ab=["pre","confirmada","hospedada"].indexOf(r.status)>=0;
     var noites=r.checkin&&r.checkout?dias(r.checkin,r.checkout):0;
     var b='<div class="card"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">'+stTag(r.status)+orTag(r.origem)+(r.grupo_nome?'<span class="tag">👥 '+esc(r.grupo_nome)+'</span>':"")+'<span class="tag" style="background:#F1F4F4;color:var(--txt2)">#'+esc(r.codigo)+'</span></div>'+
-      '<div style="font-size:19px;font-weight:800">'+esc(h.nome)+'</div>'+(r.acompanhantes?'<div class="chips" style="margin:6px 0 2px">'+r.acompanhantes.split("\n").filter(Boolean).map(function(n){return'<span class="tag">'+esc(n)+'</span>'}).join("")+'</div>':"")+'<div class="muted">'+(h.telefone?'<a href="'+wa(h.telefone)+'" target="_blank" rel="noopener">'+ftel(h.telefone)+'</a>':"sem telefone")+(h.email?' · '+esc(h.email):"")+(h.cidade?' · '+esc(h.cidade):"")+'</div>'+
+      '<div style="font-size:19px;font-weight:800">'+esc(h.nome)+'</div>'+'<div class="muted">'+(h.telefone?'<a href="'+wa(h.telefone)+'" target="_blank" rel="noopener">'+ftel(h.telefone)+'</a>':"sem telefone")+(h.email?' · '+esc(h.email):"")+(h.cidade?' · '+esc(h.cidade):"")+'</div>'+
       '<div style="margin-top:10px;font-weight:700">'+fd(r.checkin,{weekday:"short",day:"2-digit",month:"short"})+' → '+fd(r.checkout,{weekday:"short",day:"2-digit",month:"short"})+' · '+noites+' noites · '+r.adultos+' adultos'+(r.criancas?' + '+r.criancas+' crianças':"")+'</div>'+(r.motivo_status?'<div class="tiny muted" style="margin-top:6px">Motivo: '+esc(r.motivo_status)+'</div>':"")+'</div>';
+    var acs=String(r.acompanhantes||"").split("\n").filter(Boolean);
+    b+='<div class="card hp-card"><h3>Hóspedes <small class="muted tiny" style="font-family:inherit;font-weight:500">'+(1+acs.length)+' de '+(r.adultos+r.criancas)+'</small><span class="sp"></span>'+(P()!=="equipe"?'<button class="btn sm agua" id="r-hsp">'+ic("plus",14)+(acs.length?'Editar':'Incluir hóspedes')+'</button>':'')+'</h3><div class="hp-l"><span class="hp t"><b>'+esc(h.nome)+'</b><small>titular</small></span>'+acs.map(function(n){return'<span class="hp"><b>'+esc(n)+'</b></span>'}).join("")+'</div>'+(acs.length<(r.adultos+r.criancas-1)?'<p class="tiny muted" style="margin:8px 0 0">Inclua os nomes de quem está com o titular: no Bar, o pedido fica com o nome de quem pediu.</p>':'')+'</div>';
     b+='<div class="card"><h3>Quartos</h3><div class="list">'+d.quartos.map(function(q){return'<div class="li"><div class="m"><b>'+esc(q.quarto)+'</b><small>'+fd(q.checkin)+' → '+fd(q.checkout)+' · '+q.adultos+' ad'+(q.criancas?' + '+q.criancas+' cr':"")+'</small></div><span class="num">'+brl(q.valor_diaria)+'/noite</span></div>'}).join("")+'</div></div>';
     b+='<div class="card"><h3>Financeiro<span class="sp"></span>'+(ab||r.status==="finalizada"?'<button class="btn sm agua" id="r-pag">+ Pagamento</button>':"")+'</h3><div class="sum"><span>Hospedagem</span><span>'+brl(r.valor_hospedagem)+'</span>'+(r.desconto?'<span>Desconto</span><span>− '+brl(r.desconto)+'</span>':"")+'<span>Consumo / extras</span><span>'+brl(r.consumo)+'</span><span class="t">Total</span><span class="t">'+brl(tot)+'</span><span>Pago</span><span style="color:var(--ok);font-weight:700">'+brl(r.pago)+'</span><span style="font-weight:800">'+(saldo<-0.009?"A devolver":"Saldo")+'</span><span style="font-weight:800;color:'+(saldo>0.009?"var(--err)":"var(--ok)")+'">'+brl(Math.abs(saldo))+'</span></div>'+
       (r.sinal_previsto?'<p class="tiny muted" style="margin:10px 0 0">Sinal combinado: <b>'+brl(r.sinal_previsto)+'</b>'+(r.pago>=r.sinal_previsto?' ✓ recebido':' — falta '+brl(r.sinal_previsto-r.pago))+'</p>':"")+
@@ -1105,6 +1135,7 @@ function abreReserva(id){
     var re=function(){abreReserva(id);if(S.tab==="mapa")carregaMapa();else if(VIEWS[S.tab]&&S.tab!=="mapa")VIEWS[S.tab]()};
     $$("[data-rst]",$("#drawer")).forEach(function(x){x.onclick=function(){mudaStatus(id,x.dataset.rst,re)}});
     if($("#r-ed"))$("#r-ed").onclick=function(){formReserva({id:id,hospede:h,origem:r.origem,status:r.status,grupo_nome:r.grupo_nome,desconto:r.desconto,sinal_previsto:r.sinal_previsto,condicoes_pagamento:r.condicoes_pagamento,obs:r.obs,acompanhantes:r.acompanhantes||"",quartos:d.quartos.map(function(q){return{quarto_id:q.quarto_id,checkin:q.checkin,checkout:q.checkout,adultos:q.adultos,criancas:q.criancas,valor_diaria:q.valor_diaria}})})};
+    if($("#r-hsp"))$("#r-hsp").onclick=function(){editaHospedes(id,h.nome,acs,r.adultos+r.criancas,re)};
     if($("#r-mais"))$("#r-mais").onclick=function(){
       modal('<h3>Encerrar reserva #'+esc(r.codigo)+'</h3><p>Os quartos voltam a ficar livres no mapa e no site. Pagamentos continuam registrados — lance o reembolso, se houver.</p><form id="m-f" class="grid" style="gap:10px"><label class="f">O que aconteceu?<select name="st"><option value="cancelada">Cancelamento</option><option value="no_show">No-show (não compareceu)</option></select></label><label class="f">Motivo / observação<input name="motivo" maxlength="300" placeholder="ex.: cancelou com 40 dias, sinal devolvido"></label><div class="acts"><button type="button" class="btn sec" id="m-n">Voltar</button><button class="btn danger" style="background:var(--err);color:#fff">Encerrar</button></div></form>');
       $("#m-n").onclick=fechaModal;$("#m-f").onsubmit=function(e){e.preventDefault();var st=this.st.value,m=this.motivo.value;fechaModal();tenta(G("reserva_status",{id:id,status:st,motivo:m}),st==="cancelada"?"Reserva cancelada":"Marcado como no-show").then(re)}};

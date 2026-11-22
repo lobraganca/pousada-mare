@@ -184,6 +184,11 @@ const ACOES = {
     const w = { abertos: "status in ('novo','contatado')", enviados: "enviado and status in ('novo','contatado')", abandonados: "not enviado and status in ('novo','contatado')", todos: "status <> 'arquivado'", arquivados: "status = 'arquivado'" }[f];
     return { itens: await q(`select * from leads where ${w} and (length(telefone) >= 8 or length(nome) >= 2) order by atualizado_em desc limit 300`) };
   }],
+  acompanhantes: [DR, async (b, u) => {
+    const lista = String(b.acompanhantes ?? "").replace(/[<>]/g, "").split(/\n+/).map((x) => x.trim()).filter(Boolean).slice(0, 12).join("\n").slice(0, 1000);
+    await q(`update reservas set acompanhantes = $2 where id = $1`, [int(b.id, 1), lista], u.id);
+    return { ok: true, acompanhantes: lista };
+  }],
   lead_status: [DR, async (b, u) => {
     await q(`update leads set status = $2, obs = case when $3 = '' then obs else $3 end, atualizado_em = now() where id = $1`,
       [txt(b.id, 40), umDe(b.status, ["novo", "contatado", "perdido", "arquivado"]), txt(b.obs, 400)], u.id);

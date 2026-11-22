@@ -235,6 +235,7 @@
       var f = b.filtro || "abertos";
       return { itens: db.leads.filter(function (l) { var ab = l.status === "novo" || l.status === "contatado"; return (f === "todos" && l.status !== "arquivado") || (f === "arquivados" && l.status === "arquivado") || (f === "abertos" && ab) || (f === "enviados" && ab && l.enviado) || (f === "abandonados" && ab && !l.enviado); }).sort(function (a, b) { return a.atualizado_em < b.atualizado_em ? 1 : -1; }) };
     },
+    acompanhantes: function (b, u, db) { var r = byId(db.reservas, b.id); var l = String(b.acompanhantes || "").split(/\n+/).map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 12).join("\n"); if (r) r.acompanhantes = l; return { ok: true, acompanhantes: l }; },
     lead_status: function (b, u, db) { db.leads.forEach(function (l) { if (l.id === b.id) { l.status = b.status; if (b.obs) l.obs = b.obs; } }); return { ok: true }; },
     lead_del: function (b, u, db) { db.leads = db.leads.filter(function (l) { return l.id !== b.id; }); return { ok: true }; },
     hospedados: function (b, u, db) { return { itens: A.hoje({ data: b.data }, { papel: "dono" }, db).hospedados.map(function (h) { return { reserva_id: h.id, codigo: h.codigo, nome: h.nome, acompanhantes: (byId(db.reservas, h.id) || {}).acompanhantes || "", quarto_id: h.quarto_id, quarto: h.quarto }; }) }; },
