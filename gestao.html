@@ -89,6 +89,7 @@ main{min-width:0;padding:30px 36px 90px}
 .btn svg{width:16px;height:16px}
 .btn[disabled]{opacity:.45;pointer-events:none}
 a.btn{text-decoration:none}
+.msg-bt{display:flex;flex-wrap:wrap;gap:8px}.msg-bt .btn{gap:6px}.msg-ok{font-size:11px;font-weight:700;opacity:.85;margin-left:2px}
 .card{background:var(--card);border-radius:var(--r);border:1px solid var(--linha);padding:20px}
 .card h3{font-family:var(--serif);font-weight:700;font-size:21px;margin-bottom:14px;display:flex;align-items:center;gap:10px;color:var(--mar)}
 .card h3 .sp{flex:1}
@@ -1070,6 +1071,7 @@ function abreReserva(id){
     var b='<div class="card"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">'+stTag(r.status)+orTag(r.origem)+(r.grupo_nome?'<span class="tag">👥 '+esc(r.grupo_nome)+'</span>':"")+'<span class="tag" style="background:#F1F4F4;color:var(--txt2)">#'+esc(r.codigo)+'</span></div>'+
       '<div style="font-size:19px;font-weight:800">'+esc(h.nome)+'</div>'+'<div class="muted">'+(h.telefone?'<a href="'+wa(h.telefone)+'" target="_blank" rel="noopener">'+ftel(h.telefone)+'</a>':"sem telefone")+(h.email?' · '+esc(h.email):"")+(h.cidade?' · '+esc(h.cidade):"")+'</div>'+
       '<div style="margin-top:10px;font-weight:700">'+fd(r.checkin,{weekday:"short",day:"2-digit",month:"short"})+' → '+fd(r.checkout,{weekday:"short",day:"2-digit",month:"short"})+' · '+noites+' noites · '+r.adultos+' adultos'+(r.criancas?' + '+r.criancas+' crianças':"")+'</div>'+(r.motivo_status?'<div class="tiny muted" style="margin-top:6px">Motivo: '+esc(r.motivo_status)+'</div>':"")+'</div>';
+    if(h.telefone&&r.status!=="cancelada"&&r.status!=="no_show")b+=msgCard(r);
     var acs=String(r.acompanhantes||"").split("\n").filter(Boolean);
     b+='<div class="card hp-card"><h3>Hóspedes <small class="muted tiny" style="font-family:inherit;font-weight:500">'+(1+acs.length)+' de '+(r.adultos+r.criancas)+'</small><span class="sp"></span>'+(pode("reservas")||pode("mapa")?'<button class="btn sm agua" id="r-hsp">'+ic("plus",14)+(acs.length?'Editar':'Incluir hóspedes')+'</button>':'')+'</h3><div class="hp-l"><span class="hp t"><b>'+esc(h.nome)+'</b><small>titular</small></span>'+acs.map(function(n){return'<span class="hp"><b>'+esc(n)+'</b></span>'}).join("")+'</div>'+(acs.length<(r.adultos+r.criancas-1)?'<p class="tiny muted" style="margin:8px 0 0">Inclua os nomes de quem está com o titular: no Bar, o pedido fica com o nome de quem pediu.</p>':'')+'</div>';
     b+='<div class="card"><h3>Quartos</h3><div class="list">'+d.quartos.map(function(q){return'<div class="li"><div class="m"><b>'+esc(q.quarto)+'</b><small>'+fd(q.checkin)+' → '+fd(q.checkout)+' · '+q.adultos+' ad'+(q.criancas?' + '+q.criancas+' cr':"")+'</small></div><span class="num">'+brl(q.valor_diaria)+'/noite</span></div>'}).join("")+'</div></div>';
@@ -1092,6 +1094,7 @@ function abreReserva(id){
     abre('Reserva <span class="muted" style="font-weight:600">#'+esc(r.codigo)+'</span>',b,f);
     var re=function(){abreReserva(id);if(S.tab==="mapa")carregaMapa();else if(VIEWS[S.tab]&&S.tab!=="mapa")VIEWS[S.tab]()};
     $$("[data-rst]",$("#drawer")).forEach(function(x){x.onclick=function(){mudaStatus(id,x.dataset.rst,re)}});
+    $$("[data-msg]",$("#drawer")).forEach(function(x){x.onclick=function(){msgAbre(x.dataset.msg,r,d,function(){abreReserva(id)})}});
     if($("#r-ed"))$("#r-ed").onclick=function(){formReserva({id:id,hospede:h,origem:r.origem,status:r.status,grupo_nome:r.grupo_nome,desconto:r.desconto,sinal_previsto:r.sinal_previsto,condicoes_pagamento:r.condicoes_pagamento,obs:r.obs,acompanhantes:r.acompanhantes||"",quartos:d.quartos.map(function(q){return{quarto_id:q.quarto_id,checkin:q.checkin,checkout:q.checkout,adultos:q.adultos,criancas:q.criancas,valor_diaria:q.valor_diaria}})})};
     if($("#r-hsp"))$("#r-hsp").onclick=function(){editaHospedes(id,h.nome,acs,r.adultos+r.criancas,re)};
     if($("#r-mais"))$("#r-mais").onclick=function(){
@@ -1104,6 +1107,44 @@ function abreReserva(id){
     $$("[data-pdel]",$("#drawer")).forEach(function(x){x.onclick=function(){confirma("Apagar pagamento?","Use só para corrigir um lançamento errado. Fica registrado no histórico.","Apagar","danger").then(function(s){if(s)tenta(G("pagamento_del",{id:+x.dataset.pdel}),"Apagado").then(re)})}});
     $$("[data-lcan]",$("#drawer")).forEach(function(x){x.onclick=function(){confirma("Cancelar item?","O item sai da conta do hóspede.","Cancelar item","danger").then(function(s){if(s)tenta(G("lancamento_cancelar",{id:+x.dataset.lcan}),"Item cancelado").then(re)})}});
   }).catch(function(e){abre("Reserva",'<div class="empty">'+esc(e.message)+'</div>')});
+}
+/* =================== MENSAGENS PRONTAS (WhatsApp) =================== */
+var MSG_TIPOS=[["pix","Dados do Pix","para o hóspede pagar o sinal"],["confirmacao","Reserva confirmada","resumo com valores e saldo"],["chegar","Como chegar","endereço, mapa e dicas da estrada"],["vespera","Lembrete da véspera","um dia antes da chegada"],["avaliacao","Pedir avaliação","depois da saída"]];
+var MSG_PADRAO={
+  pix:"Olá, {nome}! Aqui é da Pousada Maré 🌊\n\nPara confirmar sua reserva #{codigo} ({checkin} a {checkout}, {noites}), o sinal é de *{sinal}* via Pix:\n\n🔑 Chave Pix: {pix_chave}\n👤 {pix_nome}\n🏦 {pix_banco}\n\nAssim que fizer, é só mandar o comprovante por aqui. O total da estadia é {total}.",
+  confirmacao:"Olá, {nome}! Sua reserva na Pousada Maré está confirmada ✅\n\n#{codigo}\n📅 {checkin} a {checkout} ({noites})\n🛏 {quartos}\n👥 {hospedes}\n💰 Total: {total}\n✔️ Pago: {pago}\n💳 Saldo no check-in: {saldo}\n\nCheck-in a partir das {checkin_hora} e check-out até as {checkout_hora}.\n📝 Adiante seu check-in: {link_checkin}\n\nQualquer dúvida, é só chamar. Até breve!",
+  chegar:"Olá, {nome}! Seguem as dicas para chegar à Pousada Maré 🌊\n\n📍 Alameda Roberto Pompeu, 15 – Rio do Peixe Grande, Cumuruxatiba, Prado (BA)\n🗺 https://www.google.com/maps/search/?api=1&query=Pousada+Mar%C3%A9+Cumuruxatiba\n\n✈️ Aeroportos mais próximos: Teixeira de Freitas (110 km, cerca de 2 h) e Porto Seguro (230 km, cerca de 4 h).\n🚗 Os últimos 30 km, mais ou menos, são de estrada de terra.\n🕖 A portaria funciona das 7h às 19h. Se for chegar depois, avise por aqui.\n📶 Na praia, só a Vivo tem sinal de celular.",
+  vespera:"Olá, {nome}! Amanhã é dia de Maré 🌊\n\nEstamos te esperando a partir das {checkin_hora}. A portaria fica aberta até as 19h; se for chegar mais tarde, avise por aqui.\n💳 Saldo a pagar no check-in: {saldo}\n📝 Para agilizar a chegada, preencha a ficha antes: {link_checkin}\n\nBoa viagem!",
+  avaliacao:"Olá, {nome}! Obrigado por ficar com a gente na Pousada Maré 💙\n\nSe puder, conte como foi a sua estadia. Leva um minutinho e ajuda muito a pousada:\n⭐ {link_avaliacao}\n\nVolte sempre!"
+};
+var MSG_VARS=[["nome","primeiro nome do hóspede"],["codigo","código da reserva"],["checkin","data de chegada"],["checkout","data de saída"],["noites","ex.: 3 noites"],["quartos","suítes da reserva"],["hospedes","ex.: 2 adultos + 1 criança"],["total","total da hospedagem"],["sinal","valor do sinal"],["pago","quanto já pagou"],["saldo","quanto falta pagar"],["checkin_hora","horário de check-in"],["checkout_hora","horário de check-out"],["pix_chave","chave Pix"],["pix_nome","nome no Pix"],["pix_banco","banco"],["link_avaliacao","link para avaliar"],["link_checkin","link do check-in online"]];
+function cfgTxt(k,d){var c=(S.boot&&S.boot.config)||{},v=c[k];if(Array.isArray(v))v=v[0];return v==null||v===""?(d||""):String(v)}
+function msgModelo(t){var m=(S.boot&&S.boot.config&&S.boot.config.msg_modelos)||{};return m[t]||MSG_PADRAO[t]}
+function msgVars(r,d){
+  var sinalPct=+cfgTxt("sinal_pct",50)||50,tot=+r.total_hospedagem||0,saldo=Math.max(tot+(+r.consumo||0)-(+r.pago||0),0),n=dias(r.checkin,r.checkout);
+  var qs=[];(d.quartos||[]).forEach(function(x){if(qs.indexOf(x.quarto)<0)qs.push(x.quarto)});
+  return{nome:String(r.hospede.nome||"").split(" ")[0],codigo:r.codigo,checkin:fd(r.checkin,{weekday:"short",day:"2-digit",month:"2-digit"}),checkout:fd(r.checkout,{weekday:"short",day:"2-digit",month:"2-digit"}),
+    noites:n+(n>1?" noites":" noite"),quartos:qs.join(", "),hospedes:r.adultos+(r.adultos>1?" adultos":" adulto")+(r.criancas?" + "+r.criancas+(r.criancas>1?" crianças":" criança"):""),
+    total:brl(tot),sinal:brl(r.sinal_previsto||Math.round(tot*sinalPct)/100),pago:brl(+r.pago||0),saldo:brl(saldo),
+    checkin_hora:cfgTxt("checkin_hora","14h"),checkout_hora:cfgTxt("checkout_hora","12h"),pix_chave:cfgTxt("pix_chave"),pix_nome:cfgTxt("pix_nome"),pix_banco:cfgTxt("pix_banco"),
+    link_avaliacao:cfgTxt("link_avaliacao"),link_checkin:r.link_checkin||""};
+}
+// Troca as {variáveis}; a linha cuja variável ficou vazia some (ex.: sem banco cadastrado)
+function msgMonta(modelo,v){return String(modelo||"").split("\n").filter(function(l){var m=l.match(/\{(\w+)\}/g);return!m||m.every(function(x){var k=x.slice(1,-1);return!(k in v)||String(v[k]).trim()!==""})}).join("\n").replace(/\{(\w+)\}/g,function(x,k){return k in v?v[k]:x}).replace(/\n{3,}/g,"\n\n").trim()}
+function msgSugeridas(r){var h=hojeStr(),ate=r.checkin?dias(h,r.checkin):99;
+  if(r.status==="pre")return["pix"];if(r.status==="confirmada")return ate<=2&&ate>=0?["vespera","chegar"]:["confirmacao","chegar"];if(r.status==="finalizada")return["avaliacao"];return[]}
+function msgCard(r){var env=r.mensagens||{},sug=msgSugeridas(r);
+  return'<div class="card"><h3>Mensagens prontas</h3><p class="muted tiny" style="margin:-4px 0 10px">Toque, confira o texto e envie pelo WhatsApp. Nome, datas e valores já vão preenchidos.</p><div class="msg-bt">'+MSG_TIPOS.map(function(t){var e=env[t[0]];return'<button class="btn sm '+(sug.indexOf(t[0])>=0?"agua":"sec")+'" data-msg="'+t[0]+'">'+ic("wa",14)+esc(t[1])+(e?'<span class="msg-ok" title="Enviada '+esc(fdt(e))+'">✓ '+esc(fd(e,{day:"2-digit",month:"2-digit"}))+'</span>':"")+'</button>'}).join("")+'</div></div>'}
+function msgAbre(tipo,r,d,depois){
+  var t=MSG_TIPOS.filter(function(x){return x[0]===tipo})[0],v=msgVars(r,d),txt=msgMonta(msgModelo(tipo),v),falta="";
+  if(tipo==="pix"&&!v.pix_chave)falta="A chave Pix ainda não foi cadastrada. Preencha em Ajustes › Mensagens.";
+  if(tipo==="avaliacao"&&!v.link_avaliacao)falta="O link de avaliação ainda não foi cadastrado. Preencha em Ajustes › Mensagens.";
+  modal('<h3>'+esc(t[1])+'</h3><p class="tiny muted" style="margin:-6px 0 10px">Para '+esc(r.hospede.nome)+' · '+ftel(r.hospede.telefone)+'. Pode ajustar o texto antes de enviar.</p>'+(falta?'<div class="tiny" style="background:#FDECEA;color:var(--err);border-radius:10px;padding:8px 10px;margin-bottom:10px">'+esc(falta)+'</div>':"")+
+    '<textarea id="msg-t" rows="12" style="width:100%">'+esc(txt)+'</textarea><div class="acts"><button type="button" class="btn sec" id="msg-v">Voltar</button><button type="button" class="btn sec" id="msg-c">Copiar</button><a class="btn agua" id="msg-w" target="_blank" rel="noopener" href="#">'+ic("wa",16)+'Abrir no WhatsApp</a></div>');
+  var ta=$("#msg-t"),lk=$("#msg-w"),upd=function(){lk.href=wa(r.hospede.telefone,ta.value)};upd();ta.oninput=upd;
+  $("#msg-v").onclick=fechaModal;
+  $("#msg-c").onclick=function(){var ok=function(){toast("Texto copiado ✓")};if(navigator.clipboard)navigator.clipboard.writeText(ta.value).then(ok,function(){ta.select();document.execCommand("copy");ok()});else{ta.select();document.execCommand("copy");ok()}};
+  lk.onclick=function(){fechaModal();G0("msg_marcar",{id:r.id,tipo:tipo}).then(function(){if(depois)depois()}).catch(function(){})};
 }
 function msgReserva(r,d){
   var c=S.boot.config||{},q=d.quartos.map(function(x){return x.quarto}).join(", ");
@@ -1481,7 +1522,7 @@ VIEWS.relatorios=function(){
 /* =================== AJUSTES =================== */
 VIEWS.ajustes=function(){
   S._aj=S._aj||"precos";
-  var abas=[["precos","Preços e temporadas"],["site","Site e vendas"],["quartos","Quartos e suítes"],["videos","Vídeos"],["usuarios","Usuários"],["hist","Histórico"]];if(P()!=="dono"){abas=abas.filter(function(a){return a[0]!=="usuarios"&&a[0]!=="hist"});if(!abas.some(function(a){return a[0]===S._aj}))S._aj="precos"}
+  var abas=[["precos","Preços e temporadas"],["site","Site e vendas"],["mensagens","Mensagens"],["quartos","Quartos e suítes"],["videos","Vídeos"],["usuarios","Usuários"],["hist","Histórico"]];if(P()!=="dono"){abas=abas.filter(function(a){return a[0]!=="usuarios"&&a[0]!=="hist"});if(!abas.some(function(a){return a[0]===S._aj}))S._aj="precos"}
   V.innerHTML=topo("Ajustes")+'<div class="seg" id="ajs" style="margin-bottom:16px;flex-wrap:wrap">'+abas.map(function(a){return'<button data-a="'+a[0]+'">'+a[1]+'</button>'}).join("")+'</div><div id="ajo"><div class="empty">Carregando…</div></div>';
   $$("#ajs button").forEach(function(b){b.classList.toggle("on",b.dataset.a===S._aj);b.onclick=function(){S._aj=b.dataset.a;VIEWS.ajustes()}});
   var O=$("#ajo"),re=function(){VIEWS.ajustes()};
@@ -1506,6 +1547,17 @@ VIEWS.ajustes=function(){
       $("#sv-c").onclick=function(){tenta(G("config_salvar",{site_pausado:!$("#cf-p").checked,vendas_ate:$("#cf-v").value,sinal_pct:+$("#cf-s").value,checkin_hora:$("#cf-ci").value,checkout_hora:$("#cf-co").value,whatsapp:$("#cf-w").value,whatsapp_restaurante:$("#cf-wr").value,condicoes:$("#cf-c").value,politica_pets:$("#cf-pets").value}),"Ajustes salvos ✓").then(function(){return G("boot")}).then(function(x){S.boot=x;re()})};
       $("#nf").onclick=function(){pergunta("Fechar datas no site",null,'<div class="row"><label class="f">De<input type="date" name="ini" required></label><label class="f">Até<input type="date" name="fim" required></label></div><label class="f">Motivo (interno)<input name="motivo" maxlength="120"></label>',"Fechar").then(function(o){if(o)tenta(G("fechamento_salvar",o),"Datas fechadas ✓").then(re)})};
       $$("[data-fd]",O).forEach(function(b){b.onclick=function(){tenta(G("fechamento_del",{id:+b.dataset.fd}),"Datas reabertas ✓").then(re)}});
+    }
+    if(S._aj==="mensagens"){
+      var mm=(cfg.msg_modelos&&typeof cfg.msg_modelos==="object")?cfg.msg_modelos:{};
+      O.innerHTML='<div class="grid g2"><div class="card"><h3>Pix para o sinal</h3><p class="muted tiny" style="margin:-4px 0 10px">Vai na mensagem “Dados do Pix”.</p><label class="f">Chave Pix<input id="mp-k" maxlength="140" value="'+esc(cfgTxt("pix_chave"))+'" placeholder="CNPJ, e-mail, telefone ou chave aleatória"></label><label class="f" style="margin-top:10px">Nome que aparece no Pix<input id="mp-n" maxlength="80" value="'+esc(cfgTxt("pix_nome"))+'"></label><label class="f" style="margin-top:10px">Banco (opcional)<input id="mp-b" maxlength="60" value="'+esc(cfgTxt("pix_banco"))+'"></label></div>'+
+        '<div class="card"><h3>Avaliação</h3><p class="muted tiny" style="margin:-4px 0 10px">Link que vai na mensagem “Pedir avaliação”. No Google: abra o perfil da pousada › Pedir avaliações › copiar link.</p><label class="f">Link para avaliar a pousada<input id="mp-a" maxlength="300" value="'+esc(cfgTxt("link_avaliacao"))+'" placeholder="https://g.page/r/..."></label></div></div>'+
+        '<div class="card" style="margin-top:16px"><h3>Textos das mensagens</h3><p class="muted tiny" style="margin:-4px 0 6px">As palavras entre chaves são trocadas pelos dados da reserva. Se uma delas estiver vazia (ex.: sem banco cadastrado), a linha inteira some.</p><details style="margin-bottom:12px"><summary style="font-size:15px">Ver as palavras que dá para usar</summary><div class="chips" style="margin-top:8px">'+MSG_VARS.map(function(x){return'<span class="tag" title="'+esc(x[1])+'">{'+x[0]+'} <span style="opacity:.7">'+esc(x[1])+'</span></span>'}).join("")+'</div></details>'+
+        MSG_TIPOS.map(function(x){return'<label class="f" style="margin-top:12px">'+esc(x[1])+' <span class="muted" style="font-weight:400">· '+esc(x[2])+'</span><textarea data-mm="'+x[0]+'" rows="7">'+esc(mm[x[0]]||MSG_PADRAO[x[0]])+'</textarea></label><div style="text-align:right"><button type="button" class="btn sm ghost" data-mr="'+x[0]+'">Voltar ao texto padrão</button></div>'}).join("")+'</div>'+
+        '<div style="text-align:right;margin-top:12px"><button class="btn agua" id="sv-m">Salvar mensagens</button></div>';
+      $$("[data-mr]",O).forEach(function(b){b.onclick=function(){$('[data-mm="'+b.dataset.mr+'"]',O).value=MSG_PADRAO[b.dataset.mr]}});
+      $("#sv-m").onclick=function(){var m={};$$("[data-mm]",O).forEach(function(a){if(a.value.trim()&&a.value.trim()!==MSG_PADRAO[a.dataset.mm])m[a.dataset.mm]=a.value.trim()});
+        tenta(G("config_salvar",{pix_chave:$("#mp-k").value,pix_nome:$("#mp-n").value,pix_banco:$("#mp-b").value,link_avaliacao:$("#mp-a").value.trim(),msg_modelos:m}),"Mensagens salvas ✓").then(function(){return G("boot")}).then(function(x){S.boot=x;re()})};
     }
     if(S._aj==="quartos"){
       O.innerHTML='<div class="card"><h3>Quartos (aparecem no mapa)<span class="sp"></span><button class="btn sm agua" id="nq">+ Quarto</button></h3><div class="scroll-x"><table class="t"><thead><tr><th>Ordem</th><th>Nome</th><th>Suíte (categoria)</th><th>Ativo</th><th></th></tr></thead><tbody>'+S.boot.quartos.map(function(q){return'<tr data-qr="'+q.id+'"><td><input type="number" data-k="ordem" value="'+q.ordem+'" style="width:64px"></td><td><input data-k="nome" value="'+esc(q.nome)+'" maxlength="60"></td><td><select data-k="categoria_id">'+d.categorias.map(function(c){return'<option value="'+c.id+'" '+(c.id===q.categoria_id?"selected":"")+'>'+esc(c.nome)+'</option>'}).join("")+'</select></td><td><input type="checkbox" data-k="ativo" '+(q.ativo?"checked":"")+'></td><td><button class="btn sm" data-qs="'+q.id+'">Salvar</button></td></tr>'}).join("")+'</tbody></table></div></div>'+

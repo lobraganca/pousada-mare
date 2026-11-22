@@ -12,7 +12,7 @@ const AREAS_PADRAO = { recepcao: ["mapa", "reservas", "leads", "consumo", "pagam
 const so_dono = ["usuario_salvar", "pagamento_del", "lead_del"];
 const AREA_DE = {
   mapa: ["mapa"], mover: ["mapa"], bloqueio_criar: ["mapa"], bloqueio_remover: ["mapa"],
-  reserva_salvar: ["reservas", "mapa"], reserva_status: ["reservas", "mapa"], reservas_busca: ["reservas"], hospede_busca: ["reservas", "mapa", "leads"],
+  reserva_salvar: ["reservas", "mapa"], reserva_status: ["reservas", "mapa"], msg_marcar: ["reservas", "mapa"], reservas_busca: ["reservas"], hospede_busca: ["reservas", "mapa", "leads"],
   acompanhantes: ["reservas", "mapa"], disponiveis: ["reservas", "mapa", "leads"], preco: ["reservas", "mapa", "leads"],
   reserva_get: ["reservas", "mapa", "leads", "pagamentos"], leads: ["leads"], lead_status: ["leads"],
   lancar: ["consumo"], consumo: ["pagamentos"], lancamento_cancelar: ["pagamentos"], pagamento_add: ["pagamentos"],
@@ -29,6 +29,7 @@ const podeAcao = (nome, acao, u) => {
   if (AREA_DE[nome]) { const a = areasDe(u); return AREA_DE[nome].some((x) => a.includes(x)); }
   return acao[0].includes(u.papel);
 };
+const MSG_TIPOS = ["pix", "confirmacao", "chegar", "vespera", "avaliacao"];
 const ORIGENS = ["site", "whatsapp", "booking", "telefone", "balcao", "outro"];
 const STATUS = ["pre", "confirmada", "hospedada", "finalizada", "cancelada", "no_show"];
 const ATIVOS = "('pre','confirmada','hospedada','finalizada')";
@@ -151,6 +152,12 @@ const ACOES = {
     return r.r;
   }],
 
+  // Mensagem pronta aberta no WhatsApp: guarda quando foi (aparece na reserva como "enviada")
+  msg_marcar: [DR, async (b, u) => {
+    const tipo = umDe(b.tipo, MSG_TIPOS);
+    await q(`update reservas set mensagens = coalesce(mensagens, '{}'::jsonb) || jsonb_build_object($2::text, now()) where id = $1`, [int(b.id, 1), tipo], u.id);
+    return { ok: true };
+  }],
   reserva_status: [DR, async (b, u) => {
     const st = umDe(b.status, STATUS);
     const r = await q1(`select reserva_status($1, $2, $3, $4) r`, [int(b.id, 1), st, txt(b.motivo, 300), u.id], u.id);
@@ -356,7 +363,11 @@ const ACOES = {
   config_salvar: [D, async (b, u) => {
     const permitidas = { whatsapp: (v) => String(v).replace(/\D/g, "").slice(0, 15), whatsapp_restaurante: (v) => String(v).replace(/\D/g, "").slice(0, 15),
       vendas_ate: (v) => [isData(v) ? v : ""], site_pausado: (v) => [!!v], sinal_pct: (v) => [num(v, 0, 100)], condicoes: (v) => txt(v, 1200),
-      checkin_hora: (v) => txt(v, 10), checkout_hora: (v) => txt(v, 10), politica_pets: (v) => txt(v, 600) };
+      checkin_hora: (v) => txt(v, 10), checkout_hora: (v) => txt(v, 10), politica_pets: (v) => txt(v, 600),
+      // Mensagens prontas (Ajustes › Mensagens)
+      pix_chave: (v) => txt(v, 140), pix_nome: (v) => txt(v, 80), pix_banco: (v) => txt(v, 60),
+      link_avaliacao: (v) => { const s = String(v || "").trim(); if (s && !/^https:\/\/\S+$/.test(s)) throw Object.assign(new Error("O link de avaliação precisa começar com https://"), { status: 400 }); return s.slice(0, 300); },
+      msg_modelos: (v) => Object.fromEntries(MSG_TIPOS.filter((k) => v && typeof v[k] === "string" && v[k].trim()).map((k) => [k, String(v[k]).replace(/[<>]/g, "").slice(0, 1500)])) };
     for (const [k, f] of Object.entries(permitidas)) {
       if (b[k] === undefined) continue;
       await q(`insert into config(chave, valor) values ($1, $2::jsonb) on conflict (chave) do update set valor = excluded.valor, atualizado_em = now()`, [k, JSON.stringify(f(b[k]))], u.id);

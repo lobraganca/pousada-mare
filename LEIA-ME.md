@@ -15,6 +15,7 @@ api/cron.js         todo dia 7h: tarefas de chegada, aviso de no-show, limpeza L
 db/schema.sql       tabelas, regras e funções (rodar 1x)
 db/dados-iniciais.sql  suítes, preços, 13 quartos, cardápio de exemplo
 db/central-duvidas.sql  Central de dúvidas (rodar 1x se o banco já existia antes dela)
+db/atendimento-automatico.sql  mensagens prontas e check-in online (rodar 1x se o banco já existia)
 duvidas.js          Central de dúvidas do site (busca, respostas, WhatsApp com a pergunta pronta)
 ```
 
@@ -61,4 +62,9 @@ Reservas do Booking entram manualmente com origem **Booking** (o sistema bloquei
 - Só o texto da busca é guardado (nada de nome, telefone ou IP), e é apagado depois de 1 ano.
 - Acesso: o dono vê sempre; para a recepção, marque **Dúvidas do site** em Ajustes › Usuários.
 - Banco que já existia: rode `db/central-duvidas.sql` uma vez no Neon. Ele já cadastra 13 perguntas iniciais (com espanhol e inglês), escritas só com informações que estão no site. Peça ao dono para revisar e completar (ex.: estacionamento, cartão, transfer).
+
+## Mensagens prontas (WhatsApp)
+- Em cada reserva, o cartão **Mensagens prontas** tem 5 botões: Dados do Pix, Reserva confirmada, Como chegar, Lembrete da véspera e Pedir avaliação. O texto sai com nome, datas e valores; dá para ajustar antes de enviar.
+- O botão em destaque é o que faz sentido agora (pré-reserva → Pix; confirmada → confirmação/como chegar; véspera → lembrete; depois da saída → avaliação). Depois de enviada, aparece ✓ com a data.
+- **Ajustes › Mensagens**: chave Pix, nome e banco, link de avaliação do Google e os textos (com botão para voltar ao padrão).
 
