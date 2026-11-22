@@ -134,7 +134,6 @@
     "Aniversário, chegada depois das 19h, berço, acessibilidade": ["Cumpleaños, llegada después de las 19 h, cuna, accesibilidad", "Birthday, arriving after 7 pm, cot, accessibility"],
     "Usamos estes dados só para responder sobre esta reserva.": ["Usamos estos datos solo para responder sobre esta reserva.", "We only use these details to reply about this booking."],
     "Usamos estes dados só para responder sobre esta reserva. O que você preencher fica salvo para a recepção poder te ajudar, mesmo que você não envie.": ["Usamos estos datos solo para responder sobre esta reserva. Lo que completes queda guardado para que la recepción pueda ayudarte, aunque no lo envíes.", "We only use these details to reply about this booking. What you fill in is saved so the front desk can help you, even if you don't send it."],
-    "Política de Privacidade": ["Política de Privacidad", "Privacy Policy"],
     "Escolher as datas": ["Elegir las fechas", "Choose dates"], "Mês anterior": ["Mes anterior", "Previous month"], "Próximo mês": ["Mes siguiente", "Next month"],
     "feriado ou temporada, com valores especiais": ["feriado o temporada, con precios especiales", "holiday or peak season, special rates"],
     "Adultos": ["Adultos", "Adults"], "a partir de 13 anos": ["desde 13 años", "13 and over"], "Crianças": ["Niños", "Children"], "até 12 anos": ["hasta 12 años", "up to 12"],
@@ -152,6 +151,12 @@
     "Até breve.": ["Hasta pronto.", "See you soon."], "toque aqui": ["toca aquí", "tap here"],
     "Seu pedido foi para o WhatsApp da recepção, que confirma a disponibilidade e envia os dados para pagamento. Se o WhatsApp não abriu,": ["Tu pedido fue al WhatsApp de la recepción, que confirma la disponibilidad y envía los datos para el pago. Si WhatsApp no se abrió,", "Your request went to the front desk's WhatsApp. They'll confirm availability and send payment details. If WhatsApp didn't open,"],
     "Montar reserva ": ["Reservar ", "Book your stay "],
+    "Marque “Li e concordo” para enviar": ["Marca “Leí y acepto” para enviar", "Tick “I agree” to send"],
+    "Condições da reserva": ["Condiciones de la reserva", "Booking terms"],
+    "Pedimos um sinal para garantir a reserva; o saldo é pago no check-in. Consulte a política de cancelamento com a recepção.": ["Pedimos una seña para garantizar la reserva; el resto se paga en el check-in. Consulta la política de cancelación con la recepción.", "We ask for a deposit to secure the booking; the balance is paid at check-in. Ask the front desk about the cancellation policy."],
+    "Menores de 18 anos que não estiverem com pai, mãe ou responsável legal precisam de autorização escrita deles, com firma reconhecida em cartório (ECA, art. 82). Traga o original no check-in.": ["Los menores de 18 años que no viajen con su padre, madre o tutor legal necesitan una autorización escrita de ellos, con firma certificada ante notario (ley brasileña, ECA art. 82). Trae el original al check-in.", "Under-18s not travelling with a parent or legal guardian need their written authorisation with a notarised signature (Brazilian law, ECA art. 82). Please bring the original to check-in."],
+    "Li e concordo com as condições da reserva e com a": ["Leí y acepto las condiciones de la reserva y la", "I have read and agree to the booking terms and the"],
+    "Política de Privacidade": ["Política de Privacidad", "Privacy Policy"],
     /* cardápio */
     "Cardápio do Restaurante Maré": ["Menú del Restaurante Maré", "Maré Restaurant menu"], "Fechar cardápio": ["Cerrar menú", "Close menu"], "Tudo": ["Todo", "All"],
     "Almoço das 12h às 15h, petiscos até as 17h, jantar com pedido das 15h às 19h.": ["Almuerzo de 12 a 15 h, tapas hasta las 17 h, cena con pedido de 15 a 19 h.", "Lunch 12 to 3 pm, snacks until 5 pm, dinner orders 3 to 7 pm."],
@@ -183,14 +188,14 @@
     [/^(\d+) noites?$/, function (m) { return pl(m[1], NO, NOS); }],
     [/^por (\d+) noites?$/, function (m) { return (I ? "for " : "por ") + pl(m[1], NO, NOS); }],
     [/^Total, (\d+) noites?$/, function (m) { return "Total, " + pl(m[1], NO, NOS); }],
-    [/^a (R\$ .+)$/, function (m) { return (I ? "to " : "a ") + m[1]; }],
+    [/^a (R\$\s.+)$/, function (m) { return (I ? "to " : "a ") + m[1]; }],
     [/^Hoje, (.+)$/, function (m) { return (I ? "Today, " : "Hoy, ") + (tr(m[1]) || tr(m[1].charAt(0).toUpperCase() + m[1].slice(1)) || m[1]).toLowerCase(); }],
     [/^(\d+) adultos?(?: e (\d+) crianças?)?(, com pet)?$/, function (m) { return pl(m[1], ["adulto", "adult"], ["adultos", "adults"]) + (m[2] ? (I ? " and " : " y ") + pl(m[2], ["niño", "child"], ["niños", "children"]) : "") + (m[3] ? (I ? ", with a pet" : ", con mascota") : ""); }],
     [/^(.+), (\d+) pessoas?$/, function (m) { var t = tr(m[1]); return t ? t + ", " + pl(m[2], PES, PESS) : null; }],
     [/^Adultos (.*)$/, function (m) { return (I ? "Adults " : "Adultos ") + m[1]; }],
     [/^Crianças (.*)$/, function (m) { return (I ? "Children " : "Niños ") + m[1]; }],
     [/^Suíte (\d+)(.*)$/, function (m) { return "Suite " + m[1] + (m[2] ? m[2].replace("Acessível", I ? "Accessible" : "Accesible") : ""); }],
-    [/^Para confirmar, a recepção pede um sinal de (\d+)% \((R\$ [^)]+)\) e envia os dados para pagamento pelo WhatsApp\.$/, function (m) { return I ? "To confirm, the front desk asks for a " + m[1] + "% deposit (" + m[2] + ") and sends payment details on WhatsApp." : "Para confirmar, la recepción pide una seña del " + m[1] + "% (" + m[2] + ") y envía los datos para el pago por WhatsApp."; }],
+    [/^Para confirmar, a recepção pede um sinal de (\d+)% \((R\$\s[^)]+)\) e envia os dados para pagamento pelo WhatsApp\.$/, function (m) { return I ? "To confirm, the front desk asks for a " + m[1] + "% deposit (" + m[2] + ") and sends payment details on WhatsApp." : "Para confirmar, la recepción pide una seña del " + m[1] + "% (" + m[2] + ") y envía los datos para el pago por WhatsApp."; }],
     [/^Essas suítes acomodam (\d+) pessoas e vocês são (\d+)\. Escolha mais uma\.$/, function (m) { return I ? "These suites fit " + m[1] + " people and you are " + m[2] + ". Choose one more." : "Estas suites alojan a " + m[1] + " personas y ustedes son " + m[2] + ". Elige una más."; }],
     [/^Nessas datas, as suítes livres acomodam até (\d+) pessoas?\.$/, function (m) { return I ? "For these dates, the available suites fit up to " + pl(m[1], PES, PESS) + "." : "En estas fechas, las suites libres alojan hasta " + pl(m[1], PES, PESS) + "."; }],
     [/^Nesse período a estadia mínima é de (\d+) noites\.$/, function (m) { return I ? "For these dates the minimum stay is " + m[1] + " nights." : "En este período la estadía mínima es de " + m[1] + " noches."; }],
@@ -223,7 +228,7 @@
     var k = pt.replace(/\s+/g, " ").trim(); if (!k) return;
     var out;
     if (p.parentNode && p.parentNode.classList && p.parentNode.classList.contains("sem") && k.length === 1) { var ix = [].indexOf.call(p.parentNode.children, p); out = SEM[I][ix] || k; }
-    else { var t = tr(k); if (t == null) { W.set(n, { pt: pt, out: cur }); return; } out = pt.replace(k, t); }
+    else { var t = tr(k); if (t == null) { W.set(n, { pt: pt, out: cur }); return; } out = pt.indexOf(k) >= 0 ? pt.replace(k, t) : (pt.match(/^\s*/)[0] + t + pt.match(/\s*$/)[0]); }
     W.set(n, { pt: pt, out: out }); if (out !== cur) n.nodeValue = out;
   }
   function atr(el) {

@@ -64,6 +64,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--turq);bo
 .carregando{text-align:center;color:var(--muted);padding:40px 0}
 footer{text-align:center;font-size:13px;color:var(--muted);padding:0 16px 40px}
 @media (max-width:560px){.grid{grid-template-columns:1fr}.res{grid-template-columns:1fr 1fr}.card{padding:18px;border-radius:18px}.doc{grid-template-columns:116px 1fr}}
+.eca{grid-column:1/-1;margin:0;background:#FFF6E6;border:1px solid #F2D9A6;color:#6B4A0E;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.5}.eca[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -82,7 +83,7 @@ document.documentElement.lang=L==="pt"?"pt-BR":L;
 var T={
  pt:{h1:"Check-in online",hp:"Adiante a sua ficha e chegue direto para descansar.",ola:"Olá, ",res:"Sua reserva",cheg:"Chegada",said:"Saída",sui:"Suíte",hos:"Hóspedes",ad:["adulto","adultos"],cr:["criança","crianças"],
   tit:"Titular da reserva",titS:"Precisa ser maior de idade e apresentar este documento na chegada.",nome:"Nome completo",doc:"Documento",num:"Número",nasc:"Data de nascimento",nac:"Nacionalidade",email:"E-mail",opc:"(opcional)",cid:"Cidade",uf:"Estado",pais:"País",
-  aco:"Acompanhantes",acoS:"Quem vem com você. Para menores de 18 anos, informe o parentesco com o titular.",acoN:"Acompanhante ",par:"Parentesco com o titular",parPh:"Ex.: filho(a), neto(a), sobrinho(a)",mais:"+ Incluir acompanhante",tira:"Remover",
+  aco:"Acompanhantes",acoS:"Quem vem com você: a lei pede a ficha de todos. Para menores de 18 anos, informe o vínculo.",acoN:"Acompanhante ",vin:"Vínculo (se tiver menos de 18 anos)",vins:[["","Maior de idade"],["filho_titular","Filho(a) do titular"],["filho_hospede","Filho(a) de outro acompanhante"],["tutela","Sob tutela do titular"],["parente","Outro parente (avô, tio…)"],["sem","Sem parentesco"]],eca:"Criança ou adolescente que não está com pai, mãe ou responsável legal precisa de autorização escrita deles, com firma reconhecida em cartório (Estatuto da Criança e do Adolescente, art. 82). Traga o original na chegada.",certidao:"Certidão de nascimento",par:"Parentesco com o titular",parPh:"Ex.: filho(a), neto(a), sobrinho(a)",mais:"+ Incluir acompanhante",tira:"Remover",
   via:"Chegada",viaS:"Ajuda a recepção a se preparar para receber você.",hora:"Horário previsto de chegada",placa:"Placa do carro",carro:"Modelo e cor",carroPh:"Ex.: Gol prata",obs:"Algum pedido para a chegada?",obsPh:"Ex.: chegaremos com um bebê, precisamos de berço",
   aceite:"Li e concordo com a <a href=\"/privacidade\" target=\"_blank\" rel=\"noopener\">Política de Privacidade</a>. Meus dados serão usados só para o registro de hospedagem e para esta estadia.",
   priv:"A ficha é exigida por lei para todo meio de hospedagem (Lei 11.771/2008). Seus dados ficam guardados com segurança e só a equipe da pousada tem acesso.",
@@ -91,7 +92,7 @@ var T={
   tipos:{cpf:"CPF",rg:"RG",passaporte:"Passaporte",outro:"Outro"},Brasil:"Brasil",Brasileira:"Brasileira",privL:"Política de Privacidade"},
  es:{h1:"Check-in online",hp:"Completa tu ficha antes y llega directo a descansar.",ola:"¡Hola, ",res:"Tu reserva",cheg:"Llegada",said:"Salida",sui:"Suite",hos:"Huéspedes",ad:["adulto","adultos"],cr:["niño","niños"],
   tit:"Titular de la reserva",titS:"Debe ser mayor de edad y presentar este documento al llegar.",nome:"Nombre completo",doc:"Documento",num:"Número",nasc:"Fecha de nacimiento",nac:"Nacionalidad",email:"E-mail",opc:"(opcional)",cid:"Ciudad",uf:"Provincia / estado",pais:"País",
-  aco:"Acompañantes",acoS:"Quienes vienen contigo. Para menores de 18 años, indica el parentesco con el titular.",acoN:"Acompañante ",par:"Parentesco con el titular",parPh:"Ej.: hijo(a), nieto(a), sobrino(a)",mais:"+ Agregar acompañante",tira:"Quitar",
+  aco:"Acompañantes",acoS:"Quienes vienen contigo: la ley pide la ficha de todos. Para menores de 18 años, indica el vínculo.",acoN:"Acompañante ",vin:"Vínculo (si es menor de 18 años)",vins:[["","Mayor de edad"],["filho_titular","Hijo(a) del titular"],["filho_hospede","Hijo(a) de otro acompañante"],["tutela","Bajo tutela del titular"],["parente","Otro pariente (abuelo, tío…)"],["sem","Sin parentesco"]],eca:"Un menor que no viaja con su padre, madre o tutor legal necesita una autorización escrita de ellos, con firma certificada (ley brasileña, ECA art. 82). Trae el original al llegar.",certidao:"Partida de nacimiento",par:"Parentesco con el titular",parPh:"Ej.: hijo(a), nieto(a), sobrino(a)",mais:"+ Agregar acompañante",tira:"Quitar",
   via:"Llegada",viaS:"Ayuda a la recepción a prepararse para recibirte.",hora:"Hora prevista de llegada",placa:"Patente del auto",carro:"Modelo y color",carroPh:"Ej.: Gol gris",obs:"¿Algún pedido para la llegada?",obsPh:"Ej.: llegaremos con un bebé, necesitamos cuna",
   aceite:"Leí y acepto la <a href=\"/privacidade\" target=\"_blank\" rel=\"noopener\">Política de Privacidad</a>. Mis datos se usarán solo para el registro de hospedaje y para esta estadía.",
   priv:"La ley brasileña exige esta ficha a todo alojamiento (Ley 11.771/2008). Tus datos se guardan de forma segura y solo el equipo de la posada tiene acceso.",
@@ -100,7 +101,7 @@ var T={
   tipos:{cpf:"CPF (Brasil)",rg:"DNI / cédula",passaporte:"Pasaporte",outro:"Otro"},Brasil:"",Brasileira:"",privL:"Política de Privacidad"},
  en:{h1:"Online check-in",hp:"Fill in your registration ahead and arrive ready to relax.",ola:"Hi, ",res:"Your booking",cheg:"Arrival",said:"Departure",sui:"Suite",hos:"Guests",ad:["adult","adults"],cr:["child","children"],
   tit:"Main guest",titS:"Must be an adult and show this document on arrival.",nome:"Full name",doc:"Document",num:"Number",nasc:"Date of birth",nac:"Nationality",email:"E-mail",opc:"(optional)",cid:"City",uf:"State / region",pais:"Country",
-  aco:"Companions",acoS:"Who is coming with you. For anyone under 18, tell us their relationship to the main guest.",acoN:"Companion ",par:"Relationship to the main guest",parPh:"E.g. son, daughter, grandchild",mais:"+ Add companion",tira:"Remove",
+  aco:"Companions",acoS:"Who is coming with you: the law requires a record for everyone. For anyone under 18, tell us the relationship.",acoN:"Companion ",vin:"Relationship (if under 18)",vins:[["","Adult"],["filho_titular","Child of the main guest"],["filho_hospede","Child of another companion"],["tutela","Under the main guest's legal guardianship"],["parente","Other relative (grandparent, uncle…)"],["sem","Not related"]],eca:"A minor who is not travelling with a parent or legal guardian needs their written authorisation with a notarised signature (Brazilian law, ECA art. 82). Please bring the original on arrival.",certidao:"Birth certificate",par:"Relationship to the main guest",parPh:"E.g. son, daughter, grandchild",mais:"+ Add companion",tira:"Remove",
   via:"Arrival",viaS:"Helps the front desk get ready to welcome you.",hora:"Expected arrival time",placa:"Car plate",carro:"Make and colour",carroPh:"E.g. silver Gol",obs:"Any request for your arrival?",obsPh:"E.g. we're bringing a baby and need a cot",
   aceite:"I have read and agree to the <a href=\"/privacidade\" target=\"_blank\" rel=\"noopener\">Privacy Policy</a>. My data will only be used for the guest register and this stay.",
   priv:"Brazilian law requires this registration at every lodging (Law 11.771/2008). Your data is stored securely and only the inn's staff can see it.",
@@ -123,11 +124,11 @@ function envia(f){if(MODO==="demo")return new Promise(function(ok,no){try{ok(Mar
 var cfg=function(k,d){var v=D&&D.config&&D.config[k];if(Array.isArray(v))v=v[0];return v==null||v===""?d:v};
 var zap=function(m){return"https://wa.me/"+String(cfg("whatsapp","5573998456129")).replace(/\D/g,"")+"?text="+encodeURIComponent(m)};
 
-function docSel(p,i){return'<div class="doc"><select data-k="doc_tipo" aria-label="'+esc(T.doc)+'">'+["cpf","rg","passaporte","outro"].map(function(t){return'<option value="'+t+'"'+((p.doc_tipo||(L==="pt"?"cpf":"passaporte"))===t?" selected":"")+'>'+esc(T.tipos[t])+'</option>'}).join("")+'</select><input data-k="doc" required maxlength="30" autocomplete="off" value="'+esc(p.doc||"")+'" aria-label="'+esc(T.num)+'" placeholder="'+esc(T.num)+'"></div>'}
+function docSel(p,i){return'<div class="doc"><select data-k="doc_tipo" aria-label="'+esc(T.doc)+'">'+(i<0?["cpf","rg","passaporte","outro"]:["cpf","rg","passaporte","certidao","outro"]).map(function(t){return'<option value="'+t+'"'+((p.doc_tipo||(L==="pt"?"cpf":"passaporte"))===t?" selected":"")+'>'+esc(t==="certidao"?T.certidao:T.tipos[t])+'</option>'}).join("")+'</select><input data-k="doc" required maxlength="30" autocomplete="off" value="'+esc(p.doc||"")+'" aria-label="'+esc(T.num)+'" placeholder="'+esc(T.num)+'"></div>'}
 function pessoaHtml(p,i){p=p||{};return'<div class="pessoa" data-p="'+i+'"><h3>'+esc(T.acoN+(i+1))+'<button type="button" data-tira>'+esc(T.tira)+'</button></h3><div class="grid">'+
   '<label class="f full">'+esc(T.nome)+'<input data-k="nome" maxlength="120" autocomplete="off" value="'+esc(p.nome||"")+'"></label>'+
   '<label class="f">'+esc(T.doc)+docSel(p,i)+'</label><label class="f">'+esc(T.nasc)+'<input data-k="nascimento" type="date" max="'+new Date().toISOString().slice(0,10)+'" value="'+esc(p.nascimento||"")+'"></label>'+
-  '<label class="f full">'+esc(T.par)+' <em>'+esc(T.opc)+'</em><input data-k="parentesco" maxlength="40" value="'+esc(p.parentesco||"")+'" placeholder="'+esc(T.parPh)+'"></label></div></div>'}
+  '<label class="f full">'+esc(T.vin)+'<select data-k="vinculo">'+T.vins.map(function(o){return'<option value="'+o[0]+'"'+((p.vinculo||"")===o[0]?" selected":"")+'>'+esc(o[1])+'</option>'}).join("")+'</select></label><p class="eca"'+(p.vinculo==="parente"||p.vinculo==="sem"?"":" hidden")+'>'+esc(T.eca)+'</p></div></div>'}
 function desenha(){
   var f=D.ficha||{},t=f.titular||{},n=D.adultos+D.criancas,ac=(f.acompanhantes&&f.acompanhantes.length?f.acompanhantes:[]).slice();
   while(ac.length<Math.max(0,n-1))ac.push({});
@@ -151,6 +152,7 @@ function desenha(){
   var renum=function(){$$("#acl .pessoa").forEach(function(p,i){p.dataset.p=i;$("h3",p).firstChild.nodeValue=T.acoN+(i+1)})};
   $("#mais").onclick=function(){if($$("#acl .pessoa").length>=12)return;$("#acl").insertAdjacentHTML("beforeend",pessoaHtml({},$$("#acl .pessoa").length));renum()};
   $("#acl").onclick=function(e){var b=e.target.closest("[data-tira]");if(b){b.closest(".pessoa").remove();renum()}};
+  $("#acl").onchange=function(e){if(e.target.dataset.k==="vinculo"){var n=$(".eca",e.target.closest(".pessoa"));n.hidden=!(e.target.value==="parente"||e.target.value==="sem")}};
   $("#fm").onsubmit=function(e){e.preventDefault();
     var le=function(box){var o={};$$("[data-k]",box).forEach(function(i){o[i.dataset.k]=i.value.trim()});return o};
     var ficha={titular:le($("#tit")),acompanhantes:$$("#acl .pessoa").map(le).filter(function(p){return p.nome}),chegada_hora:$("#f-h").value,placa:$("#f-pl").value,carro:$("#f-c").value.trim(),obs:$("#f-o").value.trim(),aceite:$("#f-a").checked};

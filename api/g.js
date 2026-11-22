@@ -1,7 +1,7 @@
 import { q, q1, corpo, responde, falha, txt, num, int, data, umDe, hoje, isData } from "./_db.js";
 import { usuarioDe, origemOk, hashSenha, senhaForte } from "./_auth.js";
 import { chaveBusca } from "./public.js";
-import { validaAcompanhantes } from "./_ficha.js";
+import { validaAcompanhantes, validaFichaBalcao, pendenciasCheckin } from "./_ficha.js";
 import crypto from "node:crypto";
 import { channexOn, listas as cxListas, enviaARI, puxaReservas } from "./_channex.js";
 
@@ -15,7 +15,7 @@ const AREAS_PADRAO = { recepcao: ["mapa", "reservas", "leads", "consumo", "pagam
 const so_dono = ["usuario_salvar", "pagamento_del", "lead_del"];
 const AREA_DE = {
   mapa: ["mapa"], mover: ["mapa"], bloqueio_criar: ["mapa"], bloqueio_remover: ["mapa"],
-  reserva_salvar: ["reservas", "mapa"], reserva_status: ["reservas", "mapa"], msg_marcar: ["reservas", "mapa"], ficha_conferir: ["reservas", "mapa"], reservas_busca: ["reservas"], hospede_busca: ["reservas", "mapa", "leads"],
+  reserva_salvar: ["reservas", "mapa"], reserva_status: ["reservas", "mapa"], msg_marcar: ["reservas", "mapa"], ficha_conferir: ["reservas", "mapa"], ficha_balcao: ["reservas", "mapa"], fnrh_marcar: ["reservas", "mapa"], reservas_busca: ["reservas"], hospede_busca: ["reservas", "mapa", "leads"],
   acompanhantes: ["reservas", "mapa"], disponiveis: ["reservas", "mapa", "leads"], preco: ["reservas", "mapa", "leads"],
   reserva_get: ["reservas", "mapa", "leads", "pagamentos"], leads: ["leads"], lead_status: ["leads"],
   lancar: ["consumo"], consumo: ["pagamentos"], lancamento_cancelar: ["pagamentos"], pagamento_add: ["pagamentos"],
@@ -34,6 +34,15 @@ const podeAcao = (nome, acao, u) => {
   if (AREA_DE[nome]) { const a = areasDe(u); return AREA_DE[nome].some((x) => a.includes(x)); }
   return acao[0].includes(u.papel);
 };
+// Confere a ficha antes do check-in (FNRH + ECA). Lança erro com a lista do que falta.
+async function exigeFicha(id) {
+  let r;
+  try { r = await q1(`select checkin, adultos, criancas, ficha, acompanhantes_dados from reservas where id = $1`, [id]); }
+  catch (e) { if (!/acompanhantes_dados/.test(String(e.message))) throw e; r = await q1(`select checkin, adultos, criancas, ficha, '[]'::jsonb acompanhantes_dados from reservas where id = $1`, [id]); }
+  if (!r) throw Object.assign(new Error("Reserva não encontrada."), { status: 404 });
+  const p = pendenciasCheckin(r);
+  if (p.length) throw Object.assign(new Error("Antes do check-in, complete a ficha: " + p.join(" ")), { status: 400, pendencias: p });
+}
 // Grava os demais hóspedes (com documento). Se o banco ainda não tiver a coluna, avisa em vez de quebrar.
 async function salvaDados(id, dados, uid) {
   try { await q(`update reservas set acompanhantes_dados = $2::jsonb where id = $1`, [id, JSON.stringify(dados)], uid); }
@@ -153,6 +162,11 @@ const ACOES = {
       adultos: int(x.adultos ?? 0, 0, 12), criancas: int(x.criancas ?? 0, 0, 12),
       ...(x.valor_diaria !== undefined && x.valor_diaria !== "" && x.valor_diaria !== null ? { valor_diaria: num(x.valor_diaria, 0, 100000) } : {}),
     })) : [];
+    if (b.status === "hospedada") {
+      const at = b.id ? await q1(`select status from reservas where id = $1`, [int(b.id, 1)]) : null;
+      if (!at) throw Object.assign(new Error("Para fazer check-in, salve a reserva como confirmada, preencha a ficha dos hóspedes e depois toque em Check-in."), { status: 400 });
+      if (at.status !== "hospedada") await exigeFicha(int(b.id, 1));
+    }
     const h = b.hospede || {};
     const p = {
       id: b.id ? int(b.id, 1) : null,
@@ -179,8 +193,33 @@ const ACOES = {
     await q(`update reservas set ficha_conferida_em = case when $2 then now() else null end where id = $1 and ficha is not null`, [int(b.id, 1), b.ok !== false], u.id);
     return { ok: true };
   }],
+  ficha_balcao: [DR, async (b, u) => {
+    const id = int(b.id, 1);
+    const r = await q1(`select checkin, ficha from reservas where id = $1`, [id]);
+    if (!r) throw Object.assign(new Error("Reserva não encontrada."), { status: 404 });
+    const n = validaFichaBalcao(b, r);
+    const f = Object.assign({}, r.ficha || {}, n, { titular: Object.assign({}, (r.ficha && r.ficha.titular) || {}, n.titular), origem: (r.ficha && r.ficha.origem) || "balcao" });
+    if (!Array.isArray(f.acompanhantes)) f.acompanhantes = [];
+    await q(`update reservas set ficha = $2::jsonb, ficha_em = coalesce(ficha_em, now()), ficha_conferida_em = now() where id = $1`, [id, JSON.stringify(f)], u.id);
+    const t = n.titular;
+    await q(`update hospedes set nome = $2, documento = $3, email = case when $4 <> '' then $4 else email end, cidade = case when $5 <> '' then $5 else cidade end
+              where id = (select hospede_id from reservas where id = $1)`,
+      [id, t.nome, (t.doc_tipo === "cpf" ? "CPF " : t.doc_tipo.toUpperCase() + " ") + t.doc, t.email, [t.cidade, t.uf].filter(Boolean).join(" / ").slice(0, 60)], u.id);
+    return { ok: true };
+  }],
+  fnrh_marcar: [DR, async (b, u) => {
+    const id = int(b.id, 1);
+    if (b.ok === false) await q(`update reservas set ficha = ficha - 'fnrh' where id = $1 and ficha is not null`, [id], u.id);
+    else {
+      const v = { em: new Date().toISOString(), por: u.nome, protocolo: txt(b.protocolo, 60) };
+      const r = await q1(`update reservas set ficha = ficha || jsonb_build_object('fnrh', $2::jsonb) where id = $1 and ficha is not null returning id`, [id, JSON.stringify(v)], u.id);
+      if (!r) throw Object.assign(new Error("Preencha a ficha do titular antes de marcar o registro na FNRH."), { status: 400 });
+    }
+    return { ok: true };
+  }],
   reserva_status: [DR, async (b, u) => {
     const st = umDe(b.status, STATUS);
+    if (st === "hospedada") { const at = await q1(`select status from reservas where id = $1`, [int(b.id, 1)]); if (at && at.status !== "hospedada") await exigeFicha(int(b.id, 1)); }
     const r = await q1(`select reserva_status($1, $2, $3, $4) r`, [int(b.id, 1), st, txt(b.motivo, 300), u.id], u.id);
     return r.r;
   }],
@@ -449,6 +488,9 @@ const ACOES = {
     const permitidas = { whatsapp: (v) => String(v).replace(/\D/g, "").slice(0, 15), whatsapp_restaurante: (v) => String(v).replace(/\D/g, "").slice(0, 15),
       vendas_ate: (v) => [isData(v) ? v : ""], site_pausado: (v) => [!!v], sinal_pct: (v) => [num(v, 0, 100)], condicoes: (v) => txt(v, 1200),
       checkin_hora: (v) => txt(v, 10), checkout_hora: (v) => txt(v, 10), politica_pets: (v) => txt(v, 600),
+      empresa_razao: (v) => txt(v, 120), empresa_cnpj: (v) => { const d = String(v || "").replace(/\D/g, ""); if (d && d.length !== 14) throw Object.assign(new Error("O CNPJ precisa ter 14 números."), { status: 400 }); return d ? d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5") : ""; },
+      empresa_endereco: (v) => txt(v, 200), empresa_cadastur: (v) => txt(v, 40),
+      fnrh_link: (v) => { const s = String(v || "").trim(); if (s && !/^https:\/\/\S+$/.test(s)) throw Object.assign(new Error("O link da FNRH precisa começar com https://"), { status: 400 }); return s.slice(0, 300); },
       // Mensagens prontas (Ajustes › Mensagens)
       channex_precos: (v) => [!!v], channex_markup: (v) => [num(v || 0, -50, 200)],
       pix_chave: (v) => txt(v, 140), pix_nome: (v) => txt(v, 80), pix_banco: (v) => txt(v, 60),

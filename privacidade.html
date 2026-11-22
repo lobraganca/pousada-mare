@@ -55,7 +55,7 @@ footer{text-align:center;font-size:13px;color:var(--muted);padding:0 16px 40px}
 <div class="resumo"><p><b>Em poucas palavras:</b> pedimos só os dados necessários para a sua reserva e para o registro de hóspedes que a lei exige. Não vendemos nem usamos seus dados para propaganda de terceiros. Você pode pedir, a qualquer momento, para ver, corrigir ou apagar seus dados.</p></div>
 
 <h2>1. Quem cuida dos seus dados</h2>
-<p>A <b>Pousada Maré</b> (Alameda Roberto Pompeu, 15, Rio do Peixe Grande, Cumuruxatiba, Prado – BA) é a controladora dos dados pessoais tratados neste site, no atendimento pelo WhatsApp e durante a sua hospedagem, nos termos da Lei Geral de Proteção de Dados (Lei nº 13.709/2018, “LGPD”).</p>
+<p>A <b>Pousada Maré</b><span data-emp></span> (Alameda Roberto Pompeu, 15, Rio do Peixe Grande, Cumuruxatiba, Prado – BA) é a controladora dos dados pessoais tratados neste site, no atendimento pelo WhatsApp e durante a sua hospedagem, nos termos da Lei Geral de Proteção de Dados (Lei nº 13.709/2018, “LGPD”).</p>
 <!-- PREENCHER: razão social e CNPJ da pousada, se quiser exibir: "Razão social: ____ · CNPJ: ____" -->
 <p><b>Canal de privacidade:</b> e-mail <a href="mailto:pousadamarecumuru@gmail.com">pousadamarecumuru@gmail.com</a> ou WhatsApp <a href="https://wa.me/5573998456129">(73) 99845-6129</a>. É por aqui que você fala com a pousada sobre seus dados.</p>
 
@@ -117,7 +117,7 @@ footer{text-align:center;font-size:13px;color:var(--muted);padding:0 16px 40px}
 <article lang="es" data-l="es" hidden>
 <div class="resumo"><p><b>En pocas palabras:</b> pedimos solo los datos necesarios para tu reserva y para el registro de huéspedes que exige la ley brasileña. No vendemos tus datos ni los usamos para publicidad de terceros. Puedes pedir en cualquier momento ver, corregir o borrar tus datos.</p></div>
 <h2>1. Quién cuida tus datos</h2>
-<p><b>Pousada Maré</b> (Alameda Roberto Pompeu, 15, Rio do Peixe Grande, Cumuruxatiba, Prado – Bahía, Brasil) es responsable de los datos personales tratados en este sitio, en la atención por WhatsApp y durante tu estadía, según la Ley General de Protección de Datos de Brasil (Ley nº 13.709/2018, “LGPD”).</p>
+<p><b>Pousada Maré</b><span data-emp></span> (Alameda Roberto Pompeu, 15, Rio do Peixe Grande, Cumuruxatiba, Prado – Bahía, Brasil) es responsable de los datos personales tratados en este sitio, en la atención por WhatsApp y durante tu estadía, según la Ley General de Protección de Datos de Brasil (Ley nº 13.709/2018, “LGPD”).</p>
 <p><b>Canal de privacidad:</b> e-mail <a href="mailto:pousadamarecumuru@gmail.com">pousadamarecumuru@gmail.com</a> o WhatsApp <a href="https://wa.me/5573998456129">+55 73 99845-6129</a>.</p>
 <h2>2. Qué datos usamos, para qué y con qué base legal</h2>
 <ul>
@@ -143,7 +143,7 @@ footer{text-align:center;font-size:13px;color:var(--muted);padding:0 16px 40px}
 <article lang="en" data-l="en" hidden>
 <div class="resumo"><p><b>In short:</b> we only ask for the data we need for your booking and for the guest register required by Brazilian law. We don't sell your data or use it for third-party advertising. You can ask to see, correct or delete your data at any time.</p></div>
 <h2>1. Who looks after your data</h2>
-<p><b>Pousada Maré</b> (Alameda Roberto Pompeu, 15, Rio do Peixe Grande, Cumuruxatiba, Prado – Bahia, Brazil) is the controller of the personal data processed on this website, in WhatsApp conversations and during your stay, under Brazil's General Data Protection Law (Law 13,709/2018, “LGPD”).</p>
+<p><b>Pousada Maré</b><span data-emp></span> (Alameda Roberto Pompeu, 15, Rio do Peixe Grande, Cumuruxatiba, Prado – Bahia, Brazil) is the controller of the personal data processed on this website, in WhatsApp conversations and during your stay, under Brazil's General Data Protection Law (Law 13,709/2018, “LGPD”).</p>
 <p><b>Privacy contact:</b> e-mail <a href="mailto:pousadamarecumuru@gmail.com">pousadamarecumuru@gmail.com</a> or WhatsApp <a href="https://wa.me/5573998456129">+55 73 99845-6129</a>.</p>
 <h2>2. What we use, why and on what legal basis</h2>
 <ul>
@@ -166,6 +166,9 @@ footer{text-align:center;font-size:13px;color:var(--muted);padding:0 16px 40px}
 </article>
 </main>
 <footer>Pousada Maré · Cumuruxatiba, BA</footer>
+<script>
+fetch("/api/public?a=site").then(function(r){return r.ok?r.json():null}).then(function(d){var c=(d&&d.config)||{},v=function(k){var x=c[k];return typeof x==="string"?x:""};var t=[v("empresa_razao"),v("empresa_cnpj")?"CNPJ "+v("empresa_cnpj"):""].filter(Boolean).join(", ");if(t)document.querySelectorAll("[data-emp]").forEach(function(e){e.textContent=", "+t})}).catch(function(){});
+</script>
 <script>
 (function(){var LS=["pt","es","en"],L=(function(){try{var q=new URLSearchParams(location.search).get("lang");if(LS.indexOf(q)>=0)return q;var s=localStorage.mareLang;if(LS.indexOf(s)>=0)return s}catch(e){}var n=String(navigator.language||"pt").toLowerCase();return n.indexOf("pt")===0?"pt":n.indexOf("es")===0?"es":"en"})();
 var T={pt:["Política de Privacidade","Como cuidamos dos seus dados, de acordo com a LGPD."],es:["Política de Privacidad","Cómo cuidamos tus datos, según la ley brasileña (LGPD)."],en:["Privacy Policy","How we look after your data under Brazil's LGPD."]};

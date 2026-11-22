@@ -658,6 +658,11 @@ body.rolou .regua{opacity:1}
 .fotos .fa:hover,.fotos .fp:hover{background:#0A97B4;color:#fff}
 @media (hover:none){.fotos .fa,.fotos .fp{opacity:.92}}
 @media (hover:none),(max-width:760px){.desliza .st2{display:none}}
+.copy-l.emp{font-size:12.5px;opacity:.75;margin-top:4px}
+.aceite-r{display:flex;gap:10px;align-items:flex-start;margin:14px 0 4px;font-size:14.5px;color:var(--ink2);cursor:pointer}.aceite-r input{width:20px;height:20px;flex:none;margin-top:1px;accent-color:#1FAF5C}.aceite-r a{color:var(--turq)}
+.eca-n{font-size:14px;padding:12px 14px;border-left:2px solid #E3A33B;background:#FFF6E6;margin:12px 0;color:#6B4A0E}
+.cond-r{font-size:14px;color:var(--muted);background:#F6F2EA;border-radius:12px;padding:12px 14px;margin:12px 0}.cond-r b{display:block;color:var(--ink2);margin-bottom:4px}
+.ac-dica{font-size:12.5px;color:var(--muted);line-height:1.3;display:block;max-width:22ch}
 </style>
 </head>
 <body>
@@ -847,6 +852,7 @@ body.rolou .regua{opacity:1}
   <div class="credit">
     <div class="wrap">
       <p class="copy-l">© <span id="ano"></span> Pousada Maré · Cumuruxatiba, BA · <a href="/privacidade">Política de Privacidade</a> · <a href="gestao" rel="nofollow">Área da pousada</a></p>
+      <p class="copy-l emp" id="ft-emp" data-sem-trad>Alameda Roberto Pompeu, 15 · Rio do Peixe Grande, Cumuruxatiba · Prado – BA</p>
       <div class="sig">
         <span class="lmark" aria-hidden="true">L.</span>
         <div class="sig-t"><small>Site criado por</small><b>Lorena Bragança</b></div>
@@ -1051,7 +1057,7 @@ var total=function(){return(R.dist||[]).reduce(function(s,x){return s+precoQ(x.c
 var cap=function(){return qsel().reduce(function(s,c){return s+cat(c).capacidade},0)};
 var noites=function(){return R.checkin&&R.checkout?dias(R.checkin,R.checkout):0};
 function itensLead(){var o={};(R.dist||[]).forEach(function(x){var n=cat(x.cid).nome;o[n]=o[n]||{categoria:n,quartos:0,adultos:0,criancas:0};o[n].quartos++;o[n].adultos+=x.a;o[n].criancas+=x.c});return Object.keys(o).map(function(k){return o[k]})}
-var lt;function sync(et,env){guarda();clearTimeout(lt);var go=function(){salvaLead({id:R.id,nome:R.nome||"",telefone:R.tel||"",cidade:R.cidade||"",checkin:R.checkin,checkout:R.checkout,adultos:R.adultos,criancas:R.criancas,itens:itensLead(),valor:total(),obs:({es:"[Hóspede fala espanhol] ",en:"[Hóspede fala inglês] "}[window.mareLang]||"")+(R.pet?"Vai levar pet. ":"")+(R.obs||""),etapa:et||passo,enviado:!!env})};if(env)return go();lt=setTimeout(go,1200)}
+var lt;function sync(et,env){guarda();clearTimeout(lt);var go=function(){salvaLead({id:R.id,nome:R.nome||"",telefone:R.tel||"",cidade:R.cidade||"",checkin:R.checkin,checkout:R.checkout,adultos:R.adultos,criancas:R.criancas,itens:itensLead(),valor:total(),obs:({es:"[Hóspede fala espanhol] ",en:"[Hóspede fala inglês] "}[window.mareLang]||"")+(R.aceite?"[Aceitou condições e privacidade em "+new Date(R.aceite).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})+"] ":"")+(R.pet?"Vai levar pet. ":"")+(R.obs||""),etapa:et||passo,enviado:!!env})};if(env)return go();lt=setTimeout(go,1200)}
 function resumoTopo(){}
 function temDados(){return(R.nome||"").length>=2&&String(R.tel||"").replace(/\D/g,"").length>=10}
 function abreReserva(p){passo=p||1;$("#veu").classList.add("on");$("#reserva").classList.add("on");document.body.style.overflow="hidden";desenha()}
@@ -1129,13 +1135,17 @@ function desenha(){
     var h=li("Nome",esc(R.nome))+li("WhatsApp",esc(R.tel))+li("Chegada",fd(R.checkin,{weekday:"long",day:"numeric",month:"long"}))+li("Saída",fd(R.checkout,{weekday:"long",day:"numeric",month:"long"}))+li("Hóspedes",R.adultos+(R.adultos>1?" adultos":" adulto")+(R.criancas?" e "+R.criancas+(R.criancas>1?" crianças":" criança"):"")+(R.pet?", com pet":""))+
       (R.dist||[]).map(function(x){return li(esc(cat(x.cid).nome)+", "+(x.a+x.c)+(x.a+x.c>1?" pessoas":" pessoa"),brl(precoQ(x.cid,x.a+x.c)))}).join("")+(t?'<div class="lin-res t"><span>Total, '+noites()+' noites</span><span>'+brl(t)+'</span></div>':"");
     if(t)h+='<div class="calmo">Para confirmar, a recepção pede um sinal de '+pct+'% ('+brl(Math.round(t*pct/100))+') e envia os dados para pagamento pelo WhatsApp.</div>';
-    var cd=cfg("condicoes","");if(cd)h+='<p style="font-size:14px;color:var(--muted)">'+esc(cd)+'</p>';
+    var cd=cfg("condicoes","");h+='<div class="cond-r"><b>Condições da reserva</b><span>'+esc(cd||"Pedimos um sinal para garantir a reserva; o saldo é pago no check-in. Consulte a política de cancelamento com a recepção.")+'</span> <span>Check-in a partir das '+esc(cfg("checkin_hora","14h"))+' e check-out até as '+esc(cfg("checkout_hora","12h"))+'.</span></div>';
+    h+='<div class="eca-n">Menores de 18 anos que não estiverem com pai, mãe ou responsável legal precisam de autorização escrita deles, com firma reconhecida em cartório (ECA, art. 82). Traga o original no check-in.</div>';
+    h+='<label class="aceite-r"><input type="checkbox" id="r-ac"'+(R.aceite?" checked":"")+'><span>Li e concordo com as condições da reserva e com a <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a>.</span></label>';
     b.innerHTML=h;sync(4);
-    $("#r-pe").innerHTML='<button class="link" id="r-v">Voltar</button><div class="tot"></div><button class="act" id="r-env" style="background:#1FAF5C">Enviar pelo WhatsApp</button>';
+    $("#r-pe").innerHTML='<button class="link" id="r-v">Voltar</button><div class="tot"></div><button class="act" id="r-env" style="background:#1FAF5C"'+(R.aceite?"":" disabled")+'>Enviar pelo WhatsApp</button>';
+    var dica=function(){var t=$("#r-pe .tot");if(t)t.innerHTML=R.aceite?"":'<small class="ac-dica">Marque “Li e concordo” para enviar</small>'};dica();
+    $("#r-ac").onchange=function(){R.aceite=this.checked?new Date().toISOString():"";guarda();$("#r-env").disabled=!this.checked;dica()};
     $("#r-v").onclick=function(){passo=3;desenha()};
     $("#r-env").onclick=function(){
-      var msg="Olá, Pousada Maré! Quero fazer uma pré-reserva:\n\n"+R.nome+(R.cidade?" ("+R.cidade+")":"")+"\nChegada: "+fd(R.checkin,{weekday:"short",day:"2-digit",month:"2-digit"})+"\nSaída: "+fd(R.checkout,{weekday:"short",day:"2-digit",month:"2-digit"})+" ("+noites()+" noites)\nHóspedes: "+R.adultos+" adulto(s)"+(R.criancas?" e "+R.criancas+" criança(s)":"")+(R.pet?"\nVou levar pet":"")+"\n"+(R.dist||[]).map(function(x){return"• "+cat(x.cid).nome+": "+x.a+" ad"+(x.c?" + "+x.c+" cr":"")}).join("\n")+(t?"\nValor no site: "+brl(t):"")+(R.obs?"\nObs.: "+R.obs:"")+"\n\nPedido "+R.id.slice(-6).toUpperCase()+". Aguardo a confirmação e os dados para pagamento.";
-      sync(4,true);R.enviado=true;guarda();window.open(zap(cfg("whatsapp","5573998456129"),msg),"_blank","noopener");passo=5;desenha()};return}
+      var msg="Olá, Pousada Maré! Quero fazer uma pré-reserva:\n\n"+R.nome+(R.cidade?" ("+R.cidade+")":"")+"\nChegada: "+fd(R.checkin,{weekday:"short",day:"2-digit",month:"2-digit"})+"\nSaída: "+fd(R.checkout,{weekday:"short",day:"2-digit",month:"2-digit"})+" ("+noites()+" noites)\nHóspedes: "+R.adultos+" adulto(s)"+(R.criancas?" e "+R.criancas+" criança(s)":"")+(R.pet?"\nVou levar pet":"")+"\n"+(R.dist||[]).map(function(x){return"• "+cat(x.cid).nome+": "+x.a+" ad"+(x.c?" + "+x.c+" cr":"")}).join("\n")+(t?"\nValor no site: "+brl(t):"")+(R.obs?"\nObs.: "+R.obs:"")+"\n\nLi e concordo com as condições da reserva e a Política de Privacidade.\nPedido "+R.id.slice(-6).toUpperCase()+". Aguardo a confirmação e os dados para pagamento.";
+      if(!R.aceite)return;sync(4,true);R.enviado=true;guarda();window.open(zap(cfg("whatsapp","5573998456129"),msg),"_blank","noopener");passo=5;desenha()};return}
   if(passo===5){
     b.innerHTML='<div class="pronto"><svg width="120" height="40" viewBox="0 0 120 40" fill="none" stroke="#0A97B4" stroke-width="1.5" stroke-linecap="round"><path d="M2 20 Q17 6 32 20 T62 20 T92 20 T118 20"/></svg><h4>Até breve.</h4><p style="color:var(--muted);max-width:38ch;margin:0 auto">Seu pedido foi para o WhatsApp da recepção, que confirma a disponibilidade e envia os dados para pagamento. Se o WhatsApp não abriu, <a href="'+zap(cfg("whatsapp","5573998456129"),"Olá! Fiz uma pré-reserva pelo site (pedido "+R.id.slice(-6).toUpperCase()+").")+'" target="_blank" rel="noopener">toque aqui</a>.</p></div>';
     $("#r-pe").innerHTML='<div class="tot"></div><button class="act escuro" id="r-fim">Fechar</button>';
@@ -1152,6 +1162,7 @@ document.addEventListener("click",function(e){var b=e.target.closest("[data-copy
 carregaSite().then(function(s){SITE=s||SITE;renderSuites();renderVideos();observa();
   var cd=cfg("condicoes","");if(cd){var partes=cd.split(/\.\s+/).map(function(x){return x.replace(/\.$/,"")+"."});var s1=partes.filter(function(p){return/sinal|saldo/i.test(p)}).join(" ");if(s1)$("#r-sinal").textContent=s1;var c2=partes.filter(function(p){return/cancel|remarc|crédito/i.test(p)}).join(" ");if(c2)$("#r-cancel").textContent=c2}
   var pets=cfg("politica_pets","");if(pets)$("#r-pets").textContent=pets;
+  var em=[cfg("empresa_razao",""),cfg("empresa_cnpj","")?"CNPJ "+cfg("empresa_cnpj",""):"",cfg("empresa_endereco",""),cfg("empresa_cadastur","")?"Cadastur "+cfg("empresa_cadastur",""):""].filter(Boolean);if(em.length&&$("#ft-emp"))$("#ft-emp").textContent=em.join(" · ");
   $("#r-hor").textContent="Check-in a partir das "+cfg("checkin_hora","14h")+" e check-out até as "+cfg("checkout_hora","12h")+". Portaria das 7h às 19h.";
   var zp=zap(cfg("whatsapp","5573998456129"),"Olá! Vim pelo site da Pousada Maré.");$("#zap").href=zp;$("#zap2").href=zp;$("#zap3").href=zp;
   $("#zap-rest").href=zap(cfg("whatsapp_restaurante","5573996561413"),"Olá! Gostaria de reservar uma mesa no Restaurante Maré.");

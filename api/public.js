@@ -8,7 +8,7 @@ const VAZIAS = new Set("a o os as um uma uns umas de da do das dos e em no na no
 export const normaliza = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 export const chaveBusca = (s) => { const n = normaliza(s); const k = n.split(" ").filter((w) => w && !VAZIAS.has(w)).join(" "); return (k || n).slice(0, 120); };
 
-const CFG_PUBLICA = ["whatsapp", "whatsapp_restaurante", "vendas_ate", "site_pausado", "sinal_pct", "condicoes", "checkin_hora", "checkout_hora", "politica_pets"];
+const CFG_PUBLICA = ["whatsapp", "whatsapp_restaurante", "vendas_ate", "site_pausado", "sinal_pct", "condicoes", "checkin_hora", "checkout_hora", "politica_pets", "empresa_razao", "empresa_cnpj", "empresa_endereco", "empresa_cadastur"];
 
 export default async function handler(req, res) {
   try {
@@ -99,7 +99,7 @@ export default async function handler(req, res) {
       const nomes = f.acompanhantes.map((p) => p.nome).join("\n");
       await q(`update reservas set ficha = $2::jsonb, ficha_em = now(), ficha_conferida_em = null,
                       acompanhantes = case when $3 <> '' then $3 else acompanhantes end where id = $1`, [r.id, JSON.stringify(f), nomes]);
-      await q(`update reservas set acompanhantes_dados = $2::jsonb where id = $1`, [r.id, JSON.stringify(f.acompanhantes.map((p) => ({ nome: p.nome, doc_tipo: p.doc_tipo, doc: p.doc, nascimento: p.nascimento, parentesco: p.parentesco || "" })))]).catch(() => {});
+      await q(`update reservas set acompanhantes_dados = $2::jsonb where id = $1`, [r.id, JSON.stringify(f.acompanhantes.map((p) => ({ nome: p.nome, doc_tipo: p.doc_tipo, doc: p.doc, nascimento: p.nascimento, vinculo: p.vinculo || "", parentesco: p.parentesco || "" })))]).catch(() => {});
       await q(`update hospedes set documento = $2, email = case when $3 <> '' then $3 else email end, cidade = case when $4 <> '' then $4 else cidade end
                 where id = (select hospede_id from reservas where id = $1)`,
         [r.id, (f.titular.doc_tipo === "cpf" ? "CPF " : f.titular.doc_tipo.toUpperCase() + " ") + f.titular.doc, f.titular.email, [f.titular.cidade, f.titular.uf].filter(Boolean).join(" / ").slice(0, 60)]);
