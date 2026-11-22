@@ -92,8 +92,12 @@
   function precoNoite(db, c, p, d) {
     var ts = db.tarifas.filter(function (t) { return t.categoria_id === c; }).sort(function (a, b) { return a.pessoas - b.pessoas; });
     if (!ts.length) return 0; var t = ts.filter(function (x) { return x.pessoas >= Math.max(p, 1); })[0] || ts[ts.length - 1];
+    var man = (db.precos_dia || {})[c + "|" + d];
+    if (man) { var ref = refTarifa(db, c); if (ref && ref.valor > 0) return Math.round(man * t.valor / ref.valor * 100) / 100; }
     var s = temporadaEm(db, d); return Math.round(t.valor * (1 + (s ? s.ajuste_pct : 0) / 100) * 100) / 100;
   }
+  // tarifa de referência do Calendário de preços: a de 2 pessoas (ou a mais próxima)
+  function refTarifa(db, c) { var ts = db.tarifas.filter(function (t) { return t.categoria_id === c; }).sort(function (a, b) { return a.pessoas - b.pessoas; }); return ts.filter(function (t) { return t.pessoas >= 2; })[0] || ts[ts.length - 1]; }
   function precoEstadia(db, c, p, i, o) { var s = 0; for (var d = i; d < o; d = add(d, 1)) s += precoNoite(db, c, p, d); return Math.round(s * 100) / 100; }
   var sobrepoe = function (a1, b1, a2, b2) { return a1 < b2 && a2 < b1; };
   function conflito(db, qid, i, o, ignorar) {
@@ -293,6 +297,19 @@
     categoria_salvar: function (b, u, db) { var c = byId(db.categorias, b.id); Object.assign(c, { nome: b.nome, resumo: b.resumo, descricao: b.descricao, capacidade: +b.capacidade, no_site: b.no_site !== false, fotos: b.fotos || c.fotos, caracteristicas: b.caracteristicas || c.caracteristicas }); return { ok: true }; },
     video_salvar: function (b, u, db) { if (!/^https:\/\//.test(b.url || "")) erro("Link do vídeo inválido."); var v = b.id ? byId(db.videos, b.id) : null; if (!v) { v = { id: ++db.seq.videos }; db.videos.push(v); } Object.assign(v, { titulo: b.titulo || "", url: b.url, capa: b.capa || "", ordem: +b.ordem || 0, ativo: b.ativo !== false }); return { ok: true }; },
     video_del: function (b, u, db) { db.videos = db.videos.filter(function (v) { return v.id !== +b.id; }); return { ok: true }; },
+    precos_mes: function (b, u, db) {
+      var c = +b.categoria_id, ref = refTarifa(db, c), rp = ref ? ref.pessoas : 2, qs = db.quartos.filter(function (q) { return q.ativo && q.categoria_id === c; }), out = [];
+      for (var i = 0; i < (+b.dias || 42); i++) { var d = add(b.ini, i), s = temporadaEm(db, d);
+        out.push({ dia: d, valor: precoNoite(db, c, rp, d), padrao: ref ? Math.round(ref.valor * (1 + (s ? s.ajuste_pct : 0) / 100) * 100) / 100 : 0, manual: !!(db.precos_dia || {})[c + "|" + d], temporada: s ? s.nome : null,
+          livres: qs.filter(function (q) { return !db.ocupacoes.some(function (o) { return o.ativo && o.quarto_id === q.id && o.checkin <= d && o.checkout > d; }); }).length }); }
+      return { itens: out, total: qs.length, ref_pessoas: rp };
+    },
+    precos_salvar: function (b, u, db) {
+      db.precos_dia = db.precos_dia || {}; var cs = b.categorias || [], ds = b.dias || []; if (!cs.length || !ds.length) erro("Escolha a suíte e os dias.");
+      if (b.modo === "valor" && !(+b.valor >= 1)) erro("Número inválido.");
+      cs.forEach(function (c) { ds.forEach(function (d) { var k = c + "|" + d; if (b.modo === "padrao") delete db.precos_dia[k]; else if (b.modo === "valor") db.precos_dia[k] = +b.valor; else { var ref = refTarifa(db, +c); var v = precoNoite(db, +c, ref ? ref.pessoas : 2, d); if (v > 0) db.precos_dia[k] = Math.round(v * (1 + (+b.valor) / 100)); } }); });
+      audit(db, u, "update", "precos_dia", "", { dias: ds.length, modo: b.modo }); return { ok: true };
+    },
     faq_painel: function (b, u, db) {
       var dias = +b.dias || 30, desde = new Date(Date.now() - dias * 864e5).toISOString(), bs = db.faq_buscas.filter(function (x) { return x.atualizado_em > desde; });
       var g = {};
@@ -320,7 +337,7 @@
   var AREAS = ["mapa", "reservas", "leads", "consumo", "pagamentos", "tarefas", "tarefas_gerir", "relatorios", "ajustes", "duvidas"];
   var AREAS_PADRAO = { recepcao: ["mapa", "reservas", "leads", "consumo", "pagamentos", "tarefas", "tarefas_gerir"], equipe: ["consumo", "tarefas"] };
   var SO_DONO = ["usuario_salvar", "pagamento_del", "lead_del"];
-  var AREA_DE = { mapa: ["mapa"], mover: ["mapa"], bloqueio_criar: ["mapa"], bloqueio_remover: ["mapa"], reserva_salvar: ["reservas", "mapa"], reserva_status: ["reservas", "mapa"], msg_marcar: ["reservas", "mapa"], ficha_conferir: ["reservas", "mapa"], reservas_busca: ["reservas"], hospede_busca: ["reservas", "mapa", "leads"], acompanhantes: ["reservas", "mapa"], disponiveis: ["reservas", "mapa", "leads"], preco: ["reservas", "mapa", "leads"], reserva_get: ["reservas", "mapa", "leads", "pagamentos"], leads: ["leads"], lead_status: ["leads"], lancar: ["consumo"], consumo: ["pagamentos"], lancamento_cancelar: ["pagamentos"], pagamento_add: ["pagamentos"], tarefas: ["tarefas", "tarefas_gerir"], tarefa_status: ["tarefas", "tarefas_gerir"], tarefa_salvar: ["tarefas_gerir"], tarefa_del: ["tarefas_gerir"], relatorios: ["relatorios"], auditoria: ["relatorios"], ajustes: ["ajustes"], tarifas_salvar: ["ajustes"], temporada_salvar: ["ajustes"], temporada_del: ["ajustes"], fechamento_salvar: ["ajustes"], fechamento_del: ["ajustes"], config_salvar: ["ajustes"], quarto_salvar: ["ajustes"], categoria_salvar: ["ajustes"], video_salvar: ["ajustes"], video_del: ["ajustes"], produto_salvar: ["ajustes"], faq_painel: ["duvidas"], faq_salvar: ["duvidas"], faq_del: ["duvidas"], faq_termo: ["duvidas"] };
+  var AREA_DE = { mapa: ["mapa"], mover: ["mapa"], bloqueio_criar: ["mapa"], bloqueio_remover: ["mapa"], reserva_salvar: ["reservas", "mapa"], reserva_status: ["reservas", "mapa"], msg_marcar: ["reservas", "mapa"], ficha_conferir: ["reservas", "mapa"], reservas_busca: ["reservas"], hospede_busca: ["reservas", "mapa", "leads"], acompanhantes: ["reservas", "mapa"], disponiveis: ["reservas", "mapa", "leads"], preco: ["reservas", "mapa", "leads"], reserva_get: ["reservas", "mapa", "leads", "pagamentos"], leads: ["leads"], lead_status: ["leads"], lancar: ["consumo"], consumo: ["pagamentos"], lancamento_cancelar: ["pagamentos"], pagamento_add: ["pagamentos"], tarefas: ["tarefas", "tarefas_gerir"], tarefa_status: ["tarefas", "tarefas_gerir"], tarefa_salvar: ["tarefas_gerir"], tarefa_del: ["tarefas_gerir"], relatorios: ["relatorios"], auditoria: ["relatorios"], ajustes: ["ajustes"], tarifas_salvar: ["ajustes"], temporada_salvar: ["ajustes"], temporada_del: ["ajustes"], fechamento_salvar: ["ajustes"], fechamento_del: ["ajustes"], config_salvar: ["ajustes"], quarto_salvar: ["ajustes"], categoria_salvar: ["ajustes"], video_salvar: ["ajustes"], video_del: ["ajustes"], produto_salvar: ["ajustes"], precos_mes: ["ajustes"], precos_salvar: ["ajustes"], faq_painel: ["duvidas"], faq_salvar: ["duvidas"], faq_del: ["duvidas"], faq_termo: ["duvidas"] };
   function areasDe(u) { if (u.papel === "dono") return AREAS.slice(); var x = (load().usuarios.filter(function (y) { return y.id === u.id; })[0] || u).areas; return x && x.length ? x : (AREAS_PADRAO[u.papel] || []); }
   function podeAcao(n, u) { if (u.papel === "dono") return true; if (SO_DONO.indexOf(n) >= 0) return false; var a = areasDe(u); if (AREA_DE[n]) return AREA_DE[n].some(function (x) { return a.indexOf(x) >= 0; }); return ["boot", "hoje", "hospedados"].indexOf(n) >= 0 || u.papel === "recepcao"; }
   var USER = null;

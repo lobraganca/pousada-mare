@@ -89,6 +89,24 @@ main{min-width:0;padding:30px 36px 90px}
 .btn svg{width:16px;height:16px}
 .btn[disabled]{opacity:.45;pointer-events:none}
 a.btn{text-decoration:none}
+.cp-nav{display:flex;align-items:center;gap:6px;font-family:var(--sans);font-size:15px}.cp-nav b{min-width:140px;text-align:center}
+.cp-cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.cp-cats button{border:1px solid var(--linha);background:#fff;border-radius:999px;padding:7px 14px;font:600 13px var(--sans);color:var(--txt2);cursor:pointer}.cp-cats button.on{background:var(--mar);border-color:var(--mar);color:#fff}
+.cp-atal{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.cp-g{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cp-sem{border:0;background:none;font:700 11px var(--sans);text-transform:uppercase;letter-spacing:.05em;color:var(--txt3);padding:4px 0;cursor:pointer}
+.cp-d{position:relative;min-height:74px;border:1px solid var(--linha);border-radius:10px;padding:6px 7px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:1px;font-family:var(--sans);color:var(--txt);background:color-mix(in srgb,#E8F6F2 calc((1 - var(--n))*100%),#FCE9D8);transition:transform .1s}
+.cp-d:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 10px -6px rgba(11,59,69,.4)}
+.cp-d .n{font-size:12px;font-weight:700;color:var(--txt2)}.cp-d .v{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--mar)}
+.cp-d .lv{font-size:10.5px;color:var(--txt3);margin-top:auto}.cp-d.cheio .lv{color:var(--err);font-weight:700}
+.cp-d .dif{position:absolute;top:6px;right:6px;font-size:10px;font-weight:800;padding:0 5px;border-radius:6px}.cp-d .dif.up{background:#FCE0CC;color:#9A4A00}.cp-d .dif.dn{background:#D7F1E7;color:#0F6B4F}
+.cp-d.man{box-shadow:inset 0 0 0 2px var(--agua)}.cp-d.tmp .n::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#E6A23C;margin-left:4px;vertical-align:middle}
+.cp-d.sel{outline:3px solid var(--mar);outline-offset:-1px;background:#DDEFF3}
+.cp-d.fora{visibility:hidden}.cp-d.pass{opacity:.38;cursor:default}
+.cp-leg{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}.cp-leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}.lg-m{box-shadow:inset 0 0 0 2px var(--agua)}.lg-t{background:#E6A23C;border-radius:50%!important}.lg-c{background:var(--err)}
+.cp-bar{position:sticky;bottom:12px;margin-top:12px;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;background:var(--mar);color:#fff;border-radius:16px;padding:12px 14px;box-shadow:0 14px 30px -14px rgba(11,59,69,.7);z-index:5}
+.cp-bar[hidden]{display:none}.cp-bar label{display:flex;align-items:center;gap:6px;font-size:13px}.cp-bar input[type=number]{width:96px;padding:7px 9px;border-radius:9px;border:0}.cp-f{display:flex;gap:6px;align-items:center}
+.cp-bar .btn.ghost{color:#fff}.cp-todas{font-size:12.5px;opacity:.9}
+@media (max-width:640px){.cp-g{gap:3px}.cp-d{min-height:58px;padding:4px 4px;border-radius:8px}.cp-d .v{font-size:12.5px}.cp-d .lv{font-size:9px}.cp-d .dif{display:none}.cp-nav b{min-width:0}.cp-bar{bottom:84px}}
 .msg-bt{display:flex;flex-wrap:wrap;gap:8px}.msg-bt .btn{gap:6px}.msg-ok{font-size:11px;font-weight:700;opacity:.85;margin-left:2px}
 .card{background:var(--card);border-radius:var(--r);border:1px solid var(--linha);padding:20px}
 .card h3{font-family:var(--serif);font-weight:700;font-size:21px;margin-bottom:14px;display:flex;align-items:center;gap:10px;color:var(--mar)}
@@ -1313,6 +1331,52 @@ function converteLead(l){
   });
 }
 
+/* =================== CALENDÁRIO DE PREÇOS =================== */
+function calPrecos(box,cats){
+  S._cp=S._cp||{cat:(cats[0]||{}).id,mes:hojeStr().slice(0,8)+"01",sel:{},todas:false};var C=S._cp;
+  if(!cats.some(function(c){return c.id===C.cat}))C.cat=(cats[0]||{}).id;
+  var mesNome=function(m){var s=new Date(m+"T12:00:00Z").toLocaleDateString("pt-BR",{month:"long",year:"numeric",timeZone:"UTC"});return s.charAt(0).toUpperCase()+s.slice(1)};
+  var ini=function(){var d=new Date(C.mes+"T12:00:00Z");return add(C.mes,-d.getUTCDay())};
+  box.innerHTML='<div class="card"><h3>Calendário de preços<span class="sp"></span><div class="cp-nav"><button class="btn sm ghost" id="cp-a" aria-label="Mês anterior">'+ic("l",16)+'</button><b id="cp-m"></b><button class="btn sm ghost" id="cp-p" aria-label="Próximo mês">'+ic("r",16)+'</button></div></h3>'+
+    '<p class="muted tiny" style="margin:-4px 0 12px">Toque nos dias para escolher e defina o valor. O valor é a <b>diária para 2 pessoas</b>; para mais pessoas, o sistema mantém a proporção da tabela de preços. Vale na hora para o site e para as reservas novas.</p>'+
+    '<div class="cp-cats">'+cats.map(function(c){return'<button data-cc="'+c.id+'" class="'+(c.id===C.cat?"on":"")+'">'+esc(c.nome)+'</button>'}).join("")+'</div>'+
+    '<div class="cp-atal"><span class="tiny muted">Escolher:</span><button class="btn sm sec" data-at="fds">Fins de semana</button><button class="btn sm sec" data-at="mes">Mês todo</button><button class="btn sm ghost" data-at="limpa">Limpar</button></div>'+
+    '<div class="cp-g" id="cp-g"><div class="empty">Carregando…</div></div><div class="cp-leg tiny muted"><span><i class="lg-m"></i>definido à mão</span><span><i class="lg-t"></i>temporada</span><span><i class="lg-c"></i>lotado</span></div>'+
+    '<div class="cp-bar" id="cp-bar" hidden><b id="cp-n"></b><div class="cp-f"><label>Novo valor <input type="number" id="cp-v" min="1" step="1" placeholder="R$"></label><button class="btn sm agua" id="cp-ok">Aplicar</button></div>'+
+    '<div class="cp-f"><label>ou ajustar <input type="number" id="cp-pc" step="1" placeholder="%"> %</label><button class="btn sm sec" id="cp-pok">Aplicar %</button></div><button class="btn sm ghost" id="cp-pd">Voltar ao padrão</button>'+
+    '<label class="cp-todas"><input type="checkbox" id="cp-t" '+(C.todas?"checked":"")+'> aplicar em todas as suítes</label></div></div>';
+  var dados=null;
+  var desenha=function(){
+    $("#cp-m",box).textContent=mesNome(C.mes);
+    if(!dados){$("#cp-g",box).innerHTML='<div class="empty">Carregando…</div>';return}
+    var h=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].map(function(x,i){return'<button class="cp-sem" data-sem="'+i+'" title="Escolher todas as '+x+' do mês">'+x+'</button>'}).join(""),hj=hojeStr();
+    var vals=dados.itens.filter(function(x){return String(x.dia).slice(0,7)===C.mes.slice(0,7)}).map(function(x){return+x.valor}),mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals);
+    dados.itens.forEach(function(x){var d=String(x.dia).slice(0,10),fora=d.slice(0,7)!==C.mes.slice(0,7),pass=d<hj,v=+x.valor,p=+x.padrao,niv=mx>mn?(v-mn)/(mx-mn):0;
+      h+='<button class="cp-d'+(fora?" fora":"")+(pass?" pass":"")+(C.sel[d]?" sel":"")+(x.manual?" man":"")+(x.temporada?" tmp":"")+(x.livres===0&&dados.total?" cheio":"")+'" data-d="'+d+'" '+(pass||fora?"disabled":"")+' style="--n:'+niv.toFixed(2)+'" title="'+esc(fd(d,{weekday:"long",day:"numeric",month:"long"})+(x.temporada?" · "+x.temporada:"")+(x.manual?" · definido à mão (padrão "+brl(p)+")":"")+" · "+x.livres+" de "+dados.total+" livres")+'"><span class="n">'+(+d.slice(8))+'</span><span class="v">'+(v?brl(v).replace("R$","").replace(/,00$/,"").trim():"–")+'</span>'+(x.manual&&v!==p?'<span class="dif '+(v>p?"up":"dn")+'">'+(v>p?"+":"−")+Math.round(Math.abs(v-p)/p*100)+'%</span>':"")+'<span class="lv">'+(dados.total?(x.livres===0?"lotado":x.livres+" livre"+(x.livres>1?"s":"")):"")+'</span></button>'});
+    $("#cp-g",box).innerHTML=h;
+    var n=Object.keys(C.sel).length;$("#cp-bar",box).hidden=!n;if(n)$("#cp-n",box).textContent=n+(n>1?" dias escolhidos":" dia escolhido");
+  };
+  var carrega=function(){dados=null;desenha();var i=ini();G0("precos_mes",{categoria_id:C.cat,ini:i,dias:42}).then(function(r){dados=r;desenha()}).catch(function(e){$("#cp-g",box).innerHTML='<div class="empty">'+esc(e.message)+'</div>'})};
+  var ultimo=null;
+  box.onclick=function(e){
+    var c=e.target.closest("[data-cc]");if(c){C.cat=+c.dataset.cc;$$("[data-cc]",box).forEach(function(b){b.classList.toggle("on",b===c)});carrega();return}
+    var dd=e.target.closest(".cp-d");if(dd&&!dd.disabled){var d=dd.dataset.d;
+      if(e.shiftKey&&ultimo){var a=ultimo<d?ultimo:d,z=ultimo<d?d:ultimo;for(var x=a;x<=z;x=add(x,1))if(x>=hojeStr()&&x.slice(0,7)===C.mes.slice(0,7))C.sel[x]=1}
+      else{if(C.sel[d])delete C.sel[d];else C.sel[d]=1}ultimo=d;desenha();return}
+    var sm=e.target.closest("[data-sem]");if(sm&&dados){var w=+sm.dataset.sem,ds=dados.itens.map(function(x){return String(x.dia).slice(0,10)}).filter(function(d){return d.slice(0,7)===C.mes.slice(0,7)&&d>=hojeStr()&&new Date(d+"T12:00:00Z").getUTCDay()===w}),todos=ds.every(function(d){return C.sel[d]});ds.forEach(function(d){if(todos)delete C.sel[d];else C.sel[d]=1});desenha();return}
+    var at=e.target.closest("[data-at]");if(at&&dados){var k=at.dataset.at;if(k==="limpa")C.sel={};else dados.itens.forEach(function(x){var d=String(x.dia).slice(0,10),w=new Date(d+"T12:00:00Z").getUTCDay();if(d.slice(0,7)===C.mes.slice(0,7)&&d>=hojeStr()&&(k==="mes"||w===5||w===6))C.sel[d]=1});desenha();return}
+  };
+  $("#cp-a",box).onclick=function(e){e.stopPropagation();C.mes=add(C.mes,-1).slice(0,8)+"01";carrega()};
+  $("#cp-p",box).onclick=function(e){e.stopPropagation();C.mes=add(C.mes,32).slice(0,8)+"01";carrega()};
+  $("#cp-t",box).onchange=function(){C.todas=this.checked};
+  var aplica=function(modo,valor,msg){var ds=Object.keys(C.sel).sort();if(!ds.length)return;var cs=C.todas?cats.map(function(c){return c.id}):[C.cat];
+    var qual=C.todas?"todas as suítes":esc((cats.filter(function(c){return c.id===C.cat})[0]||{}).nome||"");
+    confirma(msg,ds.length+(ds.length>1?" dias":" dia")+" · "+qual,"Aplicar").then(function(ok){if(!ok)return;tenta(G0("precos_salvar",{categorias:cs,dias:ds,modo:modo,valor:valor}),"Preços atualizados ✓ — o site já mostra os novos valores").then(function(){C.sel={};carrega()})})};
+  $("#cp-ok",box).onclick=function(){var v=+$("#cp-v",box).value;if(!(v>0)){toast("Digite o novo valor da diária.",true);return}if(C.todas&&cats.length>1){toast("Valor em reais vale para uma suíte por vez. Para todas, use o ajuste em %.",true);return}aplica("valor",v,"Mudar a diária para "+brl(v)+"?")};
+  $("#cp-pok",box).onclick=function(){var v=+$("#cp-pc",box).value;if(!v){toast("Digite o % (ex.: 20 para subir, −10 para baixar).",true);return}aplica("pct",v,(v>0?"Subir ":"Baixar ")+Math.abs(v)+"% os preços?")};
+  $("#cp-pd",box).onclick=function(){aplica("padrao",0,"Voltar ao preço padrão?")};
+  carrega();
+}
 /* =================== DÚVIDAS DO SITE (Central de dúvidas) =================== */
 var TEMA_PADRAO=["Reserva e pagamento","Chegada e horários","Suítes","Família e pets","Estrutura","Restaurante"];
 function faqPreenche(s){var c=(S.boot&&S.boot.config)||{},v=function(k,d){var x=c[k];if(Array.isArray(x))x=x[0];return x==null||x===""?d:String(x)};
@@ -1548,9 +1612,9 @@ VIEWS.ajustes=function(){
   G("ajustes").then(function(d){
     var cfg=S.boot.config;
     if(S._aj==="precos"){
-      var h='<div class="card"><h3>Diária por número de pessoas (preço base)</h3><p class="muted tiny" style="margin:-4px 0 12px">É o preço que aparece no site e que o sistema usa ao criar reservas. As temporadas aplicam um ajuste em % por cima destes valores.</p><div class="scroll-x"><table class="t"><thead><tr><th>Suíte</th>'+[1,2,3,4,5,6].map(function(p){return'<th class="num">'+p+(p===1?" pessoa":" pessoas")+'</th>'}).join("")+'</tr></thead><tbody>'+d.categorias.map(function(c){return'<tr><td><b>'+esc(c.nome)+'</b><br><span class="tiny muted">até '+c.capacidade+' pessoas</span></td>'+[1,2,3,4,5,6].map(function(p){var t=d.tarifas.filter(function(x){return x.categoria_id===c.id&&x.pessoas===p})[0];return'<td>'+(p<=c.capacidade?'<input type="number" min="0" step="1" style="width:96px;text-align:right" data-tc="'+c.id+'" data-tp="'+p+'" value="'+(t?+t.valor:"")+'" placeholder="—">':"")+'</td>'}).join("")+'</tr>'}).join("")+'</tbody></table></div><div style="text-align:right;margin-top:12px"><button class="btn agua" id="sv-t">Salvar preços</button></div></div>';
+      var h='<div id="cal-precos" style="margin-bottom:16px"></div><div class="card"><h3>Diária por número de pessoas (preço base)</h3><p class="muted tiny" style="margin:-4px 0 12px">É o preço que aparece no site e que o sistema usa ao criar reservas. As temporadas aplicam um ajuste em % por cima destes valores.</p><div class="scroll-x"><table class="t"><thead><tr><th>Suíte</th>'+[1,2,3,4,5,6].map(function(p){return'<th class="num">'+p+(p===1?" pessoa":" pessoas")+'</th>'}).join("")+'</tr></thead><tbody>'+d.categorias.map(function(c){return'<tr><td><b>'+esc(c.nome)+'</b><br><span class="tiny muted">até '+c.capacidade+' pessoas</span></td>'+[1,2,3,4,5,6].map(function(p){var t=d.tarifas.filter(function(x){return x.categoria_id===c.id&&x.pessoas===p})[0];return'<td>'+(p<=c.capacidade?'<input type="number" min="0" step="1" style="width:96px;text-align:right" data-tc="'+c.id+'" data-tp="'+p+'" value="'+(t?+t.valor:"")+'" placeholder="—">':"")+'</td>'}).join("")+'</tr>'}).join("")+'</tbody></table></div><div style="text-align:right;margin-top:12px"><button class="btn agua" id="sv-t">Salvar preços</button></div></div>';
       h+='<div class="card" style="margin-top:16px"><h3>Temporadas<span class="sp"></span><button class="btn sm agua" id="nt">+ Temporada</button></h3><p class="muted tiny" style="margin:-4px 0 10px">Ex.: Réveillon +30% com mínimo de 5 noites; baixa temporada −15%.</p>'+(d.temporadas.map(function(t){return'<div class="li"><div class="m"><b>'+esc(t.nome)+'</b><small>'+fd(t.ini,{day:"2-digit",month:"2-digit",year:"numeric"})+' a '+fd(t.fim,{day:"2-digit",month:"2-digit",year:"numeric"})+' · mínimo '+t.min_noites+' noite(s)</small></div><span class="tag" style="font-size:13px">'+(t.ajuste_pct>0?"+":"")+(+t.ajuste_pct)+'%</span><button class="btn sm sec" data-tde="'+t.id+'">Editar</button><button class="btn sm ghost" data-tdd="'+t.id+'" style="color:var(--err)">×</button></div>'}).join("")||'<div class="empty">Nenhuma temporada.</div>')+'</div>';
-      O.innerHTML=h;
+      O.innerHTML=h;calPrecos($("#cal-precos"),d.categorias);
       $("#sv-t").onclick=function(){var l=$$("[data-tc]",O).filter(function(i){return i.value!==""}).map(function(i){return{categoria_id:+i.dataset.tc,pessoas:+i.dataset.tp,valor:+i.value}});tenta(G("tarifas_salvar",{tarifas:l}),"Preços salvos ✓ — o site já mostra os novos valores")};
       var ft=function(t){pergunta(t.id?"Editar temporada":"Nova temporada",null,'<label class="f">Nome<input name="nome" required value="'+esc(t.nome||"")+'" placeholder="ex.: Carnaval 2027"></label><div class="row"><label class="f">Início<input type="date" name="ini" required value="'+(t.ini||"")+'"></label><label class="f">Fim (última noite)<input type="date" name="fim" required value="'+(t.fim||"")+'"></label></div><div class="row"><label class="f">Ajuste no preço (%)<input type="number" name="ajuste_pct" step="1" value="'+(t.ajuste_pct!=null?+t.ajuste_pct:20)+'"></label><label class="f">Mínimo de noites<input type="number" name="min_noites" min="1" max="30" value="'+(t.min_noites||1)+'"></label></div>').then(function(o){if(o)tenta(G("temporada_salvar",Object.assign({id:t.id||null},o)),"Temporada salva ✓").then(re)})};
       $("#nt").onclick=function(){ft({})};

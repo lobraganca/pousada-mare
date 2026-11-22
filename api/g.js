@@ -21,6 +21,7 @@ const AREA_DE = {
   relatorios: ["relatorios"], auditoria: ["relatorios"],
   ajustes: ["ajustes"], tarifas_salvar: ["ajustes"], temporada_salvar: ["ajustes"], temporada_del: ["ajustes"], fechamento_salvar: ["ajustes"], fechamento_del: ["ajustes"],
   config_salvar: ["ajustes"], quarto_salvar: ["ajustes"], categoria_salvar: ["ajustes"], video_salvar: ["ajustes"], video_del: ["ajustes"], produto_salvar: ["ajustes"],
+  precos_mes: ["ajustes"], precos_salvar: ["ajustes"],
   faq_painel: ["duvidas"], faq_salvar: ["duvidas"], faq_del: ["duvidas"], faq_termo: ["duvidas"],
 };
 export const areasDe = (u) => u.papel === "dono" ? AREAS.slice() : (Array.isArray(u.areas) && u.areas.length ? u.areas.filter((x) => AREAS.includes(x)) : (AREAS_PADRAO[u.papel] || []));
@@ -346,6 +347,46 @@ const ACOES = {
     for (const t of lista) {
       await q(`insert into tarifas(categoria_id, pessoas, valor) values ($1,$2,$3) on conflict (categoria_id, pessoas) do update set valor = excluded.valor`,
         [int(t.categoria_id, 1), int(t.pessoas, 1, 12), num(t.valor, 0, 1e5)], u.id);
+    }
+    return { ok: true };
+  }],
+  // ---------------- Calendário de preços ----------------
+  // Valor de cada dia (diária para 2 pessoas), o valor padrão (tabela × temporada), se foi definido à mão e quantos quartos estão livres.
+  precos_mes: [D, async (b) => {
+    const cat = int(b.categoria_id, 1), ini = data(b.ini), n = int(b.dias || 42, 1, 62);
+    const itens = await q(
+      `with ref as (select pessoas from tarifas where categoria_id = $1 order by (pessoas >= 2) desc, case when pessoas >= 2 then pessoas else -pessoas end limit 1),
+            d as (select generate_series($2::date, $2::date + ($3 - 1), interval '1 day')::date dia)
+       select d.dia, preco_noite($1, coalesce((select pessoas from ref), 2), d.dia) valor,
+              round(coalesce((select valor from tarifas where categoria_id = $1 and pessoas = (select pessoas from ref)), 0)
+                    * (1 + coalesce((select ajuste_pct from temporadas where periodo @> d.dia), 0) / 100), 2) padrao,
+              exists (select 1 from precos_dia p where p.categoria_id = $1 and p.dia = d.dia) manual,
+              (select nome from temporadas where periodo @> d.dia) temporada,
+              (select count(*) from quartos q where q.categoria_id = $1 and q.ativo
+                  and not exists (select 1 from ocupacoes o where o.quarto_id = q.id and o.ativo and o.periodo @> d.dia))::int livres
+         from d order by d.dia`, [cat, ini, n]);
+    const t = await q1(`select count(*)::int total, (select pessoas from tarifas where categoria_id = $1 order by (pessoas >= 2) desc, case when pessoas >= 2 then pessoas else -pessoas end limit 1) ref
+                          from quartos where categoria_id = $1 and ativo`, [cat]);
+    return { itens, total: t.total, ref_pessoas: t.ref || 2 };
+  }],
+  precos_salvar: [D, async (b, u) => {
+    const cats = [...new Set((Array.isArray(b.categorias) ? b.categorias : []).map((x) => int(x, 1)))].slice(0, 20);
+    const dias = [...new Set((Array.isArray(b.dias) ? b.dias : []).map((x) => data(x)))].slice(0, 400);
+    if (!cats.length || !dias.length) throw Object.assign(new Error("Escolha a suíte e os dias."), { status: 400 });
+    const modo = umDe(b.modo, ["valor", "pct", "padrao"]);
+    if (modo === "padrao") await q(`delete from precos_dia where categoria_id = any($1::int[]) and dia = any($2::date[])`, [cats, dias], u.id);
+    else if (modo === "valor") {
+      const v = num(b.valor, 1, 99999);
+      await q(`insert into precos_dia(categoria_id, dia, valor) select c, d, $3 from unnest($1::int[]) c, unnest($2::date[]) d
+               on conflict (categoria_id, dia) do update set valor = excluded.valor, atualizado_em = now()`, [cats, dias, v], u.id);
+    } else {
+      const pct = num(b.valor, -90, 500);
+      // aplica o % sobre o valor atual de cada dia (o definido à mão ou o padrão)
+      await q(`insert into precos_dia(categoria_id, dia, valor)
+               select c, d, round(preco_noite(c, coalesce((select pessoas from tarifas where categoria_id = c order by (pessoas >= 2) desc, case when pessoas >= 2 then pessoas else -pessoas end limit 1), 2), d) * (1 + $3 / 100.0))
+                 from unnest($1::int[]) c, unnest($2::date[]) d
+                where preco_noite(c, 2, d) > 0
+               on conflict (categoria_id, dia) do update set valor = excluded.valor, atualizado_em = now()`, [cats, dias, pct], u.id);
     }
     return { ok: true };
   }],

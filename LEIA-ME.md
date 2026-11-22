@@ -15,7 +15,7 @@ api/cron.js         todo dia 7h: tarefas de chegada, aviso de no-show, limpeza L
 db/schema.sql       tabelas, regras e funções (rodar 1x)
 db/dados-iniciais.sql  suítes, preços, 13 quartos, cardápio de exemplo
 db/central-duvidas.sql  Central de dúvidas (rodar 1x se o banco já existia antes dela)
-db/atendimento-automatico.sql  mensagens prontas e check-in online (rodar 1x se o banco já existia)
+db/atendimento-automatico.sql  mensagens prontas, check-in online e calendário de preços (rodar 1x se o banco já existia)
 checkin.html        check-in online do hóspede (abre pelo link secreto da reserva)
 api/_ficha.js       validação da ficha (CPF, idade, placa…)
 duvidas.js          Central de dúvidas do site (busca, respostas, WhatsApp com a pergunta pronta)
@@ -81,4 +81,10 @@ Reservas do Booking entram manualmente com origem **Booking** (o sistema bloquei
 - O texto diz o que é coletado em cada momento (pré-reserva, reserva, ficha de hóspede, buscas), para quê, a base legal, com quem é compartilhado (Vercel, Neon, WhatsApp, Google), por quanto tempo fica guardado, como é protegido e como pedir acesso, correção ou exclusão (resposta em até 15 dias).
 - **Prazos, apagados sozinhos pela rotina diária:** pré-reservas não convertidas e buscas, 1 ano; ficha de hóspede (documento, acompanhantes e link), 5 anos após a saída.
 - **Antes de publicar:** revisar o texto jurídico e, se quiser, incluir razão social e CNPJ (o lugar está marcado no arquivo `privacidade.html`).
+
+## Calendário de preços
+- Em **Ajustes › Preços e temporadas**, o calendário mostra, mês a mês e para cada suíte, a diária de cada dia (para 2 pessoas) e quantos quartos estão livres. As cores vão do verde (mais barato) ao laranja (mais caro).
+- Toque nos dias (ou em **Fins de semana**, **Mês todo**, ou no nome do dia da semana para pegar todas as sextas, por exemplo) e escolha: **novo valor em R$**, **ajuste em %** (pode valer para todas as suítes) ou **voltar ao padrão**.
+- Dia com valor definido à mão fica com borda e mostra a diferença em % para o padrão. Para mais pessoas, o preço mantém a proporção da tabela base (ex.: se a tabela tem 4 pessoas = 1,56 × o casal, continua assim).
+- A tabela base e as temporadas continuam valendo para os dias sem valor definido.
 
