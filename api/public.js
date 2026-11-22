@@ -45,10 +45,16 @@ export default async function handler(req, res) {
     // Pré-reserva sendo montada no site: salva mesmo que a pessoa NÃO envie no WhatsApp.
     if (req.method === "POST" && a === "lead") {
       const b = corpo(req);
-      const id = txt(b.id, 40).replace(/[^\w-]/g, "");
+      let id = txt(b.id, 36).replace(/[^\w-]/g, "");
       const nome = txt(b.nome, 80), tel = String(b.telefone || "").replace(/\D/g, "").slice(0, 15);
       if (id.length < 6 || (nome.length < 2 && tel.length < 8)) { console.log("lead ignorado: sem nome/WhatsApp ainda", { etapa: b.etapa }); return responde(res, 204, {}); }
-      const existe = await q1(`select status from leads where id = $1`, [id]);
+      // Se o pedido com esse código já virou reserva ou foi arquivado, e a pessoa montou outro no mesmo
+      // navegador, ele vira um pedido NOVO (código-2, -3…) em vez de ser ignorado.
+      const variantes = [id, ...[2, 3, 4, 5, 6, 7, 8, 9].map((n) => `${id}-${n}`)];
+      const ja = await q(`select id, status from leads where id = any($1::text[])`, [variantes]);
+      const st = Object.fromEntries(ja.map((x) => [x.id, x.status]));
+      id = variantes.find((v) => !st[v] || ["novo", "contatado"].includes(st[v])) || variantes[variantes.length - 1];
+      const existe = st[id] ? { status: st[id] } : null;
       if (!existe && !(await limite(`lead:${ipDe(req)}`, 15, 3600))) { console.log("lead ignorado: limite de 15 por hora neste IP"); return responde(res, 204, {}); }
       if (existe && !["novo", "contatado"].includes(existe.status)) console.log("lead já tratado, não atualiza", { status: existe.status });
       const itens = Array.isArray(b.itens) ? b.itens.slice(0, 13).map((x) => ({

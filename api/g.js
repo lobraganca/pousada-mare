@@ -16,7 +16,7 @@ const so_dono = ["usuario_salvar", "pagamento_del", "lead_del"];
 const AREA_DE = {
   mapa: ["mapa"], mover: ["mapa"], bloqueio_criar: ["mapa"], bloqueio_remover: ["mapa"],
   reserva_salvar: ["reservas", "mapa"], reserva_status: ["reservas", "mapa"], msg_marcar: ["reservas", "mapa"], ficha_conferir: ["reservas", "mapa"], ficha_balcao: ["reservas", "mapa"], fnrh_marcar: ["reservas", "mapa"], reservas_busca: ["reservas"], hospede_busca: ["reservas", "mapa", "leads"],
-  acompanhantes: ["reservas", "mapa"], disponiveis: ["reservas", "mapa", "leads"], preco: ["reservas", "mapa", "leads"],
+  acompanhantes: ["reservas", "mapa"], novidades: ["reservas", "mapa", "leads"], disponiveis: ["reservas", "mapa", "leads"], preco: ["reservas", "mapa", "leads"],
   reserva_get: ["reservas", "mapa", "leads", "pagamentos"], leads: ["leads"], lead_status: ["leads"],
   lancar: ["consumo"], consumo: ["pagamentos"], lancamento_cancelar: ["pagamentos"], pagamento_add: ["pagamentos"],
   tarefas: ["tarefas", "tarefas_gerir"], tarefa_status: ["tarefas", "tarefas_gerir"], tarefa_salvar: ["tarefas_gerir"], tarefa_del: ["tarefas_gerir"],
@@ -277,6 +277,18 @@ const ACOES = {
   pagamento_del: [D, async (b, u) => { await q(`delete from pagamentos where id = $1`, [int(b.id, 1)], u.id); return { ok: true }; }],
 
   // ---------------- Pré-reservas do site (leads) ----------------
+  // Aviso na tela: pedidos do site e reservas que chegaram nos últimos 3 dias (feitas por outra pessoa ou pelo Booking)
+  novidades: [DR, async (b, u) => {
+    const [leads, reservas] = await Promise.all([
+      q(`select id, nome, checkin, checkout, adultos, criancas, enviado, criado_em from leads
+          where status = 'novo' and criado_em > now() - interval '3 days' and (length(nome) >= 2 or length(telefone) >= 8)
+          order by criado_em desc limit 20`),
+      q(`select r.id, r.codigo, h.nome, r.origem, r.status, r.checkin, r.checkout, r.adultos, r.criancas, r.criado_em from reservas r join hospedes h on h.id = r.hospede_id
+          where r.criado_em > now() - interval '3 days' and r.criado_por is distinct from $1 and r.status not in ('cancelada','no_show')
+          order by r.criado_em desc limit 20`, [u.id]),
+    ]);
+    return { leads, reservas };
+  }],
   leads: [DR, async (b) => {
     const f = umDe(b.filtro, ["abertos", "enviados", "abandonados", "todos", "arquivados"], "abertos");
     const w = { abertos: "status in ('novo','contatado')", enviados: "enviado and status in ('novo','contatado')", abandonados: "not enviado and status in ('novo','contatado')", todos: "status <> 'arquivado'", arquivados: "status = 'arquivado'" }[f];

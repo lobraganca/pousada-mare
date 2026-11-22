@@ -697,6 +697,10 @@ body.demo-x-on .demo-bar{display:none!important}
 .us-ck b{display:block;font-size:14.5px}.us-ck small{display:block;font-size:12px;opacity:.7;line-height:1.3}
 .tk-av{position:fixed;z-index:90;left:50%;top:14px;width:min(440px,calc(100vw - 20px));transform:translate(-50%,-30px);opacity:0;transition:transform .45s var(--ease,ease),opacity .3s;background:rgba(255,255,255,.86);backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);border:1px solid rgba(255,255,255,.9);border-radius:22px;box-shadow:0 24px 60px -20px rgba(11,59,69,.45);padding:14px 16px}
 .tk-av.on{transform:translate(-50%,0);opacity:1}
+.rs-av{z-index:91;border:2px solid #1FAF5C;box-shadow:0 24px 60px -16px rgba(31,175,92,.45)}
+.rs-av .tk-i{background:#1FAF5C!important;color:#fff}
+.rs-it{all:unset;display:block;cursor:pointer;width:100%}.rs-it:hover b{text-decoration:underline}
+#tk-av.on~#rs-av,#rs-av.on~#tk-av{top:auto;bottom:14px}
 .tk-h{display:flex;gap:12px;align-items:center}.tk-h b{display:block;font-family:var(--serif);font-size:19px;color:var(--mar)}.tk-h small{display:block;font-size:12.5px;opacity:.7}
 .tk-i{width:40px;height:40px;border-radius:14px;background:var(--agua);color:#fff;display:grid;place-items:center;flex:none}
 .tk-av ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}.tk-av li{background:rgba(10,151,180,.08);border-radius:12px;padding:8px 10px}.tk-av li b{display:block;font-size:14.5px}.tk-av li small{font-size:12px;opacity:.75}
@@ -890,7 +894,7 @@ $("#lgf").addEventListener("submit",function(e){e.preventDefault();$("#lg-msg").
 $("#sair").onclick=function(){api("/api/auth",{acao:"logout"}).finally(function(){S.u=null;mostraLogin()})};
 $("#demo-reset").onclick=function(){confirma("Recomeçar a demonstração?","Tudo o que foi feito aqui é apagado e os dados de exemplo voltam.","Recomeçar","danger").then(function(v){if(v){MareDemo.reset();location.reload()}})};
 function inicia(u){S.u=u;G("boot").then(function(b){S.boot=b;$("#login").classList.add("hide");$("#app").classList.remove("hide");$("#demo-bar").classList.toggle("hide",!DEMO);
-  var h=(location.hash||"").slice(1);var t=TABS.filter(function(x){return x[0]===h&&permitido(x[2])})[0];S.tab=t?h:"hoje";renderNav();VIEWS[S.tab]();contaLeads();avisoTarefas()})}
+  var h=(location.hash||"").slice(1);var t=TABS.filter(function(x){return x[0]===h&&permitido(x[2])})[0];S.tab=t?h:"hoje";renderNav();VIEWS[S.tab]();contaLeads();avisoTarefas();avisoNovas()})}
 /* ---- aviso de tarefas novas para a equipe ---- */
 function avisoTarefas(){
   if(!S.u||!permitido("tarefas"))return;
@@ -913,7 +917,36 @@ function avisoTarefas(){
     if($("#tk-nt"))$("#tk-nt").onclick=function(){try{Notification.requestPermission().then(function(){var x=$("#tk-nt");if(x)x.remove()})}catch(e){}};
   }).catch(function(){});
 }
-document.addEventListener("visibilitychange",function(){if(!document.hidden&&S.u&&S.boot)avisoTarefas()});
+document.addEventListener("visibilitychange",function(){if(!document.hidden&&S.u&&S.boot){avisoTarefas();avisoNovas()}});
+/* ---- aviso na tela: chegou reserva nova (pedido do site, Booking ou outra pessoa da equipe) ---- */
+function bip(){try{var C=window.AudioContext||window.webkitAudioContext;if(!C)return;var c=S._ac||(S._ac=new C()),t=c.currentTime;[0,.18].forEach(function(d,i){var o=c.createOscillator(),g=c.createGain();o.type="sine";o.frequency.value=i?1046:784;g.gain.setValueAtTime(0.0001,t+d);g.gain.exponentialRampToValueAtTime(0.18,t+d+.02);g.gain.exponentialRampToValueAtTime(0.0001,t+d+.35);o.connect(g);g.connect(c.destination);o.start(t+d);o.stop(t+d+.4)})}catch(e){}}
+function avisoNovas(){
+  if(!S.u||!(pode("reservas")||pode("mapa")||pode("leads")))return;
+  clearTimeout(S._rsT);S._rsT=setTimeout(avisoNovas,30000);
+  G0("novidades",{}).then(function(r){
+    var k="mareRsV_"+S.u.id,vis=null;try{vis=JSON.parse(localStorage[k]||"null")}catch(e){}
+    var ls=(pode("leads")?r.leads:[]).map(function(l){return{k:"l"+l.id,tipo:"lead",id:l.id,nome:l.nome||"(sem nome)",ci:l.checkin,co:l.checkout,pes:(l.adultos||0)+(l.criancas||0),txt:l.enviado?"Pedido do site · enviou no WhatsApp":"Pedido do site · ainda não enviou no WhatsApp"}})
+      .concat((pode("reservas")||pode("mapa")?r.reservas:[]).map(function(x){return{k:"r"+x.id,tipo:"res",id:x.id,nome:x.nome,ci:x.checkin,co:x.checkout,pes:(x.adultos||0)+(x.criancas||0),txt:"Reserva "+(ORIG[x.origem]||x.origem)+" · #"+x.codigo}}));
+    // primeira vez neste aparelho: só registra o que já existe, sem avisar
+    if(!vis){try{localStorage[k]=JSON.stringify(ls.map(function(x){return x.k}))}catch(e){}return}
+    var novas=ls.filter(function(x){return vis.indexOf(x.k)<0});
+    var guarda=function(){try{localStorage[k]=JSON.stringify(vis.concat(novas.map(function(x){return x.k})).slice(-400))}catch(e){}};
+    if(!novas.length){return}
+    var ja=$("#rs-av");if(ja&&ja.dataset.ks===novas.map(function(x){return x.k}).join(","))return;if(ja)ja.remove();
+    var fecha1=function(){guarda();var b=$("#rs-av");if(b){b.classList.remove("on");setTimeout(function(){b.remove()},300)}};
+    var per=function(x){return x.ci?fd(x.ci,{weekday:"short",day:"2-digit",month:"2-digit"})+" → "+fd(x.co,{weekday:"short",day:"2-digit",month:"2-digit"})+(x.ci&&x.co?" · "+dias(x.ci,x.co)+" noites":""):"datas a combinar"};
+    var tit=novas.length===1?(novas[0].tipo==="lead"?"Novo pedido de reserva pelo site":"Nova reserva"):novas.length+" reservas novas";
+    document.body.insertAdjacentHTML("beforeend",'<div class="tk-av rs-av" id="rs-av" role="alert" data-ks="'+esc(novas.map(function(x){return x.k}).join(","))+'"><div class="tk-h"><span class="tk-i">'+ic("reservas",20)+'</span><div><b>'+tit+'</b><small>Chegou agora. Toque no nome para abrir.</small></div></div><ul>'+novas.slice(0,4).map(function(x,i){return'<li><button type="button" class="rs-it" data-i="'+i+'"><b>'+esc(x.nome)+'</b><small>'+esc(x.txt)+' · '+per(x)+(x.pes?' · '+x.pes+(x.pes>1?" pessoas":" pessoa"):"")+'</small></button></li>'}).join("")+(novas.length>4?'<li><small>e mais '+(novas.length-4)+'…</small></li>':"")+'</ul><div class="acts" style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px"><button class="btn sm sec" id="rs-ok">OK, vi</button>'+(novas.some(function(x){return x.tipo==="lead"})?'<button class="btn sm agua" id="rs-ld">Ver pedidos do site</button>':'')+'</div></div>');
+    var b=$("#rs-av");requestAnimationFrame(function(){b.classList.add("on")});
+    bip();try{if(navigator.vibrate)navigator.vibrate([150,80,150])}catch(e){}
+    try{if(document.hidden&&"Notification"in window&&Notification.permission==="granted")new Notification("Pousada Maré · "+tit,{body:novas.slice(0,3).map(function(x){return x.nome+" · "+per(x)}).join("\n"),tag:"mare-reservas"})}catch(e){}
+    $("#rs-ok").onclick=fecha1;
+    if($("#rs-ld"))$("#rs-ld").onclick=function(){fecha1();ir("leads")};
+    $$("#rs-av .rs-it").forEach(function(el){el.onclick=function(){var x=novas[+el.dataset.i];fecha1();if(x.tipo==="lead")ir("leads");else abreReserva(x.id)}});
+    if(S.tab==="leads"&&novas.some(function(x){return x.tipo==="lead"}))VIEWS.leads();
+    contaLeads();
+  }).catch(function(){});
+}
 function contaLeads(){if(!pode("leads"))return;G("leads",{filtro:"abertos"}).then(function(r){S.nLeads=r.itens.filter(function(l){return l.status==="novo"}).length;renderNav()}).catch(function(){})}
 function boot(){
   var prod=/pousadamarecumuru\.com\.br$/.test(location.hostname);
