@@ -1,4 +1,5 @@
 import { q, hoje, responde, falha } from "./_db.js";
+import { channexOn, puxaReservas, enviaARI, log } from "./_channex.js";
 
 // Roda todo dia às 7h (horário da Bahia). Configurado em vercel.json.
 //  • cria tarefas de arrumação para as chegadas do dia
@@ -50,6 +51,12 @@ export default async function handler(req, res) {
                from reservas r join hospedes h on h.id = r.hospede_id
               where r.status = 'finalizada' and r.checkout = $1::date - 1 and r.mensagens->>'avaliacao' is null and h.telefone <> ''
                 and not exists (select 1 from tarefas t where t.origem = 'auto_avaliacao' and t.titulo like '%(' || r.codigo || ')%')`, [d]);
+    // Channex: confere reservas que não chegaram pelo aviso e reenvia toda a disponibilidade (rede de segurança)
+    if (channexOn()) {
+      await puxaReservas("rotina diária").catch((e) => log("reservas", false, e.message));
+      await enviaARI("rotina diária").catch((e) => log("envio", false, e.message));
+    }
+    await q(`delete from channex_log where em < now() - interval '90 days'`);
     await q(`delete from sessoes where expira_em < now()`);
     await q(`delete from login_falhas where ate < now()`);
     await q(`delete from leads where atualizado_em < now() - interval '365 days' and status <> 'convertido'`);

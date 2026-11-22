@@ -271,6 +271,21 @@ create table if not exists precos_dia (
   primary key (categoria_id, dia)
 );
 
+-- ---------- Channex (Booking e outros canais) ----------
+alter table categorias add column if not exists channex_room_type text;   -- id do tipo de quarto no Channex
+alter table categorias add column if not exists channex_rate_plan text;   -- id do plano de tarifa no Channex
+create table if not exists channex_reservas (
+  booking_id text primary key,
+  reserva_id int references reservas(id) on delete set null,
+  revision_id text, status text, ota text, codigo_ota text, nome text, erro text,
+  atualizado_em timestamptz not null default now()
+);
+create table if not exists channex_log (
+  id bigserial primary key, em timestamptz not null default now(),
+  tipo text not null, ok boolean not null default true, detalhe text not null default ''
+);
+create index if not exists channex_log_em on channex_log(em desc);
+
 -- ---------- Central de dúvidas do site ----------
 create table if not exists faq (
   id serial primary key,

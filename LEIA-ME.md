@@ -53,9 +53,11 @@ duvidas.js          Central de dúvidas do site (busca, respostas, WhatsApp com 
 - Cabeçalhos CSP/HSTS no `vercel.json`; `/gestao` não indexável e não pode ser embutida em outro site.
 - LGPD: pedidos do site não convertidos são apagados após 1 ano (cron).
 
-## Booking e Channex
-O dono contou que usa Channex (link da bio) e Booking. Um próximo passo é sincronizar a disponibilidade com o Channex para o Booking não vender um quarto já ocupado aqui.
-Reservas do Booking entram manualmente com origem **Booking** (o sistema bloqueia se o quarto já estiver ocupado). Integração automática por iCal pode ser um próximo passo.
+## Booking pelo Channex
+- **Saída:** toda vez que uma reserva é criada, alterada, movida, cancelada ou um quarto é bloqueado, o sistema manda ao Channex quantos quartos de cada suíte ficam livres nos próximos 500 dias. Opcional: manda também os preços do Calendário de preços, com acréscimo em % para o Booking.
+- **Entrada:** o Channex avisa em `/api/channex` (webhook) quando chega, muda ou cancela uma reserva. O sistema escolhe um quarto livre da suíte, lança a reserva (origem Booking, valor do Booking, código da OTA nas observações), confirma o recebimento (ack) e reenvia a disponibilidade. Se não houver quarto livre ou a suíte não estiver ligada, cria uma **tarefa urgente** para a recepção.
+- **Rede de segurança:** a rotina das 7h busca reservas que tenham escapado e reenvia toda a disponibilidade.
+- **Para ligar:** variáveis `CHANNEX_API_KEY`, `CHANNEX_PROPERTY_ID` e `CHANNEX_WEBHOOK_SECRET` na Vercel (para testar no ambiente de teste do Channex, também `CHANNEX_URL=https://staging.channex.io/api/v1`). Depois, em **Ajustes › Booking (Channex)**, ligue cada suíte ao tipo de quarto e ao plano de tarifa (botão *Carregar do Channex*) e crie o webhook no Channex com o cabeçalho `X-Channex-Webhook-Secret`. A tela mostra o passo a passo e o histórico de envios.
 
 ## Central de dúvidas
 - No site, a seção **Dúvidas** tem uma busca: a pessoa digita e a resposta aparece na hora (aceita erro de digitação, sem acento, sinônimos como "cachorro" → pet, e os 3 idiomas).

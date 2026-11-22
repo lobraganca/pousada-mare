@@ -2,6 +2,7 @@ import { q, q1, corpo, responde, falha, txt, num, int, data, umDe, hoje, isData 
 import { usuarioDe, origemOk, hashSenha, senhaForte } from "./_auth.js";
 import { chaveBusca } from "./public.js";
 import crypto from "node:crypto";
+import { channexOn, listas as cxListas, enviaARI, puxaReservas } from "./_channex.js";
 
 // API da Gestão. Cada ação diz quais papéis podem usá-la:
 //   dono = tudo · recepcao = operação do dia a dia · equipe = tarefas e lançamentos do bar
@@ -22,6 +23,7 @@ const AREA_DE = {
   ajustes: ["ajustes"], tarifas_salvar: ["ajustes"], temporada_salvar: ["ajustes"], temporada_del: ["ajustes"], fechamento_salvar: ["ajustes"], fechamento_del: ["ajustes"],
   config_salvar: ["ajustes"], quarto_salvar: ["ajustes"], categoria_salvar: ["ajustes"], video_salvar: ["ajustes"], video_del: ["ajustes"], produto_salvar: ["ajustes"],
   precos_mes: ["ajustes"], precos_salvar: ["ajustes"],
+  channex_info: ["ajustes"], channex_listas: ["ajustes"], channex_mapa_salvar: ["ajustes"], channex_enviar: ["ajustes"], channex_puxar: ["ajustes"],
   faq_painel: ["duvidas"], faq_salvar: ["duvidas"], faq_del: ["duvidas"], faq_termo: ["duvidas"],
 };
 export const areasDe = (u) => u.papel === "dono" ? AREAS.slice() : (Array.isArray(u.areas) && u.areas.length ? u.areas.filter((x) => AREAS.includes(x)) : (AREAS_PADRAO[u.papel] || []));
@@ -31,6 +33,7 @@ const podeAcao = (nome, acao, u) => {
   if (AREA_DE[nome]) { const a = areasDe(u); return AREA_DE[nome].some((x) => a.includes(x)); }
   return acao[0].includes(u.papel);
 };
+const SYNC_CHANNEX = new Set(["reserva_salvar", "reserva_status", "mover", "bloqueio_criar", "bloqueio_remover", "quarto_salvar", "precos_salvar", "tarifas_salvar", "temporada_salvar", "temporada_del"]);
 const MSG_TIPOS = ["pix", "confirmacao", "checkin", "chegar", "vespera", "avaliacao"];
 const ORIGENS = ["site", "whatsapp", "booking", "telefone", "balcao", "outro"];
 const STATUS = ["pre", "confirmada", "hospedada", "finalizada", "cancelada", "no_show"];
@@ -350,6 +353,27 @@ const ACOES = {
     }
     return { ok: true };
   }],
+  // ---------------- Channex (Booking) ----------------
+  channex_info: [D, async () => {
+    const [cats, log, res, cfg] = await Promise.all([
+      q(`select id, nome, channex_room_type, channex_rate_plan from categorias order by ordem`),
+      q(`select em, tipo, ok, detalhe from channex_log order by em desc limit 30`),
+      q(`select c.*, r.codigo from channex_reservas c left join reservas r on r.id = c.reserva_id order by c.atualizado_em desc limit 30`),
+      q1(`select (select (valor->>0)::boolean from config where chave = 'channex_precos') precos, (select (valor->>0)::numeric from config where chave = 'channex_markup') markup`),
+    ]);
+    return { configurado: channexOn(), webhook: String(process.env.CHANNEX_WEBHOOK_SECRET || "").length >= 16, teste: /staging/.test(String(process.env.CHANNEX_URL || "")),
+      categorias: cats, log, reservas: res, precos: !!cfg?.precos, markup: Number(cfg?.markup) || 0 };
+  }],
+  channex_listas: [D, async () => { if (!channexOn()) throw Object.assign(new Error("Channex ainda não configurado na Vercel."), { status: 400 }); return await cxListas(); }],
+  channex_mapa_salvar: [D, async (b, u) => {
+    const uuid = (v) => { const s = String(v || "").trim(); if (s && !/^[0-9a-f-]{36}$/i.test(s)) throw Object.assign(new Error("Código do Channex inválido."), { status: 400 }); return s || null; };
+    for (const c of (Array.isArray(b.categorias) ? b.categorias : []).slice(0, 30))
+      await q(`update categorias set channex_room_type = $2, channex_rate_plan = $3 where id = $1`, [int(c.id, 1), uuid(c.room_type), uuid(c.rate_plan)], u.id);
+    return { ok: true, envio: channexOn() ? await enviaARI("ligação das suítes salva").catch((e) => ({ erro: e.message })) : null };
+  }],
+  channex_enviar: [D, async () => { if (!channexOn()) throw Object.assign(new Error("Channex ainda não configurado na Vercel."), { status: 400 }); return await enviaARI("enviado pela gestão"); }],
+  channex_puxar: [D, async () => { if (!channexOn()) throw Object.assign(new Error("Channex ainda não configurado na Vercel."), { status: 400 }); return await puxaReservas("buscado pela gestão"); }],
+
   // ---------------- Calendário de preços ----------------
   // Valor de cada dia (diária para 2 pessoas), o valor padrão (tabela × temporada), se foi definido à mão e quantos quartos estão livres.
   precos_mes: [D, async (b) => {
@@ -413,6 +437,7 @@ const ACOES = {
       vendas_ate: (v) => [isData(v) ? v : ""], site_pausado: (v) => [!!v], sinal_pct: (v) => [num(v, 0, 100)], condicoes: (v) => txt(v, 1200),
       checkin_hora: (v) => txt(v, 10), checkout_hora: (v) => txt(v, 10), politica_pets: (v) => txt(v, 600),
       // Mensagens prontas (Ajustes › Mensagens)
+      channex_precos: (v) => [!!v], channex_markup: (v) => [num(v || 0, -50, 200)],
       pix_chave: (v) => txt(v, 140), pix_nome: (v) => txt(v, 80), pix_banco: (v) => txt(v, 60),
       link_avaliacao: (v) => { const s = String(v || "").trim(); if (s && !/^https:\/\/\S+$/.test(s)) throw Object.assign(new Error("O link de avaliação precisa começar com https://"), { status: 400 }); return s.slice(0, 300); },
       msg_modelos: (v) => Object.fromEntries(MSG_TIPOS.filter((k) => v && typeof v[k] === "string" && v[k].trim()).map((k) => [k, String(v[k]).replace(/[<>]/g, "").slice(0, 1500)])) };
@@ -524,7 +549,10 @@ export default async function handler(req, res) {
     const acao = ACOES[String(b.a || "")];
     if (!acao) return responde(res, 400, { erro: "Ação desconhecida." });
     if (!podeAcao(String(b.a), acao, u)) return responde(res, 403, { erro: "Seu usuário não tem permissão para isso." });
-    return responde(res, 200, await acao[1](b, u));
+    const out = await acao[1](b, u);
+    // Mudou ocupação ou preço: avisa o Channex (Booking) na hora. Se o Channex falhar, a ação já foi salva; fica no log.
+    if (SYNC_CHANNEX.has(String(b.a)) && channexOn()) await enviaARI(`após ${b.a}`).catch((e) => import("./_channex.js").then((m) => m.log("envio", false, e.message)));
+    return responde(res, 200, out);
   } catch (e) { return falha(res, e); }
 }
 export { ACOES };
