@@ -13,13 +13,13 @@
   var TXT = {
     pt: { et: "Central de dúvidas", h: "Pergunte o que quiser", sub: "Digite sua dúvida e a resposta aparece na hora.", ph: "Ex.: aceita pet?", rot: "Sua dúvida",
       todas: "Todas", limpar: "Limpar", um: "1 resposta", varias: " respostas", nada: "Ainda não temos essa resposta aqui.", nadaSub: "A recepção responde rapidinho pelo WhatsApp. A sua pergunta já vai escrita:",
-      naoEra: "Não era isso?", perguntar: "Perguntar no WhatsApp", outra: "Ficou alguma dúvida? Fale com a recepção.", msg: "Olá! Vim pelo site da Pousada Maré e tenho uma dúvida: ", msg0: "Olá! Vim pelo site da Pousada Maré e tenho uma dúvida." },
+      naoEra: "Não era isso?", perguntar: "Perguntar no WhatsApp", outra: "Ficou alguma dúvida? Fale com a recepção.", priv: "Guardamos só o texto da busca, sem identificar você, para melhorar as respostas.", privL: "Política de Privacidade", msg: "Olá! Vim pelo site da Pousada Maré e tenho uma dúvida: ", msg0: "Olá! Vim pelo site da Pousada Maré e tenho uma dúvida." },
     es: { et: "Preguntas frecuentes", h: "Pregunta lo que quieras", sub: "Escribe tu duda y la respuesta aparece al instante.", ph: "Ej.: ¿aceptan mascotas?", rot: "Tu duda",
       todas: "Todas", limpar: "Borrar", um: "1 respuesta", varias: " respuestas", nada: "Todavía no tenemos esa respuesta aquí.", nadaSub: "La recepción responde rápido por WhatsApp. Tu pregunta ya va escrita:",
-      naoEra: "¿No era eso?", perguntar: "Preguntar por WhatsApp", outra: "¿Te quedó alguna duda? Habla con la recepción.", msg: "¡Hola! Vengo del sitio web de Pousada Maré y tengo una duda: ", msg0: "¡Hola! Vengo del sitio web de Pousada Maré y tengo una duda." },
+      naoEra: "¿No era eso?", perguntar: "Preguntar por WhatsApp", outra: "¿Te quedó alguna duda? Habla con la recepción.", priv: "Guardamos solo el texto de la búsqueda, sin identificarte, para mejorar las respuestas.", privL: "Política de Privacidad", msg: "¡Hola! Vengo del sitio web de Pousada Maré y tengo una duda: ", msg0: "¡Hola! Vengo del sitio web de Pousada Maré y tengo una duda." },
     en: { et: "Questions", h: "Ask us anything", sub: "Type your question and the answer shows up right away.", ph: "E.g. are pets allowed?", rot: "Your question",
       todas: "All", limpar: "Clear", um: "1 answer", varias: " answers", nada: "We don't have that answer here yet.", nadaSub: "The front desk replies quickly on WhatsApp. Your question is already written:",
-      naoEra: "Not what you were looking for?", perguntar: "Ask on WhatsApp", outra: "Still have a question? Talk to the front desk.", msg: "Hi! I found you on the Pousada Maré website and I have a question: ", msg0: "Hi! I found you on the Pousada Maré website and I have a question." }
+      naoEra: "Not what you were looking for?", perguntar: "Ask on WhatsApp", outra: "Still have a question? Talk to the front desk.", priv: "We only keep the search text, without identifying you, to improve the answers.", privL: "Privacy Policy", msg: "Hi! I found you on the Pousada Maré website and I have a question: ", msg0: "Hi! I found you on the Pousada Maré website and I have a question." }
   }[L] || null;
   if (!TXT) return;
 
@@ -171,6 +171,7 @@
     "#duvidas .dv-zap:hover{background:#178A48}" +
     "#duvidas .dv-zap svg{width:20px;height:20px}" +
     "#duvidas .dv-pe{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:18px;color:var(--tx2);font-size:15px}" +
+    "#duvidas .dv-priv{font-size:13px;color:var(--muted);margin:22px 0 0;max-width:760px}" +
     "#duvidas mark{background:rgba(22,180,138,.22);color:inherit;border-radius:4px;padding:0 2px}" +
     "@media (max-width:640px){#duvidas .dv-busca input{min-height:56px;font-size:16px;padding-right:96px}#duvidas .dv-temas{flex-wrap:nowrap;overflow-x:auto;margin-right:calc(-1*var(--gut));padding-right:var(--gut);scrollbar-width:none}#duvidas .dv-temas button{flex:none}#duvidas .dv-item>button{padding:16px;font-size:16px}#duvidas .dv-r{padding:0 16px 16px}}";
 
@@ -186,7 +187,7 @@
     sec.innerHTML = '<div class="wrap"><div class="topo-sec"><div><p class="etiqueta">' + esc(TXT.et) + '</p><h2>' + esc(TXT.h) + '</h2><p style="margin:10px 0 0;color:var(--tx2)">' + esc(TXT.sub) + '</p></div></div>' +
       '<form class="dv-busca" role="search" onsubmit="return false"><label for="dv-q" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">' + esc(TXT.rot) + '</label>' + LUPA +
       '<input id="dv-q" type="search" autocomplete="off" enterkeyhint="search" maxlength="120" placeholder="' + esc(TXT.ph) + '"><button type="button" class="dv-limpa" id="dv-x" hidden>' + esc(TXT.limpar) + '</button></form>' +
-      '<div class="dv-temas" id="dv-t" role="group"></div><p class="dv-info" id="dv-i" aria-live="polite"></p><div id="dv-l"></div></div>';
+      '<div class="dv-temas" id="dv-t" role="group"></div><p class="dv-info" id="dv-i" aria-live="polite"></p><div id="dv-l"></div><p class="dv-priv">' + esc(TXT.priv) + ' <a href="/privacidade">' + esc(TXT.privL) + '</a></p></div>';
     el.q = sec.querySelector("#dv-q"); el.x = sec.querySelector("#dv-x"); el.t = sec.querySelector("#dv-t"); el.i = sec.querySelector("#dv-i"); el.l = sec.querySelector("#dv-l");
     return true;
   }

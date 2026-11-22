@@ -4,6 +4,7 @@ import { q, hoje, responde, falha } from "./_db.js";
 //  • cria tarefas de arrumação para as chegadas do dia
 //  • avisa (tarefa) reservas que deveriam ter chegado ontem e não fizeram check-in → decidir no-show
 //  • limpa sessões vencidas, pedidos do site e buscas da Central de dúvidas com mais de 1 ano (LGPD)
+//  • apaga a ficha de hóspede (documento, acompanhantes) 5 anos depois da saída (LGPD)
 export default async function handler(req, res) {
   try {
     const seg = process.env.CRON_SECRET;
@@ -23,6 +24,11 @@ export default async function handler(req, res) {
     await q(`delete from login_falhas where ate < now()`);
     await q(`delete from leads where atualizado_em < now() - interval '365 days' and status <> 'convertido'`);
     await q(`delete from faq_buscas where atualizado_em < now() - interval '365 days'`);
+    // Ficha de hóspede: guardada 5 anos após a saída (obrigação legal + defesa), depois é apagada
+    await q(`update reservas set ficha = null, acompanhantes = '', checkin_token = null
+              where checkout < current_date - interval '5 years' and (ficha is not null or acompanhantes <> '' or checkin_token is not null)`);
+    await q(`update hospedes h set documento = '' where documento <> ''
+              and not exists (select 1 from reservas r where r.hospede_id = h.id and r.checkout >= current_date - interval '5 years')`);
     return responde(res, 200, { ok: true });
   } catch (e) { return falha(res, e); }
 }

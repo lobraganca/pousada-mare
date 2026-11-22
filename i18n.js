@@ -133,6 +133,8 @@
     "Nome completo": ["Nombre completo", "Full name"], "Cidade": ["Ciudad", "City"], "Algum pedido especial?": ["¿Algún pedido especial?", "Any special requests?"],
     "Aniversário, chegada depois das 19h, berço, acessibilidade": ["Cumpleaños, llegada después de las 19 h, cuna, accesibilidad", "Birthday, arriving after 7 pm, cot, accessibility"],
     "Usamos estes dados só para responder sobre esta reserva.": ["Usamos estos datos solo para responder sobre esta reserva.", "We only use these details to reply about this booking."],
+    "Usamos estes dados só para responder sobre esta reserva. O que você preencher fica salvo para a recepção poder te ajudar, mesmo que você não envie.": ["Usamos estos datos solo para responder sobre esta reserva. Lo que completes queda guardado para que la recepción pueda ayudarte, aunque no lo envíes.", "We only use these details to reply about this booking. What you fill in is saved so the front desk can help you, even if you don't send it."],
+    "Política de Privacidade": ["Política de Privacidad", "Privacy Policy"],
     "Escolher as datas": ["Elegir las fechas", "Choose dates"], "Mês anterior": ["Mes anterior", "Previous month"], "Próximo mês": ["Mes siguiente", "Next month"],
     "feriado ou temporada, com valores especiais": ["feriado o temporada, con precios especiales", "holiday or peak season, special rates"],
     "Adultos": ["Adultos", "Adults"], "a partir de 13 anos": ["desde 13 años", "13 and over"], "Crianças": ["Niños", "Children"], "até 12 anos": ["hasta 12 años", "up to 12"],

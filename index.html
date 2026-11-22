@@ -846,7 +846,7 @@ body.rolou .regua{opacity:1}
   </div>
   <div class="credit">
     <div class="wrap">
-      <p class="copy-l">© <span id="ano"></span> Pousada Maré · Cumuruxatiba, BA · <a href="gestao" rel="nofollow">Área da pousada</a></p>
+      <p class="copy-l">© <span id="ano"></span> Pousada Maré · Cumuruxatiba, BA · <a href="/privacidade">Política de Privacidade</a> · <a href="gestao" rel="nofollow">Área da pousada</a></p>
       <div class="sig">
         <span class="lmark" aria-hidden="true">L.</span>
         <div class="sig-t"><small>Site criado por</small><b>Lorena Bragança</b></div>
@@ -1118,7 +1118,7 @@ function desenha(){
       guarda();pe("Revisar o pedido",ok);
     }).catch(function(){b.innerHTML='<div class="calmo">Não foi possível calcular os valores agora. Continue e a recepção passa tudo pelo WhatsApp.</div>';R.sel={};R.dist=[];pe("Revisar o pedido",true)});return}
   if(passo===1){
-    b.innerHTML='<label class="campo"><span>Nome completo</span><input id="f-n" autocomplete="name" maxlength="80" value="'+esc(R.nome||"")+'"></label><label class="campo"><span>WhatsApp</span><input id="f-t" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" value="'+esc(R.tel||"")+'" placeholder="(31) 99999-9999"></label><label class="campo"><span>Cidade</span><input id="f-c" autocomplete="address-level2" maxlength="60" value="'+esc(R.cidade||"")+'"></label><label class="campo"><span>Algum pedido especial?</span><textarea id="f-o" rows="2" maxlength="400" placeholder="Aniversário, chegada depois das 19h, berço, acessibilidade">'+esc(R.obs||"")+'</textarea></label><p style="font-size:13.5px;color:var(--muted)">Usamos estes dados só para responder sobre esta reserva.</p>';
+    b.innerHTML='<label class="campo"><span>Nome completo</span><input id="f-n" autocomplete="name" maxlength="80" value="'+esc(R.nome||"")+'"></label><label class="campo"><span>WhatsApp</span><input id="f-t" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" value="'+esc(R.tel||"")+'" placeholder="(31) 99999-9999"></label><label class="campo"><span>Cidade</span><input id="f-c" autocomplete="address-level2" maxlength="60" value="'+esc(R.cidade||"")+'"></label><label class="campo"><span>Algum pedido especial?</span><textarea id="f-o" rows="2" maxlength="400" placeholder="Aniversário, chegada depois das 19h, berço, acessibilidade">'+esc(R.obs||"")+'</textarea></label><p style="font-size:13.5px;color:var(--muted)">Usamos estes dados só para responder sobre esta reserva. O que você preencher fica salvo para a recepção poder te ajudar, mesmo que você não envie. <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a></p>';
     var ok=function(){return(R.nome||"").length>=2&&String(R.tel||"").replace(/\D/g,"").length>=10};
     var chk=function(){R.nome=$("#f-n").value.trim();R.tel=$("#f-t").value.trim();R.cidade=$("#f-c").value.trim();R.obs=$("#f-o").value.trim();$("#r-n").disabled=!ok();sync(3)};
     $("#f-t").addEventListener("input",function(){var d=this.value.replace(/\D/g,"").slice(0,11);this.value=d.length>6?"("+d.slice(0,2)+") "+d.slice(2,d.length-4)+"-"+d.slice(-4):d.length>2?"("+d.slice(0,2)+") "+d.slice(2):d});

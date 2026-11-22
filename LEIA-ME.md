@@ -76,3 +76,9 @@ Reservas do Booking entram manualmente com origem **Booking** (o sistema bloquei
 - O servidor confere: CPF válido, titular maior de idade, parentesco de menores, placa no formato brasileiro. Os nomes viram a lista de hóspedes da reserva, e o documento, e-mail e cidade vão para o cadastro do hóspede.
 - Na reserva, a recepção vê a ficha e toca em **Marcar como conferido**. O link para de funcionar depois do check-in na recepção ou depois da data de saída.
 
+## LGPD
+- **Política de Privacidade** em `/privacidade` (português, espanhol e inglês), com link no rodapé do site, no formulário de reserva, na Central de dúvidas e no check-in online. O hóspede só envia a ficha depois de aceitar a política.
+- O texto diz o que é coletado em cada momento (pré-reserva, reserva, ficha de hóspede, buscas), para quê, a base legal, com quem é compartilhado (Vercel, Neon, WhatsApp, Google), por quanto tempo fica guardado, como é protegido e como pedir acesso, correção ou exclusão (resposta em até 15 dias).
+- **Prazos, apagados sozinhos pela rotina diária:** pré-reservas não convertidas e buscas, 1 ano; ficha de hóspede (documento, acompanhantes e link), 5 anos após a saída.
+- **Antes de publicar:** revisar o texto jurídico e, se quiser, incluir razão social e CNPJ (o lugar está marcado no arquivo `privacidade.html`).
+
