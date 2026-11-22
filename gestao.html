@@ -164,6 +164,9 @@ table.t tr.click{cursor:pointer}table.t tr.click:hover td{background:#F5FAF9}
 .mrow .rn b{font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mrow .rn small{font-size:11px;color:var(--txt3);white-space:nowrap}
 .mrow.catrow{height:30px;background:var(--bg)}
+.compacto .mrow.catrow{height:22px}.compacto .mrow.catrow .rn{font-size:12.5px}
+.compacto .mrow .rn{padding:2px 12px}.compacto .mrow .rn small{display:none}
+.compacto .bar{top:3px;height:calc(var(--rowh) - 6px);font-size:11.5px}.compacto .bar .bi{font-size:11px}
 .mrow.catrow .rn{background:var(--bg);font-family:var(--serif);font-size:14px;color:var(--mar2);width:auto;padding:0 14px;justify-content:center;border:0}
 .cells{display:flex;position:relative}
 .cell{width:var(--cell);flex:none;border-right:1px solid #F1F4F3;height:100%;transition:background .15s}
@@ -978,8 +981,18 @@ function carregaMapa(){
   var ini=S.mapIni,n=S.mapDias===31?(S.mapLivre?31:dias(ini,add(ini,32).slice(0,8)+"01")):S.mapDias,fim=add(ini,n-1);
   G("mapa",{ini:ini,fim:fim}).then(function(r){S.mapItens=r.itens;desenhaMapa(ini,n)}).catch(function(e){$("#mw").innerHTML='<div class="empty">'+esc(e.message)+'</div>'});
 }
+// Computador: o mapa cabe inteiro na tela (todas as suítes, sem rolar), afinando as linhas quando precisa
+function mapaCabe(){var mw=$("#mw");if(!mw)return;mw.classList.remove("compacto");mw.style.removeProperty("--rowh");mw.style.maxHeight="";
+  if(innerWidth<901||matchMedia("print").matches)return;
+  var nq=$$(".mrow:not(.catrow)",mw).length,nc=$$(".mrow.catrow",mw).length,hd=$(".map-head",mw);if(!nq||!hd)return;
+  var disp=innerHeight-mw.getBoundingClientRect().top-14,cab=hd.offsetHeight+2,rh=Math.floor((disp-cab-nc*30)/nq);
+  if(rh>=48)return;
+  mw.classList.add("compacto");rh=Math.floor((disp-cab-nc*22)/nq);rh=Math.max(24,Math.min(48,rh));
+  mw.style.setProperty("--rowh",rh+"px");if(cab+nc*22+nq*rh<=disp+1)mw.style.maxHeight="none"}
+var _mapRz=0;addEventListener("resize",function(){clearTimeout(_mapRz);_mapRz=setTimeout(function(){if(S.tab==="mapa"&&S._mapArgs&&S.mapItens&&$("#mw"))desenhaMapa(S._mapArgs[0],S._mapArgs[1])},180)});
 function desenhaMapa(ini,n){
-  if(innerWidth<900){var sd=innerWidth<400?88:104;document.documentElement.style.setProperty("--side",sd+"px");document.documentElement.style.setProperty("--cell",Math.max(30,Math.floor((Math.min(innerWidth,900)-30-sd)/Math.min(n,innerWidth<600?7:14)))+"px")}else{var de=document.documentElement;de.style.removeProperty("--side");de.style.removeProperty("--cell");var mwx=$("#mw");if(mwx&&n>14){var sd2=parseFloat(getComputedStyle(de).getPropertyValue("--side"))||160,cw0=parseFloat(getComputedStyle(de).getPropertyValue("--cell"))||44,cf=Math.floor((mwx.clientWidth-sd2-2)/n);de.style.setProperty("--cell",Math.max(30,Math.min(cw0,cf))+"px")}}
+  if(innerWidth<900){var sd=innerWidth<400?88:104;document.documentElement.style.setProperty("--side",sd+"px");document.documentElement.style.setProperty("--cell",Math.max(30,Math.floor((Math.min(innerWidth,900)-30-sd)/Math.min(n,innerWidth<600?7:14)))+"px")}else{var de=document.documentElement;de.style.removeProperty("--side");de.style.removeProperty("--cell");var mwx=$("#mw");if(mwx&&n>14){var sd2=parseFloat(getComputedStyle(de).getPropertyValue("--side"))||160,cw0=parseFloat(getComputedStyle(de).getPropertyValue("--cell"))||44,cf=Math.floor((mwx.clientWidth-sd2-2)/n);de.style.setProperty("--cell",Math.max(n<=31?24:30,Math.min(cw0,cf))+"px")}}
+  S._mapArgs=[ini,n];
   var cw=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--cell"))||44,td=hojeStr();
   var qs=S.boot.quartos.filter(function(q){return q.ativo}),itens=S.mapItens;
   var porDia=[];for(var i=0;i<n;i++){var d=add(ini,i),c={};itens.forEach(function(o){if(o.tipo==="reserva"&&o.checkin<=d&&o.checkout>d)c[o.quarto_id]=1});porDia.push(Object.keys(c).length)}
@@ -1001,6 +1014,7 @@ function desenhaMapa(ini,n){
     h+='</div></div>';
   });
   h+='</div>';$("#mw").innerHTML=h;
+  mapaCabe();
   var mw=$("#mw");if(S._mapKeep!=null){mw.scrollLeft=S._mapKeep;S._mapKeep=null}if(S._mapIr0){S._mapIr0=0;mw.scrollLeft=0}if(S._mapIrFim){S._mapIrFim=0;mw.scrollLeft=mw.scrollWidth}if(!desenhaMapa._scrolled){var offs=mw.scrollWidth-mw.clientWidth<cw*2?0:dias(ini,td);if(offs>3)mw.scrollLeft=(offs-2)*cw;desenhaMapa._scrolled=true}
   ligaMapa(ini,n,cw);
 }
