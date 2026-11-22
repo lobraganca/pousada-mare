@@ -9,7 +9,10 @@ async function sql() {
   if (!url) throw Object.assign(new Error("Banco de dados não configurado (falta DATABASE_URL na Vercel)."), { status: 503 });
   const { neon, types } = await import("@neondatabase/serverless");
   // Colunas "date" voltam como texto AAAA-MM-DD (sem virar data com hora e fuso, que quebrava as telas)
-  TIPOS = { getTypeParser: (oid, fmt) => (oid === 1082 ? (v) => v : types.getTypeParser(oid, fmt)) };
+  // Valores em dinheiro (numeric) e contagens (bigint) voltam como número, não como texto
+  // (texto fazia "4020.00" + "437.00" virar emenda em vez de soma, e o saldo da conta saía errado)
+  const numero = (v) => { const n = Number(v); return Number.isFinite(n) ? n : v; };
+  TIPOS = { getTypeParser: (oid, fmt) => (oid === 1082 ? (v) => v : oid === 1700 || oid === 20 ? numero : types.getTypeParser(oid, fmt)) };
   _sql = neon(url);
   return _sql;
 }
