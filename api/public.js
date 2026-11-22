@@ -1,4 +1,4 @@
-import { q, q1, corpo, responde, falha, ipDe, limite, txt, isData, hoje } from "./_db.js";
+import { q, q1, garanteColunas, corpo, responde, falha, ipDe, limite, txt, isData, hoje } from "./_db.js";
 import { validaFicha } from "./_ficha.js";
 
 // API pública do site. Só expõe: suítes, preços, nº de quartos livres, cardápio e vídeos.
@@ -13,6 +13,7 @@ const CFG_PUBLICA = ["whatsapp", "whatsapp_restaurante", "vendas_ate", "site_pau
 export default async function handler(req, res) {
   try {
     const a = String(req.query?.a || "");
+    if (a === "ficha") await garanteColunas();
 
     if (req.method === "GET" && a === "site") {
       const [cats, cfg, menu, vids, temps] = await Promise.all([

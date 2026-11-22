@@ -1,4 +1,4 @@
-import { q, q1, corpo, responde, falha, txt, num, int, data, umDe, hoje, isData } from "./_db.js";
+import { q, q1, garanteColunas, corpo, responde, falha, txt, num, int, data, umDe, hoje, isData } from "./_db.js";
 import { usuarioDe, origemOk, hashSenha, senhaForte } from "./_auth.js";
 import { chaveBusca } from "./public.js";
 import { validaAcompanhantes, validaFichaBalcao, pendenciasCheckin } from "./_ficha.js";
@@ -610,6 +610,7 @@ export default async function handler(req, res) {
     const acao = ACOES[String(b.a || "")];
     if (!acao) return responde(res, 400, { erro: "Ação desconhecida." });
     if (!podeAcao(String(b.a), acao, u)) return responde(res, 403, { erro: "Seu usuário não tem permissão para isso." });
+    await garanteColunas();
     const out = await acao[1](b, u);
     // Mudou ocupação ou preço: avisa o Channex (Booking) na hora. Se o Channex falhar, a ação já foi salva; fica no log.
     if (SYNC_CHANNEX.has(String(b.a)) && channexOn()) await enviaARI(`após ${b.a}`).catch((e) => import("./_channex.js").then((m) => m.log("envio", false, e.message)));

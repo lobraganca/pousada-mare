@@ -29,6 +29,21 @@ export async function q(text, params = [], uid = null) {
     return r[1];
   } catch (e) { throw traduz(e); }
 }
+// Colunas novas criadas sozinhas (uma vez por instância), para não depender de rodar SQL no Neon à mão.
+const COLUNAS = [
+  ["reservas", "acompanhantes_dados", "jsonb not null default '[]'"],
+  ["hospedes", "nascimento", "date"],
+];
+let _colunas = null;
+export function garanteColunas() {
+  if (globalThis.__TEST_DB) return Promise.resolve();
+  if (!_colunas) _colunas = (async () => {
+    const tem = await q(`select table_name || '.' || column_name c from information_schema.columns where table_schema = current_schema() and (table_name, column_name) in (${COLUNAS.map((_, i) => `($${2 * i + 1}, $${2 * i + 2})`).join(", ")})`, COLUNAS.flatMap((x) => [x[0], x[1]]));
+    const ja = new Set(tem.map((x) => x.c));
+    for (const [t, c, tipo] of COLUNAS) if (!ja.has(t + "." + c)) await q(`alter table ${t} add column if not exists ${c} ${tipo}`);
+  })().catch((e) => { _colunas = null; console.error("garanteColunas:", e.message); });
+  return _colunas;
+}
 export const q1 = async (text, params, uid) => (await q(text, params, uid))[0] || null;
 
 // Erros de regra de negócio (P0001) viram mensagem amigável; o resto vira erro genérico.
